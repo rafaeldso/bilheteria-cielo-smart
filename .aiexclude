@@ -1,0 +1,11 @@
+# Arquivos que o Gemini no Android Studio não deve ler
+# (equivalente às regras deny do .claude/settings.json).
+local.properties
+*.jks
+*.keystore
+*.p12
+.env
+.env.*
+google-services.json
+**/secrets.*
+**/build/

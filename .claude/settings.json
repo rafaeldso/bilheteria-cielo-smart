@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew *)",
+      "Bash(scripts/harness/verify.sh *)",
+      "Bash(scripts/harness/lint-file.sh *)",
+      "Bash(scripts/harness/scan-sensitive-data.sh *)",
+      "Bash(scripts/harness/check-traceability.sh *)",
+      "Bash(scripts/harness/security-scan.sh *)",
+      "Bash(android docs *)",
+      "Bash(android info *)",
+      "Bash(android describe *)",
+      "Bash(android layout *)",
+      "Bash(android screen *)",
+      "Bash(android emulator list *)",
+      "Bash(android skills list *)",
+      "Bash(android studio *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git worktree list *)",
+      "WebFetch(domain:developer.android.com)",
+      "WebFetch(domain:kotlinlang.org)",
+      "WebFetch(domain:docs.konsist.lemonappdev.com)",
+      "WebFetch(domain:detekt.dev)",
+      "WebFetch(domain:mas.owasp.org)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git merge *)",
+      "Bash(git rebase *)",
+      "Bash(android run *)",
+      "Bash(android install *)",
+      "Bash(android emulator start *)",
+      "Bash(android skills add *)",
+      "Bash(android create *)",
+      "Edit(/build-logic/**)",
+      "Edit(/gradle/**)",
+      "Edit(/settings.gradle.kts)",
+      "Edit(/build.gradle.kts)",
+      "Edit(/config/**)",
+      "Edit(/quality/**)",
+      "Edit(/scripts/harness/**)",
+      "Edit(/.github/**)",
+      "Edit(/.githooks/**)",
+      "Edit(/.editorconfig)",
+      "Edit(/docs/constitution.md)",
+      "Edit(/docs/adr/**)"
+    ],
+    "deny": [
+      "Read(**/local.properties)",
+      "Read(**/*.jks)",
+      "Read(**/*.keystore)",
+      "Read(**/*.p12)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/google-services.json)",
+      "Edit(**/local.properties)",
+      "Edit(**/*.jks)",
+      "Edit(**/*.keystore)",
+      "Bash(git push *)",
+      "Bash(git push)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(curl *)",
+      "Bash(wget *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-bash.sh", "timeout": 10 }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-files.sh", "timeout": 10 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-edit-lint.sh", "timeout": 30 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/stop-verify.sh", "timeout": 600 }
+        ]
+      }
+    ]
+  }
+}

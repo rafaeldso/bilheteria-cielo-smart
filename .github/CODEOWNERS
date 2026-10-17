@@ -1,0 +1,35 @@
+# Code owners: revisão obrigatória por caminho (CONTRIBUTING.md § Pull requests).
+# Só é exigida quando a proteção de `main` liga "Require review from Code Owners" (bootstrap.md).
+# A ÚLTIMA regra que casa com o arquivo vence: mantenha do geral para o específico.
+# Use times (@org/time), não pessoas. Descomente ao definir os times no bootstrap.
+
+# Padrão: qualquer pessoa do time Android
+# *                              @<org>/android
+
+# Segurança, rede e dados sensíveis (PCI DSS / LGPD)
+# /core/security/                @<org>/android-security
+# /core/network/                 @<org>/android-security
+# **/AndroidManifest.xml         @<org>/android-security
+# **/network_security_config.xml @<org>/android-security
+
+# Instruções dos revisores de IA e processo de segurança (prompt injection: só via code owner)
+# /REVIEW.md                     @<org>/android-security
+# /SECURITY.md                   @<org>/android-security
+# /docs/security/                @<org>/android-security
+
+# Build, qualidade e harness de IA
+# /build-logic/                  @<org>/android-platform
+# /gradle/                       @<org>/android-platform
+# /quality/                      @<org>/android-platform
+# /config/                       @<org>/android-platform
+# /scripts/harness/              @<org>/android-platform
+# /.claude/                      @<org>/android-platform
+# /.github/                      @<org>/android-platform
+
+# Regras do projeto
+# /docs/constitution.md          @<org>/android-tech-leads
+# /docs/adr/                     @<org>/android-tech-leads
+
+# Exceções aos blocos acima (a última regra vence): ficam com segurança
+# /gradle/verification-metadata.xml @<org>/android-security
+# /.github/security/             @<org>/android-security

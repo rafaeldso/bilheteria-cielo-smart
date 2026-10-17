@@ -1,0 +1,136 @@
+# detekt — sensor S-04 (ADR-0003). Usado com `buildUponDefaultConfig = true`:
+# só declaramos o que difere do padrão. Cada `reason` é lido pelo agente como
+# instrução de correção, por isso é escrito no imperativo e aponta o guia.
+# Alterações exigem aprovação (Constitution Art. VIII.3).
+
+config:
+  validation: true
+  warningsAsErrors: true
+
+complexity:
+  CyclomaticComplexMethod:
+    threshold: 10
+  LongMethod:
+    threshold: 40
+    excludes: ['**/test/**', '**/androidTest/**']
+  LargeClass:
+    threshold: 300
+  LongParameterList:
+    functionThreshold: 6
+    constructorThreshold: 8
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    thresholdInFiles: 15
+    thresholdInClasses: 15
+    ignorePrivate: true
+    ignoreAnnotatedFunctions: ['Preview']
+
+coroutines:
+  InjectDispatcher:
+    active: true
+    dispatcherNames: ['IO', 'Default', 'Unconfined', 'Main']
+    excludes: ['**/di/**', '**/test/**', '**/androidTest/**', '**/core/testing/**']
+  GlobalCoroutineUsage:
+    active: true
+  RedundantSuspendModifier:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true
+  SleepInsteadOfDelay:
+    active: true
+
+exceptions:
+  SwallowedException:
+    active: true
+  TooGenericExceptionCaught:
+    active: true
+    excludes: ['**/test/**']
+  InstanceOfCheckForException:
+    active: true
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+    excludes: ['**/test/**', '**/androidTest/**']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][_A-Z0-9]*'
+
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+  LateinitUsage:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+    ignoreOnClassesPattern: '.*(Activity|Fragment|Application)'
+
+style:
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Preview', 'Composable']
+    excludes: ['**/test/**', '**/androidTest/**', '**/designsystem/**']
+  ForbiddenComment:
+    comments:
+      - reason: 'Abra um ticket e cite-o: TODO(PROJ-123). TODO solto vira dívida invisível.'
+        value: 'TODO:'
+      - reason: 'Corrija agora ou abra ticket. FIXME não entra na main.'
+        value: 'FIXME'
+  ForbiddenImport:
+    active: true
+    imports:
+      - reason: 'Use o logger do projeto (core:common). Log direto pode vazar PII/cartão. Ver docs/harness/guides/security.md'
+        value: 'android.util.Log'
+      - reason: 'Use JUnit 5 (org.junit.jupiter). Ver docs/harness/guides/testing.md'
+        value: 'org.junit.Test'
+      - reason: 'Use java.time (ou kotlinx-datetime) com Clock injetado.'
+        value: 'java.util.Date'
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - reason: 'Bloqueia a thread. Use funções suspend e o escopo apropriado. Ver kotlin-style.md#coroutines-e-flow'
+        value: 'kotlinx.coroutines.runBlocking'
+      - reason: 'Use o logger do projeto; println vaza em release.'
+        value: 'kotlin.io.println'
+      - reason: 'Use Clock injetado para manter testes determinísticos.'
+        value: 'java.lang.System.currentTimeMillis'
+      - reason: 'Nunca imprima stack traces; logue via logger do projeto sem dados sensíveis.'
+        value: 'kotlin.Throwable.printStackTrace'
+  UnusedPrivateMember:
+    active: true
+    ignoreAnnotated: ['Preview']
+  ReturnCount:
+    max: 3
+  MaxLineLength:
+    maxLineLength: 120
+  WildcardImport:
+    active: true
+
+# Plugin io.nlopez.compose.rules — ativo quando aplicado no convention plugin app.quality.
+Compose:
+  ModifierMissing:
+    active: true
+  ModifierWithoutDefault:
+    active: true
+  ViewModelForwarding:
+    active: true
+  ViewModelInjection:
+    active: true
+  MutableParams:
+    active: true
+  PreviewPublic:
+    active: true
+  ContentEmitterReturningValues:
+    active: true
+  RememberMissing:
+    active: true
+  UnstableCollections:
+    active: true
+
+# Regras próprias (quality/detekt-rules). Ver docs/harness/templates/kotlin/SensitiveDataInLogRule.kt
+project-rules:
+  active: true
+  SensitiveDataInLog:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']

@@ -1,0 +1,15 @@
+# Log de uso de IA
+
+> Ferramenta principal: Claude Code (extensão VS Code), modelo Opus 5.5 na sessão principal.
+> Uma linha por etapa. Sem segredos, PAN ou PII.
+
+| Data | Etapa | Pedido (resumo) | Skill / agente (modelo) | Resultado | Intervenção humana |
+|---|---|---|---|---|---|
+| 2026-10-17 | Planejamento | Ler o case e dividir em tarefas otimizadas ([prompt 1](prompts.md#prompt-1)) | `feature-flow` (sessão principal) | Leitura do case e do harness; proposta de 4 demandas (D0–D3), duas trilhas paralelas, mock local e 10 itens de produção a pular, cada um com motivo | Humano recusou a primeira busca web (queria o plano antes); aprovou a estrutura, todos os pulos, o mock local e a identidade ([prompt 2](prompts.md#prompt-2)) |
+| 2026-10-17 | Spike Cielo | Ler a doc oficial da Cielo Smart sem inventar requisitos | WebFetch (sessão principal) + `general-purpose` (sonnet), em segundo plano | Emulador = APK, Android 7 ou 10; doc recomenda Deep Link; índice da doc mapeado; `research.md` em produção | — |
+| 2026-10-17 | Ambiente | Preparar a máquina | Android CLI (`android sdk install`) | Constatado: sem JDK, SDK, Homebrew e `gh`; SDK instalado pelo CLI | Decisão sobre como instalar o JDK |
+| 2026-10-17 | Spike Cielo (resultado) | — | `general-purpose` (sonnet) | [research.md](../specs/001-venda-de-ingressos/research.md): Deep Link recomendado; SDK Local descontinuado; códigos de erro 1–4; sem idempotência nativa → `reference` próprio + consulta `lio://orders` antes de reenviar. Ressalva do próprio agente: WebFetch devolveu resumos, URIs e JSONs serão conferidos na fonte antes do plano | — |
+| 2026-10-17 | Sensor (falso positivo) | Instalar JDK e `gh` com verificação de checksum | hook `guard-bash` | Bloqueou pipe para `shasum` como se fosse execução de script; registrado no [steering loop](../harness/steering-loop.md) com correção proposta, sem alterar o hook | Downloads negados pela permissão → humano instala JDK e `gh` |
+| 2026-10-17 | D0 Fundação | Criar projeto, build-logic, sensores, CI/CD | Android CLI (`android create`, `sdk`, `emulator`, `screen`, `layout`), WebFetch nos repositórios Maven, `gh api` | Versões estáveis consultadas na fonte, não da memória. Sensores acusaram e o agente corrigiu: config detekt pedia compose-rules (faltava no catálogo), Konsist lia templates de `docs/`, linhas longas, formatação, BOM exigindo `compileSdk 37`. `verify.sh full` verde; sensores provados com arquivo-sonda (hook, detekt, Konsist falharam como esperado); app rodando no AVD Android 10 | Humano instalou JDK e `gh` (downloads do agente negados) |
+| 2026-10-17 | Steering loop | Corrigir o falso positivo do hook | Sessão principal | `guard-bash.sh` com limite de palavra; 2 casos novos no `selftest.sh` (106 ok) | Humano aprovou a mudança em `.claude/hooks/` |
+| 2026-10-17 | T14 Repositório | Repositório privado + primeiro push | `gh repo create` (sem push) | Commit inicial local; push feito pelo humano, porque o hook bloqueia `git push` do agente mesmo com autorização | Humano faz o push |

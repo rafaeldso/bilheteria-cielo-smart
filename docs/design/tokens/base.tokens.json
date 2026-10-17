@@ -1,0 +1,429 @@
+{
+  "$description": "Tokens base: tipografia, espacamento, forma, elevacao, tamanhos e movimento. PLACEHOLDER: papeis no formato do Material Theme Builder (seed aproximado #00696B); regerar no Theme Builder quando a direcao visual for aprovada. Unidade px = dp/sp no Android. Ver docs/design/README.md.",
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "brand": {
+        "$value": [
+          "Roboto Flex",
+          "Roboto",
+          "sans-serif"
+        ],
+        "$description": "Titulos. Trocar junto com a direcao visual."
+      },
+      "plain": {
+        "$value": [
+          "Roboto",
+          "sans-serif"
+        ],
+        "$description": "Texto corrido e rotulos."
+      },
+      "numeric": {
+        "$value": [
+          "Roboto Mono",
+          "monospace"
+        ],
+        "$description": "Opcional para valores tabulares (extrato)."
+      }
+    }
+  },
+  "typography": {
+    "$type": "typography",
+    "displaySmall": {
+      "$value": {
+        "fontFamily": "{font.family.brand}",
+        "fontSize": {
+          "value": 36,
+          "unit": "px"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.2222,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "px"
+        }
+      }
+    },
+    "headlineMedium": {
+      "$value": {
+        "fontFamily": "{font.family.brand}",
+        "fontSize": {
+          "value": 28,
+          "unit": "px"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.2857,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "px"
+        }
+      }
+    },
+    "headlineSmall": {
+      "$value": {
+        "fontFamily": "{font.family.brand}",
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.3333,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "px"
+        }
+      }
+    },
+    "titleLarge": {
+      "$value": {
+        "fontFamily": "{font.family.brand}",
+        "fontSize": {
+          "value": 22,
+          "unit": "px"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.2727,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "px"
+        }
+      }
+    },
+    "titleMedium": {
+      "$value": {
+        "fontFamily": "{font.family.plain}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": 500,
+        "lineHeight": 1.5,
+        "letterSpacing": {
+          "value": 0.15,
+          "unit": "px"
+        }
+      }
+    },
+    "titleSmall": {
+      "$value": {
+        "fontFamily": "{font.family.plain}",
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "fontWeight": 500,
+        "lineHeight": 1.4286,
+        "letterSpacing": {
+          "value": 0.1,
+          "unit": "px"
+        }
+      }
+    },
+    "bodyLarge": {
+      "$value": {
+        "fontFamily": "{font.family.plain}",
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "letterSpacing": {
+          "value": 0.5,
+          "unit": "px"
+        }
+      }
+    },
+    "bodyMedium": {
+      "$value": {
+        "fontFamily": "{font.family.plain}",
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.4286,
+        "letterSpacing": {
+          "value": 0.25,
+          "unit": "px"
+        }
+      }
+    },
+    "bodySmall": {
+      "$value": {
+        "fontFamily": "{font.family.plain}",
+        "fontSize": {
+          "value": 12,
+          "unit": "px"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.3333,
+        "letterSpacing": {
+          "value": 0.4,
+          "unit": "px"
+        }
+      }
+    },
+    "labelLarge": {
+      "$value": {
+        "fontFamily": "{font.family.plain}",
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "fontWeight": 500,
+        "lineHeight": 1.4286,
+        "letterSpacing": {
+          "value": 0.1,
+          "unit": "px"
+        }
+      }
+    },
+    "labelMedium": {
+      "$value": {
+        "fontFamily": "{font.family.plain}",
+        "fontSize": {
+          "value": 12,
+          "unit": "px"
+        },
+        "fontWeight": 500,
+        "lineHeight": 1.3333,
+        "letterSpacing": {
+          "value": 0.5,
+          "unit": "px"
+        }
+      }
+    },
+    "labelSmall": {
+      "$value": {
+        "fontFamily": "{font.family.plain}",
+        "fontSize": {
+          "value": 11,
+          "unit": "px"
+        },
+        "fontWeight": 500,
+        "lineHeight": 1.4545,
+        "letterSpacing": {
+          "value": 0.5,
+          "unit": "px"
+        }
+      }
+    }
+  },
+  "spacing": {
+    "$type": "dimension",
+    "none": {
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      }
+    },
+    "xxs": {
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      }
+    },
+    "xs": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      }
+    },
+    "sm": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    },
+    "md": {
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      }
+    },
+    "lg": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      }
+    },
+    "xl": {
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      }
+    },
+    "xxl": {
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      }
+    },
+    "xxxl": {
+      "$value": {
+        "value": 48,
+        "unit": "px"
+      }
+    }
+  },
+  "shape": {
+    "$type": "dimension",
+    "none": {
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      }
+    },
+    "extraSmall": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      }
+    },
+    "small": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    },
+    "medium": {
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      }
+    },
+    "large": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      }
+    },
+    "extraLarge": {
+      "$value": {
+        "value": 28,
+        "unit": "px"
+      }
+    },
+    "full": {
+      "$value": {
+        "value": 9999,
+        "unit": "px"
+      }
+    }
+  },
+  "elevation": {
+    "$type": "dimension",
+    "level0": {
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      }
+    },
+    "level1": {
+      "$value": {
+        "value": 1,
+        "unit": "px"
+      }
+    },
+    "level2": {
+      "$value": {
+        "value": 3,
+        "unit": "px"
+      }
+    },
+    "level3": {
+      "$value": {
+        "value": 6,
+        "unit": "px"
+      }
+    },
+    "level4": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    },
+    "level5": {
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      }
+    }
+  },
+  "size": {
+    "$type": "dimension",
+    "touchTargetMin": {
+      "$value": {
+        "value": 48,
+        "unit": "px"
+      }
+    },
+    "iconSmall": {
+      "$value": {
+        "value": 18,
+        "unit": "px"
+      }
+    },
+    "iconMedium": {
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      }
+    },
+    "iconLarge": {
+      "$value": {
+        "value": 40,
+        "unit": "px"
+      }
+    },
+    "contentMaxWidth": {
+      "$value": {
+        "value": 640,
+        "unit": "px"
+      }
+    }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "short": {
+        "$value": {
+          "value": 150,
+          "unit": "ms"
+        }
+      },
+      "medium": {
+        "$value": {
+          "value": 300,
+          "unit": "ms"
+        }
+      },
+      "long": {
+        "$value": {
+          "value": 500,
+          "unit": "ms"
+        }
+      }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "standard": {
+        "$value": [
+          0.2,
+          0,
+          0,
+          1
+        ]
+      },
+      "emphasized": {
+        "$value": [
+          0.3,
+          0,
+          0,
+          1
+        ]
+      }
+    }
+  }
+}

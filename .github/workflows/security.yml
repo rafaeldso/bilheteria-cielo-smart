@@ -1,0 +1,92 @@
+# Security scanning computacional (ADR-0006). Somente ferramentas gratuitas (ADR-0003).
+# Jobs secrets, dependencies, sast-mobile e workflows são checks obrigatórios de merge.
+# IA não roda aqui: ver ai-review.yml e ai-security-review.yml. Processo: docs/security/README.md.
+# Versões fixadas abaixo; atualize junto com docs/security/landscape.md.
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'   # semanal: CVEs novas em dependências antigas
+  workflow_dispatch:
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # S-14 — segredos em todo o histórico. CLI (MIT): a action oficial exige licença para organizações.
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: 8.21.2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { fetch-depth: 0, persist-credentials: false }
+      - name: Gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
+          ./gitleaks git --redact --exit-code 1 .
+
+  # S-15 — CVEs nas versões RESOLVIDAS (gradle.lockfile, via dependency locking).
+  # Exceções com prazo: osv-scanner.toml ([[IgnoredVulns]] com ignoreUntil e reason),
+  # espelhadas no registro de docs/security/triage.md.
+  dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OSV_SCANNER_VERSION: 2.7.0
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - name: OSV-Scanner
+        run: |
+          curl -sSfL -o osv-scanner "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
+          chmod +x osv-scanner
+          set +e
+          ./osv-scanner scan source --recursive .
+          code=$?
+          set -e
+          # 128 = nenhum lockfile encontrado. Dependency locking está fora do escopo do case
+          # (ADR-0009, S7): CVEs ficam com o Dependabot até o locking ser adotado.
+          if [ "$code" -eq 128 ]; then echo "::notice::Sem gradle.lockfile (ADR-0009, S7); Dependabot cobre CVEs."; exit 0; fi
+          exit "$code"
+
+  # S-22 — SAST mobile no fonte (Kotlin/Java/manifest) com as regras do MobSF.
+  sast-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MOBSFSCAN_VERSION: 1.0.1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - name: mobsfscan (relatório SARIF)
+        run: pipx run "mobsfscan==${MOBSFSCAN_VERSION}" --sarif -o mobsfscan.sarif --no-fail .
+      - name: mobsfscan (gate)
+        run: pipx run "mobsfscan==${MOBSFSCAN_VERSION}" .
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with: { name: mobsfscan-sarif, path: mobsfscan.sarif, if-no-files-found: ignore }
+
+  # S-21 — workflows do GitHub Actions: injeção de template, permissões, actions sem SHA, credenciais.
+  workflows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ZIZMOR_VERSION: 1.31.1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - name: zizmor
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: pipx run "zizmor==${ZIZMOR_VERSION}" --format=github .github/workflows
+
+  # S-23 (MobSF no APK de release) fora do escopo do case: ADR-0009, S5.

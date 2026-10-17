@@ -1,0 +1,16 @@
+Do not report the following (they are false positives or already covered by deterministic CI checks):
+
+- Card network test PANs (the TEST_PANS list in scripts/harness/scan-sensitive-data.sh) inside src/test,
+  src/androidTest, src/testFixtures or core/testing.
+- Masked values such as "**** 1234" or toString overrides that already mask sensitive fields.
+- Dispatchers or logging configured inside dependency injection modules (di packages) or debug source sets.
+- network_security_config debug-overrides trusting user certificates: they only apply to debuggable builds.
+- Placeholders in documentation and templates under docs/ (for example PIN_PRINCIPAL_BASE64=).
+- Generated code under build/ or generated/ directories, gradle.lockfile and gradle/verification-metadata.xml.
+- Findings about formatting, code style, complexity or missing tests (handled by Spotless, detekt and traceability sensors).
+- Known CVEs in dependencies (handled by OSV-Scanner in the security workflow) unless the PR adds the dependency.
+- Hardcoded secrets that Gitleaks already scans for, unless the value is clearly a real credential.
+- Denial of service, rate limiting, resource exhaustion and open redirects without demonstrated impact.
+- Root, emulator or debugger detection missing on the client: the project decides integrity on the server (Play Integrity).
+
+Lower to informational any finding whose vulnerable code is not reachable from production code paths.

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Pre-commit: sensores S-01/S-02 nos arquivos staged (~1 s). Gradle fica com o hook
+# Stop do agente e com o CI, para não pesar no commit. Para rodar também o nível fast:
+#   HARNESS_PRECOMMIT_LEVEL=fast git commit ...
+# Ativação: git config core.hooksPath .githooks   (feito por scripts/harness/bootstrap.sh)
+set -uo pipefail
+root="$(git rev-parse --show-toplevel)"
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[[ -z "$staged" ]] && exit 0
+
+cd "$root"
+# shellcheck disable=SC2086
+scripts/harness/lint-file.sh $staged || { echo "pre-commit: corrija as violações acima."; exit 1; }
+# shellcheck disable=SC2086
+scripts/harness/scan-sensitive-data.sh $staged || exit 1
+if [[ "${HARNESS_PRECOMMIT_LEVEL:-light}" == "fast" ]]; then scripts/harness/verify.sh fast || exit 1; fi

@@ -1,0 +1,53 @@
+# CI = mesmos sensores que o agente roda localmente (sem surpresas).
+# Níveis: standard em PR; full em main. Ver docs/harness/sensors/README.md.
+# Varredura de segurança (Gitleaks, OSV, mobsfscan, zizmor, MobSF): security.yml.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'   # contínuo: drift semanal (dependências: security.yml)
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  harness-selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - run: scripts/harness/selftest.sh
+
+  verify:
+    needs: harness-selftest
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { persist-credentials: false }
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+      - name: Harness verify
+        run: scripts/harness/verify.sh ${{ github.event_name == 'pull_request' && 'standard' || 'full' }}
+      - name: Relatórios
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: harness-reports
+          path: |
+            build/harness/
+            **/build/reports/
+          if-no-files-found: ignore

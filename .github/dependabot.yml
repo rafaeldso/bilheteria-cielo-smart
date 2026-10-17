@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule: { interval: weekly }
+    # Cooldown: versões recém-publicadas esperam alguns dias (mitiga pacote comprometido/
+    # sequestrado antes de ser detectado). Correções de segurança não esperam.
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      androidx: { patterns: ['androidx.*'] }
+      kotlin: { patterns: ['org.jetbrains.kotlin*', 'com.google.devtools.ksp*'] }
+    # Só versões estáveis (ADR-0007): o Dependabot não propõe pré-release para dependência
+    # que já está em versão estável; a revisão do PR recusa alpha/beta/RC no catálogo.
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    # Actions ficam fixadas por SHA (zizmor, S-21); o Dependabot atualiza o SHA e o comentário de versão.
+    cooldown:
+      default-days: 7

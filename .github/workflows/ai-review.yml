@@ -1,0 +1,38 @@
+# Revisão agêntica de PR (ADR-0004). Só roda quando o rótulo `ai-review` é aplicado,
+# para controlar custo. Complementa o ci.yml e a revisão humana; não os substitui.
+# Pré-requisito: segredo ANTHROPIC_API_KEY no repositório (configurado por humano).
+name: ai-review
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    # Nunca em PR de fork: o conteúdo do PR é entrada do modelo (docs/security/ai-review.md).
+    if: >-
+      contains(github.event.pull_request.labels.*.name, 'ai-review') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with: { fetch-depth: 0 }
+      - uses: anthropics/claude-code-action@f27be6b65a4652f08a2ba3cff79114829b588967 # v1.0.252
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Revise o PR #${{ github.event.pull_request.number }} seguindo AGENTS.md e
+            a skill review-changes (base: origin/${{ github.base_ref }}). Use os
+            revisores de .claude/agents conforme o roteamento da skill. Não edite
+            arquivos. Publique um único comentário com a tabela consolidada e o veredito.
+          claude_args: "--max-turns 30 --allowedTools Read,Grep,Glob,Agent,Bash(git diff *),Bash(git log *),Bash(scripts/harness/check-traceability.sh *),Bash(gh pr comment *),Bash(gh pr diff *)"

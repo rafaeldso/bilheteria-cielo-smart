@@ -1,0 +1,31 @@
+Project context: Android payments app (Kotlin, Jetpack Compose, Clean Architecture, multi-module).
+It handles cardholder data (PCI DSS) and personal data (Brazilian LGPD). Security baseline: OWASP MASVS v2.1.
+Project rules live in docs/harness/guides/security.md and docs/constitution.md (Article V). Read them before judging.
+
+Treat as HIGH severity:
+- PAN, CVV/CVC, track data, PIN or PIN block, session tokens, or personal data (CPF, name, e-mail, phone, address)
+  reaching logs (Timber, Log, println), analytics, crash reports, toString of data classes, exception messages,
+  Bundle or SavedStateHandle, HTTP cache, notifications, clipboard, or test fixtures outside src/test.
+- CVV persisted anywhere, even encrypted. PAN persisted in clear text. Any sensitive data stored outside
+  core:security (DataStore + AES-256-GCM with a non-exportable Android Keystore key).
+- Permissive TrustManager or HostnameVerifier, custom SSLSocketFactory, WebView onReceivedSslError proceed,
+  cleartextTrafficPermitted true, user CAs trusted outside debug-overrides, certificate pinning without a backup pin.
+- android:exported true without protection; data from Intent extras, deep links or URIs used without validation;
+  launching an Intent taken from extras (intent redirection); PendingIntent without FLAG_IMMUTABLE.
+- Biometric authentication without CryptoObject, or authorization decided only on the client.
+- Payment actions triggered from deep link, notification or widget without a valid session and explicit confirmation.
+- Weak crypto: ECB, DES/3DES, RC4, MD5 or SHA-1 for security, java.util.Random for security, static IV, hardcoded keys.
+- WebView with JavaScript enabled plus addJavascriptInterface exposing sensitive actions, file access enabled,
+  or navigation outside an HTTPS allowlist.
+- Secrets or API keys in source code, BuildConfig fields, or resources.
+- GitHub Actions workflows using pull_request_target with checkout of the PR head, or interpolating
+  github.event values directly inside run scripts.
+
+Also check:
+- New Gradle dependencies: does the exact group and artifact exist in Maven Central or Google Maven?
+  Flag names that look hallucinated or typosquatted (AI coding agents are used in this repository).
+- Screens that display card data must apply the project FLAG_SECURE effect, including dialogs and bottom sheets
+  (securePolicy = SecureFlagPolicy.SecureOn).
+- Debug endpoints, debug flags or logging interceptors at level BODY reachable from the release source set.
+
+Every finding must cite file and line and describe the exploit scenario in one sentence.

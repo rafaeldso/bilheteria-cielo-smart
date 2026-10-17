@@ -1,0 +1,12 @@
+
+# <tipo>(<escopo>): <resumo no imperativo, em inglês, até 72 caracteres>
+#   tipos: feat fix perf refactor test docs build ci style chore revert
+#   escopo: módulo em kebab-case (balance-ui, core-network) ou harness, deps, specs, adr
+#   ex.: feat(balance-ui): show blocked amount on balance card
+#
+# Corpo: o PORQUÊ da mudança (não o como). Quebre em 72 colunas.
+#
+# Refs: AC-01, AC-02 · docs/specs/NNN-slug
+# BREAKING CHANGE: <o que quebra e como migrar>
+#
+# Guia completo: CONTRIBUTING.md · Ativar: git config commit.template .gitmessage

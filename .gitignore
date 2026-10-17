@@ -1,0 +1,30 @@
+# Gradle / Android
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+.kotlin/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Segredos (nunca versionar)
+local.properties
+*.jks
+*.keystore
+*.p12
+.env
+.env.*
+google-services.json
+**/secrets.*
+
+# Claude Code: configurações pessoais
+.claude/settings.local.json
+CLAUDE.local.md

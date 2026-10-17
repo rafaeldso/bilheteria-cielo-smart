@@ -1,0 +1,61 @@
+# Revisão de segurança por IA (S-26, ADR-0006). Complementa security.yml; nunca é check obrigatório.
+# Roda quando o diff toca caminho sensível ou com o rótulo `security-review`.
+# A action NÃO é endurecida contra prompt injection: só roda em PR do próprio repositório
+# (nunca de fork) e nunca com pull_request_target. Política: docs/security/ai-review.md.
+# Pré-requisito: segredo ANTHROPIC_API_KEY (environment `ai-review`), configurado por humano.
+name: ai-security-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+concurrency:
+  group: ai-security-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.draft == false &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ai-review
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Toca caminho sensível?
+        id: scope
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'security-review') }}
+        run: |
+          # Mantenha alinhado com o roteamento do security-reviewer (.claude/skills/review-changes).
+          pattern='(^|/)(data|security|network|auth|payment|card)/|AndroidManifest\.xml$|network_security_config|\.github/workflows/|libs\.versions\.toml$|build\.gradle\.kts$|proguard|\.pro$'
+          if [ "$HAS_LABEL" = "true" ] || git diff --name-only "origin/${BASE_REF}...HEAD" | grep -Eq "$pattern"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Nenhum caminho sensível alterado; revisão de segurança por IA pulada."
+          fi
+
+      - uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda # main 2026-10-17
+        if: steps.scope.outputs.run == 'true'
+        with:
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          comment-pr: true
+          upload-results: true
+          claudecode-timeout: 20
+          exclude-directories: build,docs,.gradle
+          custom-security-scan-instructions: .github/security/claude-scan-instructions.txt
+          false-positive-filtering-instructions: .github/security/false-positive-filtering.txt
