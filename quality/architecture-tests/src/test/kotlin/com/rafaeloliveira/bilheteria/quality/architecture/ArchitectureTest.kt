@@ -33,6 +33,12 @@ private const val VIEW_MODEL_SHAPE =
         "MutableStateFlow privado. Ver docs/harness/guides/compose-ui.md (AP-04)"
 private const val CIELO_ISOLATED =
     "Deep link lio:// e Base64 da Cielo só no pacote ..data.cielo.. (ADR-0010). Use PaymentGateway fora dele."
+private const val JUNIT4_ONLY_ROBOLECTRIC =
+    "JUnit 4 (org.junit.Test) só em teste com @RunWith (Robolectric/Compose). Use JUnit 5. " +
+        "Ver docs/harness/guides/testing.md"
+private const val TEST_FORBIDDEN_IMPORTS =
+    "Teste de data/ui não importa android.util.Log nem java.util.Date (detekt exclui esses caminhos). " +
+        "Use o Logger do projeto e java.time. Ver docs/harness/guides/testing.md"
 private const val SCREEN_STATELESS = "Passe uiState e onEvent para a Screen; só a Route conhece o ViewModel (AP-05)"
 
 /** Sensor S-06. Failure messages are written for the agent: what is wrong + how to fix + guide. */
@@ -135,5 +141,27 @@ class ArchitectureTest {
             .assertTrue(additionalMessage = "Interface de repositório pertence ao domain. Ver $GUIDE") {
                 it.resideInPackage("..domain..")
             }
+    }
+
+    // The detekt ForbiddenImport rule is excluded in data/ui unit tests so Robolectric can use JUnit 4;
+    // these two checks keep the rest of that rule enforced there.
+    private val robolectricTests =
+        Konsist.scopeFromTest().slice {
+            val path = it.path
+            "/.claude/" !in path && "/docs/" !in path && ("/data/src/test/" in path || "/ui/src/test/" in path)
+        }
+
+    @Test
+    fun `JUnit 4 em testes de data e ui so com RunWith`() {
+        robolectricTests.files
+            .filter { it.hasImport { import -> import.name == "org.junit.Test" } }
+            .assertTrue(additionalMessage = JUNIT4_ONLY_ROBOLECTRIC) { "@RunWith(" in it.text }
+    }
+
+    @Test
+    fun `testes de data e ui nao importam Log nem Date`() {
+        robolectricTests.files.assertFalse(additionalMessage = TEST_FORBIDDEN_IMPORTS) {
+            it.hasImport { import -> import.name == "android.util.Log" || import.name == "java.util.Date" }
+        }
     }
 }
