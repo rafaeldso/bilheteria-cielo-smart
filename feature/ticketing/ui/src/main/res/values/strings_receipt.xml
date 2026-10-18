@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2026 Rafael Oliveira
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<resources>
+    <!-- SCR-03 Comprovante (ui-spec 4.4) -->
+    <string name="ticketing_receipt_title">Comprovante</string>
+    <string name="ticketing_receipt_back">Voltar ao histórico</string>
+
+    <string name="ticketing_receipt_approved_title">Pagamento aprovado</string>
+    <string name="ticketing_receipt_approved_body">Entregue os ingressos ao comprador.</string>
+    <string name="ticketing_receipt_declined_title">Pagamento negado</string>
+    <string name="ticketing_receipt_declined_body">A Cielo não autorizou o pagamento. Se o comprador quiser, refaça a venda com outra forma de pagamento.</string>
+    <string name="ticketing_receipt_cancelled_title">Pagamento cancelado</string>
+    <string name="ticketing_receipt_cancelled_body">O pagamento foi cancelado no terminal.</string>
+
+    <!-- Status do badge e do campo Status (chaves próprias do comprovante: evitam colidir com as da SCR-04) -->
+    <string name="ticketing_receipt_status_approved">Aprovada</string>
+    <string name="ticketing_receipt_status_declined">Negada</string>
+    <string name="ticketing_receipt_status_cancelled">Cancelada</string>
+
+    <string name="ticketing_receipt_field_purchase_number">Nº da compra</string>
+    <string name="ticketing_receipt_field_event">Evento</string>
+    <string name="ticketing_receipt_field_event_date">Data do evento</string>
+    <string name="ticketing_receipt_field_venue">Local</string>
+    <string name="ticketing_receipt_field_quantity">Quantidade</string>
+    <string name="ticketing_receipt_field_unit_price">Valor unitário</string>
+    <string name="ticketing_receipt_field_total">Total</string>
+    <string name="ticketing_receipt_field_purchased_at">Data/hora da compra</string>
+    <string name="ticketing_receipt_field_status">Status</string>
+    <string name="ticketing_receipt_field_brand">Bandeira</string>
+    <string name="ticketing_receipt_field_auth_code">Código de autorização</string>
+    <string name="ticketing_receipt_field_nsu">NSU</string>
+
+    <!-- Data absoluta: "17/10/2026 às 14:32" (data e hora vêm formatadas em pt-BR pelo código) -->
+    <string name="ticketing_receipt_datetime_format">%1$s às %2$s</string>
+
+    <plurals name="ticketing_receipt_tickets">
+        <item quantity="one">%d ingresso</item>
+        <item quantity="other">%d ingressos</item>
+    </plurals>
+
+    <!-- Valores por extenso para o leitor de tela: "100 reais", "10 reais e 50 centavos" -->
+    <plurals name="ticketing_receipt_spoken_reais">
+        <item quantity="one">%d real</item>
+        <item quantity="other">%d reais</item>
+    </plurals>
+    <plurals name="ticketing_receipt_spoken_centavos">
+        <item quantity="one">%d centavo</item>
+        <item quantity="other">%d centavos</item>
+    </plurals>
+    <string name="ticketing_receipt_spoken_reais_and_centavos">%1$s e %2$s</string>
+
+    <string name="ticketing_receipt_new_sale">Nova venda</string>
+    <string name="ticketing_receipt_loading">Carregando o comprovante</string>
+
+    <string name="ticketing_receipt_error_title">Não foi possível abrir o comprovante</string>
+    <string name="ticketing_receipt_error_body">Os dados desta compra não puderam ser lidos.</string>
+    <string name="ticketing_receipt_retry">Tentar novamente</string>
+</resources>

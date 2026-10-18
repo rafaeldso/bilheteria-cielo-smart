@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2026 Rafael Oliveira
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<resources>
+    <!-- SCR-04: purchase history (ui-spec 0.4.2, section 4.4). -->
+    <string name="ticketing_history_title">Histórico de compras</string>
+    <string name="ticketing_history_back">Voltar para eventos</string>
+    <string name="ticketing_history_loading">Carregando histórico</string>
+    <string name="ticketing_history_empty_title">Nenhuma compra registrada</string>
+    <string name="ticketing_history_empty_body">Vendas aprovadas, negadas ou canceladas aparecem aqui.</string>
+    <string name="ticketing_history_error_title">Não foi possível carregar o histórico</string>
+    <string name="ticketing_history_error_body">As compras registradas não puderam ser lidas. Tente de novo.</string>
+    <string name="ticketing_history_retry">Tentar de novo</string>
+
+    <plurals name="ticketing_history_count">
+        <item quantity="one">%d compra</item>
+        <item quantity="other">%d compras</item>
+    </plurals>
+    <plurals name="ticketing_history_quantity">
+        <item quantity="one">%d ingresso</item>
+        <item quantity="other">%d ingressos</item>
+    </plurals>
+
+    <!-- Relative date and time of the purchase (DESIGN.md section 9): today, yesterday, then dd/MM. -->
+    <string name="ticketing_history_datetime_today">hoje às %1$s</string>
+    <string name="ticketing_history_datetime_yesterday">ontem às %1$s</string>
+    <string name="ticketing_history_datetime_other">%1$s às %2$s</string>
+    <!-- Spoken form of the older dates: "15 de outubro às 09:00". -->
+    <string name="ticketing_history_datetime_other_spoken">%1$d de %2$s às %3$s</string>
+
+    <string name="ticketing_history_item_supporting">%1$s · %2$s</string>
+    <!-- Spoken row: event, date and time, tickets, total, status. -->
+    <string name="ticketing_history_item_a11y">%1$s, %2$s, %3$s, %4$s, %5$s</string>
+
+    <!-- Total spelled out for TalkBack: "100 reais", "1 real e 5 centavos", "50 centavos". -->
+    <plurals name="ticketing_history_spoken_reais">
+        <item quantity="one">%d real</item>
+        <item quantity="other">%d reais</item>
+    </plurals>
+    <plurals name="ticketing_history_spoken_cents">
+        <item quantity="one">%d centavo</item>
+        <item quantity="other">%d centavos</item>
+    </plurals>
+    <string name="ticketing_history_spoken_reais_and_cents">%1$s e %2$s</string>
+
+    <string name="ticketing_history_status_approved">Aprovada</string>
+    <string name="ticketing_history_status_declined">Negada</string>
+    <string name="ticketing_history_status_cancelled">Cancelada</string>
+</resources>

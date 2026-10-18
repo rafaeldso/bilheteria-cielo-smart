@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2026 Rafael Oliveira
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- SCR-02 Compra. Keys and texts: docs/specs/001-venda-de-ingressos/ui-spec.md, SCR-02 section 4.4. -->
+<resources>
+    <string name="ticketing_purchase_title">Compra</string>
+    <string name="ticketing_purchase_back">Voltar para eventos</string>
+    <string name="ticketing_purchase_loading">Carregando a compra</string>
+
+    <!-- Event header: day, time, venue / price, availability -->
+    <string name="ticketing_purchase_event_when">%1$s · %2$s · %3$s</string>
+    <string name="ticketing_purchase_unit_price">%1$s por ingresso · %2$s</string>
+    <string name="ticketing_purchase_unit_price_only">%1$s por ingresso</string>
+    <plurals name="ticketing_purchase_available">
+        <item quantity="one">%d disponível</item>
+        <item quantity="other">%d disponíveis</item>
+    </plurals>
+
+    <!-- Quantity -->
+    <string name="ticketing_purchase_quantity">Quantidade</string>
+    <string name="ticketing_purchase_quantity_group">Quantidade de ingressos</string>
+    <string name="ticketing_purchase_decrease">Diminuir quantidade</string>
+    <string name="ticketing_purchase_increase">Aumentar quantidade</string>
+    <plurals name="ticketing_purchase_tickets">
+        <item quantity="one">%d ingresso</item>
+        <item quantity="other">%d ingressos</item>
+    </plurals>
+    <string name="ticketing_purchase_limit_max">Máximo de %d ingressos por compra</string>
+    <plurals name="ticketing_purchase_limit_available">
+        <item quantity="one">Só resta %d ingresso para este evento</item>
+        <item quantity="other">Só restam %d ingressos para este evento</item>
+    </plurals>
+
+    <!-- Total and payment -->
+    <string name="ticketing_purchase_total">Total</string>
+    <string name="ticketing_purchase_total_detail">%1$s × %2$s</string>
+    <string name="ticketing_purchase_total_spoken">Total %1$s, %2$s de %3$s</string>
+    <string name="ticketing_purchase_pay">Pagar %s no terminal</string>
+
+    <!-- Money read aloud: "100 reais e 50 centavos" -->
+    <plurals name="ticketing_purchase_spoken_reais">
+        <item quantity="one">%d real</item>
+        <item quantity="other">%d reais</item>
+    </plurals>
+    <plurals name="ticketing_purchase_spoken_centavos">
+        <item quantity="one">%d centavo</item>
+        <item quantity="other">%d centavos</item>
+    </plurals>
+    <string name="ticketing_purchase_spoken_reais_and_centavos">%1$s e %2$s</string>
+
+    <!-- AwaitingPayment -->
+    <string name="ticketing_purchase_awaiting_title">Conclua o pagamento no terminal</string>
+    <string name="ticketing_purchase_awaiting_body">%1$s · %2$s. Não feche o app até o resultado aparecer.</string>
+    <string name="ticketing_purchase_awaiting_button">Aguardando pagamento…</string>
+    <string name="ticketing_purchase_awaiting_progress">Aguardando o pagamento</string>
+
+    <!-- Recovering -->
+    <string name="ticketing_purchase_recovering_title">Confirmando o pagamento com a Cielo</string>
+    <string name="ticketing_purchase_recovering_body">Não recebemos uma confirmação clara deste pagamento. Antes de permitir uma nova cobrança, estamos consultando se ele já foi feito.</string>
+    <string name="ticketing_purchase_recovering_progress">Consultando a Cielo</string>
+
+    <!-- Error -->
+    <string name="ticketing_purchase_error_summary">%1$s · %2$s</string>
+    <string name="ticketing_purchase_retry_pay">Tentar pagar %s de novo</string>
+    <string name="ticketing_purchase_retry_recovery">Consultar de novo</string>
+    <string name="ticketing_purchase_error_no_app_title">Pagamento Cielo indisponível neste aparelho</string>
+    <string name="ticketing_purchase_error_no_app_body">Instale ou atualize o app de pagamento da Cielo e tente de novo. Nenhum valor foi cobrado.</string>
+    <string name="ticketing_purchase_error_generic_title">Não foi possível concluir o pagamento</string>
+    <string name="ticketing_purchase_error_generic_body">A Cielo informou um erro e a venda não foi registrada. Você pode tentar de novo.</string>
+    <string name="ticketing_purchase_error_auth_title">A Cielo não reconheceu este app</string>
+    <string name="ticketing_purchase_error_auth_body">Erro de autenticação. Avise o responsável pelo terminal: tentar de novo só resolve depois que a configuração for corrigida.</string>
+    <string name="ticketing_purchase_error_not_found_title">Pagamento anterior não encontrado</string>
+    <string name="ticketing_purchase_error_not_found_body">A Cielo não tem registro do pagamento interrompido. Você pode tentar de novo.</string>
+    <string name="ticketing_purchase_error_recovery_title">Não foi possível confirmar o pagamento</string>
+    <string name="ticketing_purchase_error_recovery_body">Ainda não sabemos se o pagamento anterior foi feito. Consulte de novo antes de cobrar outra vez.</string>
+
+    <!-- Unavailable -->
+    <string name="ticketing_purchase_unavailable_title">Evento indisponível</string>
+    <string name="ticketing_purchase_unavailable_body">Não foi possível carregar este evento ou os ingressos acabaram.</string>
+    <string name="ticketing_purchase_unavailable_back">Voltar para eventos</string>
+</resources>
