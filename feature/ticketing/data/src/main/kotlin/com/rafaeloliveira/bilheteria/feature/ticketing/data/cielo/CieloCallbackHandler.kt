@@ -22,6 +22,7 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.data.di.CallbackScope
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.HandlePaymentOutcomeUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 /**
@@ -44,11 +45,19 @@ internal class CieloCallbackHandler
         ) {
             scope
                 .launch {
-                    val result = suspendRunCatching { handlePaymentOutcome(parser.parse(response)) }
-                    if (result.getOrNull() !is DataResult.Success) {
+                    // Bounded so the translucent activity never stays over the app if storage hangs.
+                    val result =
+                        withTimeoutOrNull(TIMEOUT_MILLIS) {
+                            suspendRunCatching { handlePaymentOutcome(parser.parse(response)) }
+                        }
+                    if (result?.getOrNull() !is DataResult.Success) {
                         // Room keeps the purchase open and the recovery (BR-15) resolves it.
                         logger.error("payment_outcome_not_applied")
                     }
                 }.invokeOnCompletion { onDone() }
+        }
+
+        private companion object {
+            const val TIMEOUT_MILLIS = 10_000L
         }
     }

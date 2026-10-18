@@ -218,7 +218,7 @@ class ObservePurchaseHistoryUseCase   // BR-18, BR-20, BR-21
   sku=eventId, unitOfMeasure="unidade", unitPrice=centavos}]`, `value`=total em centavos como string; sem `paymentCode`, Q7) →
   Base64 → `lio://payment?request=…&urlCallback=order://response`. `Intent(ACTION_VIEW)` com `FLAG_ACTIVITY_NEW_TASK`;
   `resolveActivity == null` ou `ActivityNotFoundException` → `TerminalAppUnavailable` (AC-12).
-- **Cielo, entrada** (`CieloCallbackActivity`, exported, intent-filter `VIEW`/`DEFAULT`/`BROWSABLE`, scheme `order`, host `response`,
+- **Cielo, entrada** (`CieloCallbackActivity`, exported, intent-filter `VIEW`/`DEFAULT` (sem `BROWSABLE`: link de navegador/QR não aciona o callback; confirmar na T25), scheme `order`, host `response`,
   `launchMode="singleInstance"` e `taskAffinity=""` (mobsfscan/StrandHogg 2.0), sem UI): lê `response` → Base64 → `CieloResponseParser` → `HandlePaymentOutcomeUseCase` → traz a
   `MainActivity` de volta → `finish()`. Parser tolerante (`ignoreUnknownKeys`), lê **só** `id`, `reference`, `status`, `payments[].amount`,
   `payments[].{authCode, cieloCode, brand, paymentFields.statusCode}`, e `code` no erro. Classificação pelo JSON, não pelo `responsecode`.

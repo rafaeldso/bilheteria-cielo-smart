@@ -36,7 +36,8 @@ import dagger.hilt.components.SingletonComponent
 internal class CieloCallbackActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        handle(intent)
+        // A recreated activity already handed its callback over: processing it again would apply it twice.
+        if (savedInstanceState == null) handle(intent)
     }
 
     override fun onNewIntent(intent: Intent) {

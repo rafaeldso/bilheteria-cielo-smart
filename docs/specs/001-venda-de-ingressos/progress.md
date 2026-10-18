@@ -8,7 +8,7 @@
 
 ## Estado atual
 - **Última etapa concluída:** lote C (T12–T14) commitado (ba3c3d9, 2708982, 62fa628) + correções da revisão (5aef7b1, 585b46b)
-- **Próxima etapa:** T15 (módulo Hilt `CieloDataModule` em `data/di/`)
+- **Próxima etapa:** lote D (T16–T19)
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
 - **Último sensor:** `verify.sh standard` → verde em 2026-10-18 (lote C)
@@ -25,11 +25,14 @@
 | 2026-10-18 | detekt `ForbiddenImport` excluído em testes data/ui + Konsist (JUnit 4 só com `@RunWith`; sem Log/Date) | Room in-memory exige Robolectric/JUnit 4 (aprovado pelo humano) | testing.md |
 | 2026-10-18 | Erro Cielo forjado sem `reference` = risco aceito | Consulta não distingue em andamento de cancelado; exige app malicioso no terminal gerenciado | Plano §7 |
 | 2026-10-18 | Módulos Hilt do data na pasta única `di/` (como no plano §2) | Decisão humana; mesmo padrão de `core:*` | Não |
+| 2026-10-18 | Callback Cielo sem `BROWSABLE` | security-reviewer: link/QR acionaria o callback exportado; validar na T25 | Plano §4 |
 | 2026-10-18 | Teto de 10 (BR-07) ligado ao `StartPurchase` na integração | T05 e T06 rodaram em paralelo sem dependência | Não |
 
 ## Bloqueios e perguntas abertas
 - [x] Spoofing de erro sem `reference`: **risco aceito** pelo humano (plan §7, STRIDE). Reavaliar na T25 se o emulador mostrar outro cenário.
 - [ ] Sugestões do lote C: `toString` redigido nos DTOs do encoder (token); limitar tamanho de `id`/`authCode`/`brand` no parser; pagamento com `statusCode 2` na mesma ordem; `DateTimeException` no `guarded`; log do `CatalogUnavailable`; plano §4 `LookupPage` defasado; teste de JSON aninhado profundo.
+- [ ] T25: callback sem `BROWSABLE` chega? (senão: volta `BROWSABLE` e o risco aceito do plan §7 passa a valer para links/QR); `<queries>` só com pacotes (sem `<intent>` lio://) funciona?; FGS sem POST_NOTIFICATIONS; tema translúcido sem piscar.
+- [ ] Sugestões T15 abertas: `queryIntentActivities` com escolha pela allowlist; release falhar sem `cielo.*`; sensor de manifest mesclado.
 - [ ] T25: confirmar percent-encoding do Base64 na URI e numeração de página da Cielo (`FIRST_CIELO_PAGE`).
 - [x] F1 (Importante, compose-ui-reviewer): `DsTopAppBar` com `maxLines = 1` + elipse corta "Histórico de compras" em 200% (compose-ui.md:239). Opções: barra própria que cresce com a fonte ou `expandedHeight` dinâmico.
 - [ ] Sugestões abertas da revisão: remover `DsIcons.Lock` (sem uso); registrar `DsStatusMessage` em docs/design/components.md; confirmar ícones do `DsStatusBadge` (Error=Block, Neutral=Cancel) com a prancha; papel RadioButton do chip só verificável no dispositivo.

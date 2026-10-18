@@ -58,6 +58,8 @@ internal class AndroidTerminalAppLauncher
                 false // the message of the exception carries the intent (and the token): dropped on purpose
             } catch (expected: SecurityException) {
                 false
+            } catch (expected: IllegalArgumentException) {
+                false // e.g. a binder failure wrapped by the framework: its message may carry the intent too
             }
 
         private fun viewIntent(uri: String): Intent = Intent(Intent.ACTION_VIEW, uri.toUri())
