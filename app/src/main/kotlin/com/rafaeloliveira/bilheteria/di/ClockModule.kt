@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rafaeloliveira.bilheteria.feature.ticketing.data.di
+package com.rafaeloliveira.bilheteria.di
 
 import dagger.Module
 import dagger.Provides
@@ -23,13 +23,13 @@ import java.time.Clock
 import javax.inject.Singleton
 
 /**
- * System clock for the ticketing use cases (`HandlePaymentOutcomeUseCase`, `RecoverPendingPurchaseUseCase`); tests
- * inject a fixed one. Lives here because the Cielo callback is the first entry point that needs the use cases.
+ * The one clock of the app. It uses the device zone, so the use cases that group events by month (BR-22) and the
+ * screens that show their dates agree on the day; tests inject a fixed clock instead.
  */
 @Module
 @InstallIn(SingletonComponent::class)
 internal object ClockModule {
     @Provides
     @Singleton
-    fun provideClock(): Clock = Clock.systemUTC()
+    fun provideClock(): Clock = Clock.systemDefaultZone()
 }

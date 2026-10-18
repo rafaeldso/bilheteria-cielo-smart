@@ -19,31 +19,35 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
+import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.EventListRoute
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.navigation.OpenPurchaseRedirect
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.navigation.ticketingGraph
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.Clock
+import javax.inject.Inject
 
-/** Single activity. Placeholder content until the first feature (001) adds the NavHost. */
+/**
+ * Single activity: hosts the `NavHost` with the ticketing flow, which starts on the event list. When the app opens
+ * with a purchase still open, [OpenPurchaseRedirect] takes the user back to it (BR-15).
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var clock: Clock
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             BilheteriaTheme {
-                Scaffold { padding ->
-                    Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
-                    }
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = EventListRoute) {
+                    ticketingGraph(navController = navController, clock = clock)
                 }
+                OpenPurchaseRedirect(navController)
             }
         }
     }

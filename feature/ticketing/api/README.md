@@ -6,7 +6,7 @@ Contrato público da feature de venda de ingressos: rotas de navegação type-sa
 **Camada:** api · **Plano:** [plan.md](../../../docs/specs/001-venda-de-ingressos/plan.md)
 
 ## API pública
-`EventListRoute`, `PurchaseRoute`, `ReceiptRoute`, `PurchaseHistoryRoute` (a criar na T24).
+`EventListRoute`, `PurchaseRoute(eventId)`, `ReceiptRoute(purchaseId)`, `PurchaseHistoryRoute` (`navigation/TicketingRoutes.kt`). O nome de cada propriedade é a chave do `SavedStateHandle` lida pelos ViewModels; um teste cruzado em `:feature:ticketing:ui` falha se um lado mudar.
 
 ## Dependências
 <!-- module-graph:start -->

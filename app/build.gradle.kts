@@ -38,5 +38,6 @@ dependencies {
     implementation(projects.feature.ticketing.ui)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.timber)
 }

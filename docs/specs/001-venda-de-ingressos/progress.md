@@ -7,11 +7,11 @@
 **Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.2.0 (Aprovada) · **UI Spec:** v0.4.2 (Aprovada) · **Branch:** `main` (commits locais do lote C em diante, sem push)
 
 ## Estado atual
-- **Última etapa concluída:** lote E (T20–T23, telas Compose) commitado localmente; revisão em 2 rodadas (compose-ui, architecture, ui-design) sem bloqueante
-- **Próxima etapa:** T24 (navegação) → T25.
+- **Última etapa concluída:** lote E (T20–T23) e T24 (navegação) commitados localmente; lote E revisado em 2 rodadas (compose-ui, architecture, ui-design) sem bloqueante
+- **Próxima etapa:** T25 (Journeys no AVD com `lio-emulator`, `verify-on-device`).
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
-- **Último sensor:** `verify.sh standard` → verde (exit 0) em 2026-10-18 (lote E)
+- **Último sensor:** `verify.sh standard` → verde (exit 0) e `assertModuleGraph` verde em 2026-10-18 (T24)
 
 ## Decisões da implementação
 | Data | Decisão | Motivo | Afeta spec/plano? |
@@ -34,16 +34,21 @@
 | 2026-10-18 | `PurchaseViewModel` coleta no `init` (exceção ao AP-22) | Recuperação da BR-15 roda sem UI assinando | Plano §4 |
 | 2026-10-18 | Binding mínimo do `ReferenceGenerator` (UUID v4) antecipado da T24 | `standard` quebrava o Hilt do app | Não |
 | 2026-10-18 | Rodada extra de revisão (3ª) com worker Sonnet, autorizada pelo humano | Achado de cobrança dupla no `settle()` | Não |
+| 2026-10-18 | Origem do comprovante (venda × histórico) derivada da pilha de navegação, sem argumento extra na rota | Argumentos de rota são só IDs; sobrevive à morte do processo | Plano §4 |
+| 2026-10-18 | `OpenPurchaseRedirect` (VM por activity, estado + evento de consumo) leva a SCR-01 → SCR-02 se abrir com compra aberta | Fluxo da UI Spec §3 (`A -.-> Recovering`) | Plano §4 |
+| 2026-10-18 | `ClockModule` movido de `data/di` para `app/di` com `systemDefaultZone` | Agrupamento por mês (domain) e exibição (UI) no mesmo fuso; `app` agrega o grafo | Não |
+| 2026-10-18 | `androidx.navigation.compose` adicionado ao `app` (já no catálogo) | `NavHost` no `app` (architecture.md) | Não |
 
 ## Bloqueios e perguntas abertas
 - [ ] **Decisão do humano (lote E):** (1) saída do comprovante em `Error` vindo da venda (hoje só o voltar do sistema; recomendação: seta "Voltar para eventos"); (2) ícone do botão "Voltar para eventos" no `Unavailable` (`DsErrorState` fixa `Refresh`; precisa de `actionIcon` no core); (3) registrar `DsStatusMessage` no catálogo e na §5; (4) UI Spec 0.4.3: chaves reais da §4.4 (`ticketing_status_*`/`common_retry` em `strings_common.xml`, `ticketing_history_datetime_today/yesterday/other`, `ticketing_purchase_event_*`, `*_spoken_*`), cabeçalho do snapshot sem "disponíveis", "Data do evento" absoluta, dia da semana por extenso, ícones substitutos, "Tentar de novo" × "Tentar novamente" (spec §6 × UI Spec).
 - [ ] Sugestões do lote E: `spokenBody` no `DsStatusMessage` e rótulo falado do retry do `DsErrorState` (valor por extenso); "de 2026" no falado do comprovante; `heading` do resultado do comprovante com `mergeDescendants` (conferir no TalkBack, T25); `Year` do EventList congelado na virada do ano; `HistoryItem.status` já como `SaleResult` no mapper; `OtherDay` carregar `SpokenDateTime`; mover testes de `SpokenDateTime`; previews Font 2x dos Empty; live region do comprovante re-anuncia na rotação (ver origem na T24); sensores propostos: chaves da §4.4 × `strings_*.xml`, `ZoneId.systemDefault`/`Clock.system*` só em `*Route.kt`, `NumberFormat`/`DateTimeFormatter.ofPattern` só em `ui.format`, `UnusedResources` como erro.
-- [ ] T24: `ClockModule` fornece UTC; passar a `systemDefaultZone` para domain (agrupa por mês) e UI (`Clock` das Routes) usarem o mesmo fuso; uma única fonte de `Clock` para as Routes.
+- [x] T24: `ClockModule` agora no `app` (`di/`), com `Clock.systemDefaultZone()`; `MainActivity` injeta o `Clock` e o passa a `ticketingGraph` e às Routes (domain e UI no mesmo fuso).
 - [x] Spec 1.2.0 e UI Spec 0.4.2 aprovadas pelo humano em 2026-10-18 (o S-09 passa a cobrir AC-25..27).
 - [ ] Backlog do lote D: `UuidReferenceGenerator` + teste de formato/unicidade; `toString` mascarado em `Purchase`/`TransactionData`; `purchaseId` (= `reference`) no `SavedStateHandle` enquanto aberta; `recoverPending` não atômico (`findOpen`+`update`, CAS no DAO); `clampQuantity` → `QuantityLimits`; `Loading` do EventList piscando ao reassinar; filtro de mês fora do `SavedStateHandle`; chaves `"eventId"`/`"purchaseId"` ligadas às rotas `:api` na T24 (`toRoute`); feedback visual em "Consultar de novo"; `MonthGroup` duplicado (ui × domain).
 - [ ] Sugestões da revisão final (aprovada): trocar o `check()` de `toFailedState` por ramo defensivo (`Error(RecoveryFailed)`) para não derrubar o app; ignorar no `settle` um `Finished` de id diferente da última tentativa (motivo de falha obsoleto, sem risco de dinheiro); teste `Finished(Failed)` + catálogo `Unknown` → `Loading`; contador de tentativas no `LookupFailingGateway`; renomear o teste "prevalece a compra" sem prefixo AC-26.
 - [ ] Sensores propostos (harness-improve): Konsist `*UiState` com `@Immutable`; declarações do `ui` `internal`; regra contra `launch{collect}` em `init`; teste de propriedade `Error` × `retry()`; imports não usados em teste; nome de teste da rastreabilidade existir.
-- [ ] T24/T25: `popUpTo` no `Completed`; origem do comprovante (venda × histórico) para "Nova venda"/voltar; pendência dos bindings Hilt dos use cases e do dono do `ClockModule`.
+- [x] T24: `popUpTo<PurchaseRoute>{inclusive}` no `Completed`; origem do comprovante derivada da pilha (entrada anterior = histórico); use cases já são `@Inject`, o grafo Hilt do app compila.
+- [ ] T25: confirmar no dispositivo o `OpenPurchaseRedirect` (abrir o app com compra aberta leva à SCR-02 `Recovering`), a origem do comprovante após rotação/morte do processo e se a live region do comprovante re-anuncia ao recriar.
 - [x] Spoofing de erro sem `reference`: **risco aceito** pelo humano (plan §7, STRIDE). Reavaliar na T25 se o emulador mostrar outro cenário.
 - [ ] Sugestões do lote C: `toString` redigido nos DTOs do encoder (token); limitar tamanho de `id`/`authCode`/`brand` no parser; pagamento com `statusCode 2` na mesma ordem; `DateTimeException` no `guarded`; log do `CatalogUnavailable`; plano §4 `LookupPage` defasado; teste de JSON aninhado profundo.
 - [ ] T25: callback sem `BROWSABLE` chega? (senão: volta `BROWSABLE` e o risco aceito do plan §7 passa a valer para links/QR); `<queries>` só com pacotes (sem `<intent>` lio://) funciona?; FGS sem POST_NOTIFICATIONS; tema translúcido sem piscar.
