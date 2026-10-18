@@ -8,7 +8,7 @@
 
 ## Estado atual
 - **Última etapa concluída:** lote E (T20–T23) e T24 (navegação) commitados localmente; lote E revisado em 2 rodadas (compose-ui, architecture, ui-design) sem bloqueante
-- **Próxima etapa:** T25 (Journeys no AVD com `lio-emulator`, `verify-on-device`).
+- **Próxima etapa:** fechar a T25 com as decisões do humano (aprovação tardia, `BROWSABLE`, AC-25) e o que falta no dispositivo (TalkBack, modo escuro, AVD API 30+, terminal real); depois T26 (`review-changes`).
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
 - **Último sensor:** `verify.sh standard` → verde (exit 0) e `assertModuleGraph` verde em 2026-10-18 (T24)
@@ -48,24 +48,29 @@
 - [ ] Sugestões da revisão final (aprovada): trocar o `check()` de `toFailedState` por ramo defensivo (`Error(RecoveryFailed)`) para não derrubar o app; ignorar no `settle` um `Finished` de id diferente da última tentativa (motivo de falha obsoleto, sem risco de dinheiro); teste `Finished(Failed)` + catálogo `Unknown` → `Loading`; contador de tentativas no `LookupFailingGateway`; renomear o teste "prevalece a compra" sem prefixo AC-26.
 - [ ] Sensores propostos (harness-improve): Konsist `*UiState` com `@Immutable`; declarações do `ui` `internal`; regra contra `launch{collect}` em `init`; teste de propriedade `Error` × `retry()`; imports não usados em teste; nome de teste da rastreabilidade existir.
 - [x] T24: `popUpTo<PurchaseRoute>{inclusive}` no `Completed`; origem do comprovante derivada da pilha (entrada anterior = histórico); use cases já são `@Inject`, o grafo Hilt do app compila.
-- [ ] T25 (achados da revisão da T24): app fechado/processo morto sem estado salvo com a venda já aprovada abre na SCR-01 e não no comprovante (o redirect só trata `Pending`/`Recovering`; decidir na spec se leva ao comprovante da última venda); compra aberta ilegível ao abrir não mostra o erro na SCR-01 (AC-25 literal); flash da SCR-01 antes do redirect (`Checking`); transições do `NavHost` (padrão do Navigation) × 300 ms da UI Spec §6 e com a escala de animação em 0; fundo escuro da janela (novo `values-night/themes.xml`).
-- [ ] T25: confirmar no dispositivo o `OpenPurchaseRedirect` (abrir o app com compra aberta leva à SCR-02 `Recovering`), a origem do comprovante após rotação/morte do processo e se a live region do comprovante re-anuncia ao recriar.
+- [ ] **Decisões do humano (T25, 2026-10-18):** (1) **aprovação tardia**: depois de "Pagamento anterior não encontrado" (`Failed`/`NotFound`) o terminal ainda pode concluir o pagamento antigo; o emulador devolveu `PAID` com o `reference` da compra já `Failed` e o app ignorou (dinheiro cobrado, venda `Failed`; a spec não cobre; recomendação: nova BR para reabrir/aprovar a compra `Failed/NotFound` quando chegar callback ou consulta `PAID` com o mesmo `reference` e valor); (2) app fechado com a venda **já aprovada** abre na SCR-01, não no comprovante (reproduzido; recomendação: manter, o comprovante está no histórico); (3) `BROWSABLE`: o callback chega sem ele (Cielo → `startActivity`); link/QR de navegador não testado, risco aceito do plano §7 segue valendo; (4) compra aberta ilegível ao abrir o app não mostra erro na SCR-01 (desvio do AC-25 literal, nunca há cobrança; recomendação: ajustar o texto do AC-25).
+- [x] T25 (achados da revisão da T24): processo morto sem estado salvo com a venda aprovada abre na SCR-01 (decisão 2 acima); `OpenPurchaseRedirect` confirmado (compra `Pending` + reabrir → SCR-02 `Recovering` → `Error` "não encontrado" com nova tentativa, com e sem estado salvo); origem do comprovante preservada na rotação; escala de animação 0 navega normalmente. **Não verificado:** flash da SCR-01 antes do redirect (4 quadros sem ver a SCR-01, inconclusivo), fundo escuro sem piscar (o AVD não entrou em modo noturno por shell), duração das transições × 300 ms.
+- [ ] T25: TalkBack/`android layout` não expõem `heading`, live region nem papel (o CLI só mostra texto, `content-desc` e interações): `heading` do resultado do comprovante, foco inicial da SCR-02, papel de botão do "Pagar" e live region sem reanúncio após rotação precisam de TalkBack manual. Verificado: rótulo falado "Pagar 80 reais no terminal", alvos de toque ≥ 48dp (132 px a 420 dpi), "Voltar ao histórico" e demais `content-desc`.
+- [x] T25: **D1** (corrigido) em fonte 200% a SCR-01 truncava o nome ("Orquestr a Jove…"), contra a UI Spec §SCR-01; `DsListItem` agora empilha o trailing abaixo do texto com fonte ≥ 1,5× (conferido no AVD). O local ainda corta na 2ª linha, como a UI Spec permite.
+- [ ] T25: J8 (evento indisponível) e consulta que falha (J7 só cobriu resposta ilegível → consulta → `NotFound`) não são reproduzíveis no emulador sem alterar o catálogo ou a rede; cobertos por testes de ViewModel (AC-25, AC-26).
+- [ ] T25: emulador **retém o pedido abandonado** e devolve o `reference` antigo no pagamento seguinte (ver README do data); limpar com `am force-stop br.com.cielosmart.orderservice` entre cenários.
 - [x] Spoofing de erro sem `reference`: **risco aceito** pelo humano (plan §7, STRIDE). Reavaliar na T25 se o emulador mostrar outro cenário.
 - [ ] Sugestões do lote C: `toString` redigido nos DTOs do encoder (token); limitar tamanho de `id`/`authCode`/`brand` no parser; pagamento com `statusCode 2` na mesma ordem; `DateTimeException` no `guarded`; log do `CatalogUnavailable`; plano §4 `LookupPage` defasado; teste de JSON aninhado profundo.
-- [ ] T25: callback sem `BROWSABLE` chega? (senão: volta `BROWSABLE` e o risco aceito do plan §7 passa a valer para links/QR); `<queries>` só com pacotes (sem `<intent>` lio://) funciona?; FGS sem POST_NOTIFICATIONS; tema translúcido sem piscar.
+- [x] T25: callback sem `BROWSABLE` chega (ver decisão 3); `<queries>` só com pacotes resolve a Cielo, mas no Android 10 isso não prova nada (visibilidade de pacotes só existe no 11+: repetir em AVD API 30+ ou terminal real); FGS no Android 10 ok (canal `payment_in_progress`, importância baixa, visibilidade secreta), Android 13+ e tema translúcido sem piscar não verificados.
 - [ ] Sugestões T15 abertas: `queryIntentActivities` com escolha pela allowlist; release falhar sem `cielo.*`; sensor de manifest mesclado.
-- [ ] T25: confirmar percent-encoding do Base64 na URI e numeração de página da Cielo (`FIRST_CIELO_PAGE`).
+- [x] T25: numeração de página confirmada (`page: 0` → `currentPage: 1`); percent-encoding: `=` literal aceito, `+` e `/` sem amostra; **ordenação do `orders` indeterminada** (lista fixa no emulador): validar em terminal real antes de depender de `pageSize = 5` (BR-15).
 - [x] F1 (Importante, compose-ui-reviewer): `DsTopAppBar` com `maxLines = 1` + elipse corta "Histórico de compras" em 200% (compose-ui.md:239). Opções: barra própria que cresce com a fonte ou `expandedHeight` dinâmico.
 - [ ] Sugestões abertas da revisão: remover `DsIcons.Lock` (sem uso); registrar `DsStatusMessage` em docs/design/components.md; confirmar ícones do `DsStatusBadge` (Error=Block, Neutral=Cancel) com a prancha; papel RadioButton do chip só verificável no dispositivo.
 - [x] T11: API do `DsQuantityStepper` aprovada (UI Spec 0.4.1)
 - [ ] Tokens sem `background`/`surfaceTint`/`surfaceDim`/`surfaceBright` (derivados em `Color.kt`); detekt não reconhece `@PreviewLightDark` (`config/`).
 - [ ] Conferir na fonte (texto literal) as URIs e JSONs do deep link antes do `plan.md` (ressalva do spike).
-- [ ] Descobrir qual código o botão "Error" do `lio-emulator` devolve (capturar na implementação; registrar no README).
-- [ ] Credenciais: testar valores fictícios no emulador (Q12).
+- [x] Botão "Erro" do `lio-emulator`: código 2 ("Falha no processo de pagamento"), sem `reference` (README do data).
+- [x] Credenciais fictícias aceitas pelo emulador (Q12).
 
 ## Log de sessões
 | Data | Ferramenta / agente | Resumo |
 |---|---|---|
+| 2026-10-18 | Claude Code (sessão principal, `verify-on-device`) | T25 parcial: J1–J7 no AVD Android 10 com `lio-emulator`, fatos do README do data, D1 (fonte 200% da SCR-01) corrigido, `journeys/` criado; decisões do humano acima |
 | 2026-10-18 | Claude Code + 5× `android-implementer` + revisores (compose-ui, arch, ui-design) | Lote E (T20 ∥ T21 ∥ T22 ∥ T23) + 2 rodadas de revisão; standard verde |
 | 2026-10-17 | Claude Code + `general-purpose` (sonnet) | Spike Cielo → research.md |
 | 2026-10-17 | Claude Code (sessão principal) | Spec 0.1.0 → 1.0.0 com 12 perguntas respondidas pelo humano |
