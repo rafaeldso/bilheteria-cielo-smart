@@ -16,11 +16,15 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.data.di
 
 import com.rafaeloliveira.bilheteria.feature.ticketing.data.purchase.DefaultPurchaseRepository
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseReference
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.payment.ReferenceGenerator
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.repository.PurchaseRepository
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.util.UUID
 import javax.inject.Singleton
 
 @Module
@@ -29,4 +33,11 @@ internal interface PurchaseDataModule {
     @Binds
     @Singleton
     fun bindPurchaseRepository(impl: DefaultPurchaseRepository): PurchaseRepository
+
+    companion object {
+        /** UUID v4 sent to Cielo as `reference` (BR-08); unguessable, so a forged callback cannot target a purchase. */
+        @Provides
+        fun provideReferenceGenerator(): ReferenceGenerator =
+            ReferenceGenerator { PurchaseReference(UUID.randomUUID().toString()) }
+    }
 }
