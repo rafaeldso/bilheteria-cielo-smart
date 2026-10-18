@@ -22,7 +22,8 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveOpe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,11 +43,11 @@ internal class OpenPurchaseRedirectViewModel
         private val observeOpenPurchase: ObserveOpenPurchaseUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow<OpenPurchaseRedirectUiState>(OpenPurchaseRedirectUiState.Checking)
-        val uiState: StateFlow<OpenPurchaseRedirectUiState> = _uiState
+        val uiState: StateFlow<OpenPurchaseRedirectUiState> = _uiState.asStateFlow()
 
         init {
             viewModelScope.launch {
-                val result = observeOpenPurchase().first()
+                val result = observeOpenPurchase().firstOrNull()
                 _uiState.value =
                     when (result) {
                         is DataResult.Success -> {
@@ -54,7 +55,7 @@ internal class OpenPurchaseRedirectViewModel
                                 ?: OpenPurchaseRedirectUiState.None
                         }
 
-                        is DataResult.Failure -> {
+                        is DataResult.Failure, null -> {
                             OpenPurchaseRedirectUiState.None
                         }
                     }

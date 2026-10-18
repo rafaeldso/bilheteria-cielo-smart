@@ -34,16 +34,16 @@ import java.time.Clock
  * @param origin sale or history; decides which way out is shown.
  * @param onNewSale leaves the receipt for a new sale (back to the event list).
  * @param onNavigateUp leaves the receipt for the history.
- * @param clock source of the zone the dates are shown in; the default is the system clock and zone.
+ * @param clock source of the zone the dates are shown in; the app's single clock.
  */
 @Composable
 internal fun ReceiptRoute(
     origin: ReceiptOrigin,
     onNewSale: () -> Unit,
     onNavigateUp: () -> Unit,
+    clock: Clock,
     modifier: Modifier = Modifier,
     viewModel: ReceiptViewModel = hiltViewModel(),
-    clock: Clock = Clock.systemDefaultZone(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnNewSale by rememberUpdatedState(onNewSale)

@@ -19,6 +19,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafaeloliveira.bilheteria.core.common.DataResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.ReceiptRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.TransactionData
@@ -36,8 +37,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-/** `ReceiptRoute(purchaseId)` argument in the [SavedStateHandle]: type-safe navigation uses the property name. */
-private const val PURCHASE_ID_KEY = "purchaseId"
+/**
+ * `ReceiptRoute(purchaseId)` argument in the [SavedStateHandle]: type-safe navigation names the entry after the route
+ * property, so the key is read from the route itself and cannot drift from it.
+ */
+private val PURCHASE_ID_KEY: String = ReceiptRoute.serializer().descriptor.getElementName(0)
 private const val STOP_TIMEOUT_MS = 5_000L
 
 /**

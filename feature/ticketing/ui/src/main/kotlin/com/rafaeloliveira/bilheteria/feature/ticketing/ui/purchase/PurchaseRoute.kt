@@ -32,16 +32,16 @@ import java.time.Clock
  * screen from the back stack, so back from the receipt does not reopen the purchase.
  * @param onBackToEvents "Voltar para eventos" of the `Unavailable` state.
  * @param onNavigateUp the back arrow of the top app bar.
- * @param clock source of the zone the event day and time are shown in; the default is the system clock and zone.
+ * @param clock source of the zone the event day and time are shown in; the app's single clock.
  */
 @Composable
 internal fun PurchaseRoute(
     onCompleted: (purchaseId: String) -> Unit,
     onBackToEvents: () -> Unit,
     onNavigateUp: () -> Unit,
+    clock: Clock,
     modifier: Modifier = Modifier,
     viewModel: PurchaseViewModel = hiltViewModel(),
-    clock: Clock = Clock.systemDefaultZone(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnCompleted by rememberUpdatedState(onCompleted)

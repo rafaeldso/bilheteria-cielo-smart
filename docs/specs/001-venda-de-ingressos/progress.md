@@ -36,7 +36,7 @@
 | 2026-10-18 | Rodada extra de revisão (3ª) com worker Sonnet, autorizada pelo humano | Achado de cobrança dupla no `settle()` | Não |
 | 2026-10-18 | Origem do comprovante (venda × histórico) derivada da pilha de navegação, sem argumento extra na rota | Argumentos de rota são só IDs; sobrevive à morte do processo | Plano §4 |
 | 2026-10-18 | `OpenPurchaseRedirect` (VM por activity, estado + evento de consumo) leva a SCR-01 → SCR-02 se abrir com compra aberta | Fluxo da UI Spec §3 (`A -.-> Recovering`) | Plano §4 |
-| 2026-10-18 | `ClockModule` movido de `data/di` para `app/di` com `systemDefaultZone` | Agrupamento por mês (domain) e exibição (UI) no mesmo fuso; `app` agrega o grafo | Não |
+| 2026-10-18 | `ClockModule` movido de `data/di` para `core:common/di` com `systemDefaultZone` (como o `DispatchersModule`) | Agrupamento por mês (domain) e exibição (UI) no mesmo fuso; `app` agrega o grafo | Não |
 | 2026-10-18 | `androidx.navigation.compose` adicionado ao `app` (já no catálogo) | `NavHost` no `app` (architecture.md) | Não |
 
 ## Bloqueios e perguntas abertas
@@ -48,6 +48,7 @@
 - [ ] Sugestões da revisão final (aprovada): trocar o `check()` de `toFailedState` por ramo defensivo (`Error(RecoveryFailed)`) para não derrubar o app; ignorar no `settle` um `Finished` de id diferente da última tentativa (motivo de falha obsoleto, sem risco de dinheiro); teste `Finished(Failed)` + catálogo `Unknown` → `Loading`; contador de tentativas no `LookupFailingGateway`; renomear o teste "prevalece a compra" sem prefixo AC-26.
 - [ ] Sensores propostos (harness-improve): Konsist `*UiState` com `@Immutable`; declarações do `ui` `internal`; regra contra `launch{collect}` em `init`; teste de propriedade `Error` × `retry()`; imports não usados em teste; nome de teste da rastreabilidade existir.
 - [x] T24: `popUpTo<PurchaseRoute>{inclusive}` no `Completed`; origem do comprovante derivada da pilha (entrada anterior = histórico); use cases já são `@Inject`, o grafo Hilt do app compila.
+- [ ] T25 (achados da revisão da T24): app fechado/processo morto sem estado salvo com a venda já aprovada abre na SCR-01 e não no comprovante (o redirect só trata `Pending`/`Recovering`; decidir na spec se leva ao comprovante da última venda); compra aberta ilegível ao abrir não mostra o erro na SCR-01 (AC-25 literal); flash da SCR-01 antes do redirect (`Checking`); transições do `NavHost` (padrão do Navigation) × 300 ms da UI Spec §6 e com a escala de animação em 0; fundo escuro da janela (novo `values-night/themes.xml`).
 - [ ] T25: confirmar no dispositivo o `OpenPurchaseRedirect` (abrir o app com compra aberta leva à SCR-02 `Recovering`), a origem do comprovante após rotação/morte do processo e se a live region do comprovante re-anuncia ao recriar.
 - [x] Spoofing de erro sem `reference`: **risco aceito** pelo humano (plan §7, STRIDE). Reavaliar na T25 se o emulador mostrar outro cenário.
 - [ ] Sugestões do lote C: `toString` redigido nos DTOs do encoder (token); limitar tamanho de `id`/`authCode`/`brand` no parser; pagamento com `statusCode 2` na mesma ordem; `DateTimeException` no `guarded`; log do `CatalogUnavailable`; plano §4 `LookupPage` defasado; teste de JSON aninhado profundo.

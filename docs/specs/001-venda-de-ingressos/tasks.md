@@ -114,7 +114,7 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 | AC-12 | T06, T15, T17 | `AC-12 - dado app Cielo ausente quando pagar entao erro sem cobranca` |
 | AC-13 | T07, T14, T17, T25 | `AC-13 - dado codigo 2 ou 4 quando processar entao falhou com nova tentativa` |
 | AC-14 | T07, T14, T17 | `AC-14 - dado resposta ilegivel quando processar entao consulta a Cielo antes de cobrar` |
-| AC-15 | T07, T14, T17, T25 | `AC-15 - dado compra aberta ao reabrir quando consultar entao aplica resultado ou nao encontrado` |
+| AC-15 | T07, T14, T17, T24, T25 | `AC-15 - dado compra aberta ao reabrir quando consultar entao aplica resultado ou nao encontrado` |
 | AC-16 | T08, T18, T22 | `AC-16 - dado compra aprovada quando exibir comprovante entao mostra campos sem cartao` |
 | AC-17 | T05, T12, T16 | `AC-17 - dado 50 ingressos quando aprovar 1 entao mostra 49` |
 | AC-18 | T08, T12, T19 | `AC-18 - dado compras registradas quando abrir historico entao ordem decrescente sem falhas` |

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rafaeloliveira.bilheteria.di
+package com.rafaeloliveira.bilheteria.core.common.di
 
 import dagger.Module
 import dagger.Provides
@@ -24,11 +24,12 @@ import javax.inject.Singleton
 
 /**
  * The one clock of the app. It uses the device zone, so the use cases that group events by month (BR-22) and the
- * screens that show their dates agree on the day; tests inject a fixed clock instead.
+ * screens that show their dates agree on the day; tests inject a fixed clock instead. The zone is read when the
+ * process starts, so a change of the device zone only applies after a restart (accepted limitation).
  */
 @Module
 @InstallIn(SingletonComponent::class)
-internal object ClockModule {
+object ClockModule {
     @Provides
     @Singleton
     fun provideClock(): Clock = Clock.systemDefaultZone()

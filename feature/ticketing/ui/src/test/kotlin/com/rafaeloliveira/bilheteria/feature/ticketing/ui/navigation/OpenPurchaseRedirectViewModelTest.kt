@@ -73,7 +73,7 @@ class OpenPurchaseRedirectViewModelTest {
         }
 
     @Test
-    fun `AC-25 - dado compra aberta ilegivel quando o app abrir entao fica na lista de eventos`() =
+    fun `dado compra aberta ilegivel quando o app abrir entao nao redireciona e a tela de compra trata a falha`() =
         runTest {
             val viewModel = createViewModel(UnreadableOpenPurchaseRepository(FakePurchaseRepository()))
 

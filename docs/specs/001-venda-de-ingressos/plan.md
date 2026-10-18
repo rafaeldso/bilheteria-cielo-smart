@@ -44,9 +44,9 @@ inequívoca, e ainda é conferida por `reference` e valor.
 | domain | `feature:ticketing:domain` | `model/` (Event, AvailableEvent, EventMonth, Purchase, PurchaseStatus, PurchaseReference, Money, TransactionData, PaymentOutcome), `repository/` (EventCatalogRepository, PurchaseRepository), `payment/PaymentGateway.kt`, `usecase/` (§4), `error/TicketingError.kt` | Novo |
 | data | `feature:ticketing:data` | `catalog/` (asset data source + DTO + mapper), `purchase/` (DefaultPurchaseRepository), `cielo/` (CieloDeepLinkGateway, CieloRequestEncoder, CieloResponseParser, CieloCallbackActivity, PaymentForegroundService, CieloCredentials), `di/`, `src/main/assets/events.json`, `AndroidManifest.xml` | Novo |
 | data (core) | `core:database` | `BilheteriaDatabase`, `PurchaseEntity`, `PurchaseDao`, `schemas/` | Novo (ADR-0007: Room em `core:database`) |
-| ui | `feature:ticketing:ui` | `events/`, `purchase/`, `receipt/`, `history/` (UiState, UiEvent, ViewModel, Route, Screen, previews), `navigation/TicketingNavGraph.kt`, `res/values/strings.xml` | Novo |
+| ui | `feature:ticketing:ui` | `eventlist/`, `purchase/`, `receipt/`, `history/` (UiState, UiEvent, ViewModel, Route, Screen, previews), `format/` (dinheiro, datas e fala), `common/`, `navigation/` (`TicketingNavGraph.kt`: `ticketingGraph` e `OpenPurchaseRedirect`), `res/values/strings_<tela>.xml` + `strings_common.xml` | Novo |
 | ui (core) | `core:designsystem` | Tema com a paleta A (tokens), `DsQuantityStepper`, `DsProgressIndicator`, `DsStatusBadge`, `DsListItem`, `DsSummaryCard`, `DsKeyValueList`, `DsEmptyState`, `DsErrorState`, `DsLoadingSkeleton`, `DsFilterChip`, `DsTopAppBar`, `DsButton`, `DsIconButton` | Alterado |
-| app | `app` | `NavHost` com o grafo da feature; `<queries>`; ligação de módulos | Alterado |
+| app | `app` | `NavHost` com o grafo da feature (`ticketingGraph`) e `OpenPurchaseRedirect`; `<queries>`; ligação de módulos; `androidx.navigation.compose` | Alterado |
 | build | `build-logic`, `gradle/libs.versions.toml` | `app.android.room` (KSP Room + schema), plugin de serialization nas features; catálogo | Alterado |
 
 **Entradas novas no catálogo** (todas na stack de referência do ADR-0007, sem aprovação extra):
@@ -306,7 +306,9 @@ Navegação é estado quando o destino vem de um resultado assíncrono: `Purchas
 navegar num `LaunchedEffect` com `popUpTo<PurchaseRoute> { inclusive = true }`. O estado deriva do Room, então o consumo é
 a saída da compra da pilha, sem evento interno (decisão 2026-10-18; requisito da T24 e Journey da T25). Navegação por clique
 (`OnEventSelected`, `OnOpenHistory`, `OnPurchaseSelected`, `OnNewSale`, "Voltar para eventos") não muda o estado: a `Route`
-chama o callback. Argumentos de rota são só IDs. O `SavedStateHandle` da compra guarda `eventId` (rota), a quantidade e o
+chama o callback. Argumentos de rota são só IDs.
+
+**Implementação da T24 (2026-10-18):** (1) `ticketingGraph(navController, clock)` liga as 4 Routes por callbacks; o `app` hospeda o `NavHost` com `startDestination = EventListRoute`. (2) A origem do comprovante (venda × histórico) não é argumento: vem da pilha (entrada anterior = histórico), então sobrevive à morte do processo. (3) `OpenPurchaseRedirect` (ViewModel por activity, estado + evento de consumo) empilha a SCR-02 sobre a SCR-01 quando o app abre com compra `Pending`/`Recovering` (UI Spec §3, AC-15); só age se o destino atual é a SCR-01, e a segurança do pagamento não depende dele (BR-10: sem "Pagar" enquanto a compra aberta é desconhecida). Compra aberta ilegível ao abrir não redireciona (sem `eventId`): o erro da BR-26 aparece quando o operador abre a compra, nunca há cobrança (lacuna registrada frente ao AC-25 literal). (4) O voltar das SCR-02/03/04 só age na entrada visível (`RESUMED`), contra toque duplo. (5) Um único `Clock` (`core:common/di/ClockModule`, `systemDefaultZone`) alimenta os use cases e as Routes, e o fuso é lido na criação do processo. (6) As chaves `eventId`/`purchaseId` dos ViewModels vêm do descritor das rotas de `:api`, com teste cruzado. O `SavedStateHandle` da compra guarda `eventId` (rota), a quantidade e o
 `purchaseId` da tentativa atual. Exceção ao AP-22: o `PurchaseViewModel` coleta compra aberta e catálogo desde o `init`,
 porque a recuperação da BR-15 precisa rodar mesmo sem a UI assinando (decisão 2026-10-18). `Completed` também é decisão de
 2026-10-18 (não está na spec §6: é sinal de navegação). Todas as declarações do `ui` são `internal`; os `sealed interface *UiState` têm `@Immutable`.

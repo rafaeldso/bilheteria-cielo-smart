@@ -34,16 +34,16 @@ import java.time.Year
  *
  * @param onEventSelected called with the event id to open SCR-02.
  * @param onOpenHistory called to open SCR-04.
- * @param clock source of the zone and of the current year; the default is the system clock and zone. The screen
+ * @param clock source of the zone and of the current year; the app's single clock. The screen
  * itself never reads the clock: the route resolves it once and hands the zone and the year down.
  */
 @Composable
 internal fun EventListRoute(
     onEventSelected: (id: String) -> Unit,
     onOpenHistory: () -> Unit,
+    clock: Clock,
     modifier: Modifier = Modifier,
     viewModel: EventListViewModel = hiltViewModel(),
-    clock: Clock = Clock.systemDefaultZone(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnEventSelected by rememberUpdatedState(onEventSelected)

@@ -30,6 +30,7 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt.ReceiptUiState
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt.ReceiptViewModel
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.descriptors.SerialDescriptor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -41,7 +42,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
  * read them: renaming a property or a key on one side only makes them fail (plan §4).
  */
 internal class RouteArgumentKeysTest : PurchaseViewModelTestBase() {
-    private fun key(descriptor: kotlinx.serialization.descriptors.SerialDescriptor): String {
+    private fun key(descriptor: SerialDescriptor): String {
         assertEquals(1, descriptor.elementsCount)
         return descriptor.getElementName(0)
     }
@@ -62,7 +63,7 @@ internal class RouteArgumentKeysTest : PurchaseViewModelTestBase() {
         }
 }
 
-class ReceiptRouteArgumentKeyTest {
+internal class ReceiptRouteArgumentKeyTest {
     @JvmField
     @RegisterExtension
     val mainDispatcher = MainDispatcherExtension()

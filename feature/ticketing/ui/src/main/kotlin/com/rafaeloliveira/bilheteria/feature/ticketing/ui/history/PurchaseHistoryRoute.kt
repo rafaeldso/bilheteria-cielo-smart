@@ -30,15 +30,15 @@ import java.time.Clock
  * Opening a receipt and going back are navigation, so they leave through [onPurchaseSelected] (receives the
  * purchase id, BR-19) and [onNavigateUp] instead of the ViewModel. The other events go to the ViewModel.
  *
- * @param clock source of "now" for the relative dates; the default is the system clock and zone.
+ * @param clock source of "now" for the relative dates; the app's single clock.
  */
 @Composable
 internal fun PurchaseHistoryRoute(
     onPurchaseSelected: (purchaseId: String) -> Unit,
     onNavigateUp: () -> Unit,
+    clock: Clock,
     modifier: Modifier = Modifier,
     viewModel: PurchaseHistoryViewModel = hiltViewModel(),
-    clock: Clock = Clock.systemDefaultZone(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnPurchaseSelected by rememberUpdatedState(onPurchaseSelected)

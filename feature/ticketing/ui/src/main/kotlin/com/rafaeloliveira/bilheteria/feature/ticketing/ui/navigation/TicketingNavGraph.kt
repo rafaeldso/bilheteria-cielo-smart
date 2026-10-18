@@ -20,11 +20,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.EventListRoute
@@ -66,25 +66,25 @@ public fun NavGraphBuilder.ticketingGraph(
                 }
             },
             onBackToEvents = { navController.backToEvents() },
-            onNavigateUp = { navController.popBackStack() },
+            onNavigateUp = { navController.navigateUpOnce() },
             clock = clock,
         )
     }
     composable<ReceiptRoute> { entry ->
         // The origin is read from the back stack, which survives process death: after a sale the receipt sits on the
         // event list (the purchase was popped); from the history the history is right below it.
-        val origin = remember(entry) { navController.receiptOrigin() }
+        val origin = remember(entry) { receiptOrigin(previousIsHistory = navController.previousIsHistory()) }
         ReceiptScreenRoute(
             origin = origin,
             onNewSale = { navController.backToEvents() },
-            onNavigateUp = { navController.popBackStack() },
+            onNavigateUp = { navController.navigateUpOnce() },
             clock = clock,
         )
     }
     composable<PurchaseHistoryRoute> {
         PurchaseHistoryScreenRoute(
             onPurchaseSelected = { purchaseId -> navController.navigateSingleTop(ReceiptRoute(purchaseId)) },
-            onNavigateUp = { navController.popBackStack() },
+            onNavigateUp = { navController.navigateUpOnce() },
             clock = clock,
         )
     }
@@ -97,7 +97,7 @@ public fun NavGraphBuilder.ticketingGraph(
  * pushed again.
  */
 @Composable
-public fun OpenPurchaseRedirect(navController: NavHostController) {
+public fun OpenPurchaseRedirect(navController: NavController) {
     val viewModel: OpenPurchaseRedirectViewModel = hiltViewModel()
     val redirect by viewModel.uiState.collectAsStateWithLifecycle()
     val entry by navController.currentBackStackEntryAsState()
@@ -107,7 +107,7 @@ public fun OpenPurchaseRedirect(navController: NavHostController) {
     // Waits for the graph: the redirect only makes sense once the current destination is known.
     LaunchedEffect(target, current) {
         if (target != null && current != null) {
-            if (current.destination.hasRoute<EventListRoute>()) {
+            if (shouldRedirect(current.destination.hasRoute<EventListRoute>())) {
                 navController.navigateSingleTop(PurchaseRoute(target.eventId))
             }
             viewModel.onEvent(OpenPurchaseRedirectUiEvent.OnRedirectHandled)
@@ -122,10 +122,26 @@ private fun NavController.backToEvents() {
     if (!popBackStack<EventListRoute>(inclusive = false)) navigate(EventListRoute) { launchSingleTop = true }
 }
 
+private fun NavController.previousIsHistory(): Boolean =
+    previousBackStackEntry?.destination?.hasRoute<PurchaseHistoryRoute>() == true
+
+/**
+ * The back arrow of SCR-02 to SCR-04. Ignores a second tap during the exit animation: the first tap already removed
+ * the screen from the stack, so another pop would remove the screen below it (or the start destination, leaving the
+ * host empty). Only the entry that is on screen and resumed navigates up.
+ */
+private fun NavController.navigateUpOnce() {
+    val onScreen = currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED
+    if (onScreen && previousBackStackEntry != null) popBackStack()
+}
+
 /** History when the entry below the receipt is the history; otherwise the receipt came from a sale. */
-private fun NavController.receiptOrigin(): ReceiptOrigin =
-    if (previousBackStackEntry?.destination?.hasRoute<PurchaseHistoryRoute>() == true) {
-        ReceiptOrigin.History
-    } else {
-        ReceiptOrigin.Sale
-    }
+internal fun receiptOrigin(previousIsHistory: Boolean): ReceiptOrigin =
+    if (previousIsHistory) ReceiptOrigin.History else ReceiptOrigin.Sale
+
+/**
+ * The open purchase is resumed only from the event list. The safety of the payment does not depend on it: while the
+ * open purchase is unknown or open, the purchase screen offers no "Pagar" (BR-10, BR-15), so a user who already
+ * moved on (history) or whose restored stack already holds the purchase is simply left where they are.
+ */
+internal fun shouldRedirect(currentIsEventList: Boolean): Boolean = currentIsEventList

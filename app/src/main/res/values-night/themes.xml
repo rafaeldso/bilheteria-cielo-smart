@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Dark window background, so the cold start and the fade between screens do not flash light (T24 review). -->
+    <style name="Theme.Bilheteria" parent="android:Theme.Material.NoActionBar" />
+</resources>

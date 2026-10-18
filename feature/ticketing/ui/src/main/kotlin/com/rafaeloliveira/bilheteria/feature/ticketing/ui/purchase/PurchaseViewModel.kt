@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafaeloliveira.bilheteria.core.common.AppError
 import com.rafaeloliveira.bilheteria.core.common.DataResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.PurchaseRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.error.TicketingError
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveAvailableEventsUseCase
@@ -40,8 +41,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Route argument: the event being bought (plan §4: route arguments are only ids). */
-private const val EVENT_ID_KEY = "eventId"
+/**
+ * Route argument: the event being bought (plan §4: route arguments are only ids). Type-safe navigation names the
+ * `SavedStateHandle` entry after the route property, so the key is read from the route and cannot drift from it.
+ */
+private val EVENT_ID_KEY: String = PurchaseRoute.serializer().descriptor.getElementName(0)
 
 /** Quantity in editing, kept in the [SavedStateHandle] so it survives process death (BR-05 to BR-07). */
 private const val QUANTITY_KEY = "quantity"
