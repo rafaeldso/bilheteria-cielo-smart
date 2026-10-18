@@ -87,13 +87,14 @@ class RootConventionPlugin : Plugin<Project> {
         extensions.configure<SpotlessExtension> {
             kotlin {
                 target("**/*.kt")
-                targetExclude("**/build/**", "docs/**")
+                // .claude/worktrees holds checkouts of parallel workers; each one runs its own sensors.
+                targetExclude("**/build/**", "docs/**", ".claude/**")
                 ktlint()
                 licenseHeaderFile(header)
             }
             kotlinGradle {
                 target("**/*.kts")
-                targetExclude("**/build/**")
+                targetExclude("**/build/**", ".claude/**")
                 ktlint()
                 // First line that is not part of the /* ... */ header.
                 licenseHeaderFile(header, "(?!/\\*| \\*).+")

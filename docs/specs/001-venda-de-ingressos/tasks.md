@@ -29,15 +29,15 @@
 
 ## Fase 1 — Domain (lote A, paralelo) e design system (lote B, paralelo)
 **Lote A** (`feature:ticketing:domain`, um arquivo de use case + teste por tarefa):
-- [ ] **T05** [P] `ObserveAvailableEventsUseCase`, `GroupEventsByMonthUseCase`, `QuantityLimits` + testes ·
+- [x] **T05** [P] `ObserveAvailableEventsUseCase`, `GroupEventsByMonthUseCase`, `QuantityLimits` + testes ·
   BR-01, BR-02, BR-05–07, BR-17, BR-22–24 · AC-01, AC-02, AC-04, AC-05, AC-06, AC-17, AC-22, AC-23, AC-24 ·
   **Pronto quando:** testes `AC-xx` passam com `Clock` fixo, limites testados no valor, abaixo e acima
-- [ ] **T06** [P] `StartPurchaseUseCase` + testes · BR-08–10, BR-14 (app ausente) · AC-07, AC-08, AC-12 ·
+- [x] **T06** [P] `StartPurchaseUseCase` + testes · BR-08–10, BR-14 (app ausente) · AC-07, AC-08, AC-12 ·
   **Pronto quando:** compra gravada antes do gateway; segunda compra aberta recusada; app ausente → `Failed`
-- [ ] **T07** [P] `HandlePaymentOutcomeUseCase` e `RecoverPendingPurchaseUseCase` + testes · BR-11–15, BR-25, STRIDE (spoofing) ·
+- [x] **T07** [P] `HandlePaymentOutcomeUseCase` e `RecoverPendingPurchaseUseCase` + testes · BR-11–15, BR-25, STRIDE (spoofing) ·
   AC-09, AC-10, AC-11, AC-13, AC-14, AC-15 · **Pronto quando:** cada código Cielo vai ao status certo; resposta forjada
   (reference/valor divergentes, sem compra aberta) é descartada; paginação até 4 páginas e "não encontrado" testados
-- [ ] **T08** [P] `ObservePurchaseUseCase` e `ObservePurchaseHistoryUseCase` + testes · BR-16, BR-18–21 · AC-16, AC-18, AC-19,
+- [x] **T08** [P] `ObservePurchaseUseCase` e `ObservePurchaseHistoryUseCase` + testes · BR-16, BR-18–21 · AC-16, AC-18, AC-19,
   AC-20, AC-21 · **Pronto quando:** histórico só com Approved/Declined/Cancelled, ordem decrescente; erros propagados
 
 **Lote B** (`core:designsystem`, arquivos disjuntos; um `@Preview` por variante, claro e escuro):

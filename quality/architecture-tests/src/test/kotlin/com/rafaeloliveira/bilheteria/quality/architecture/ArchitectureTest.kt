@@ -37,8 +37,8 @@ private const val SCREEN_STATELESS = "Passe uiState e onEvent para a Screen; só
 
 /** Sensor S-06. Failure messages are written for the agent: what is wrong + how to fix + guide. */
 class ArchitectureTest {
-    // docs/ holds reference templates (com.example.*), not production code.
-    private val production = Konsist.scopeFromProduction().slice { "/docs/" !in it.path }
+    // docs/ holds reference templates (com.example.*); .claude/worktrees holds checkouts of parallel workers.
+    private val production = Konsist.scopeFromProduction().slice { "/docs/" !in it.path && "/.claude/" !in it.path }
 
     @Test
     fun `camadas respeitam a direcao ui para domain e data para domain`() {
