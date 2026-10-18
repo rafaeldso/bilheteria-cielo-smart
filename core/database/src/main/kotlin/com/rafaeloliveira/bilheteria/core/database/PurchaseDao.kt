@@ -42,6 +42,9 @@ abstract class PurchaseDao {
     @Query("SELECT * FROM purchase WHERE status IN (:openStatuses) ORDER BY created_at DESC LIMIT 1")
     abstract suspend fun findOpen(openStatuses: List<String>): PurchaseEntity?
 
+    @Query("SELECT * FROM purchase WHERE id = :id")
+    abstract suspend fun findById(id: String): PurchaseEntity?
+
     @Query(
         "SELECT event_id, SUM(quantity) AS total_quantity FROM purchase " +
             "WHERE status = :status GROUP BY event_id",

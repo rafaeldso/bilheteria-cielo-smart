@@ -38,4 +38,7 @@ interface PurchaseRepository {
     suspend fun update(purchase: Purchase): DataResult<Unit>
 
     suspend fun findOpen(): DataResult<Purchase?>
+
+    /** A purchase by id (= its `reference`), open or not; `Success(null)` when there is none. Used by BR-29. */
+    suspend fun findById(id: String): DataResult<Purchase?>
 }

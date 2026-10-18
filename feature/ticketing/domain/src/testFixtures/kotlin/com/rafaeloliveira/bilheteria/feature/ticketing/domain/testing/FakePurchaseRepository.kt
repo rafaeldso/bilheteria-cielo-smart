@@ -80,6 +80,13 @@ class FakePurchaseRepository(
             }
         }
 
+    override suspend fun findById(id: String): DataResult<Purchase?> =
+        if (failStorage) {
+            DataResult.Failure(TicketingError.StorageFailure)
+        } else {
+            DataResult.Success(purchases.value.firstOrNull { it.id == id })
+        }
+
     override suspend fun findOpen(): DataResult<Purchase?> =
         if (failStorage) {
             DataResult.Failure(TicketingError.StorageFailure)

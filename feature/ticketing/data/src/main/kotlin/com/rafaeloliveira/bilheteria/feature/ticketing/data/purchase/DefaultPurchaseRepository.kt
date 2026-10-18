@@ -110,6 +110,15 @@ internal class DefaultPurchaseRepository
                 }
             }
 
+        override suspend fun findById(id: String): DataResult<Purchase?> =
+            withContext(ioDispatcher) {
+                try {
+                    guarded("find_by_id") { dao.findById(id)?.toDomain() }
+                } catch (failure: SQLiteException) {
+                    storageFailure("find_by_id", failure)
+                }
+            }
+
         private inline fun <T> guarded(
             operation: String,
             block: () -> T,

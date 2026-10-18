@@ -133,5 +133,7 @@ class ObservePurchaseHistoryUseCaseTest {
         override suspend fun update(purchase: Purchase): DataResult<Unit> = error("unused")
 
         override suspend fun findOpen(): DataResult<Purchase?> = error("unused")
+
+        override suspend fun findById(id: String): DataResult<Purchase?> = error("unused")
     }
 }

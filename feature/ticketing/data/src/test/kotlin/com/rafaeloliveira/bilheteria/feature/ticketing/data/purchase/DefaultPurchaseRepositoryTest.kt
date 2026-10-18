@@ -296,6 +296,27 @@ class DefaultPurchaseRepositoryTest {
         }
 
     @Test
+    fun `AC-28 - dado compra que falhou quando buscar por id entao devolve a compra e nulo se nao existir`() =
+        runTest(dispatcher) {
+            val database = newDatabase()
+            val repository = repository(database.purchaseDao())
+            val failed = purchase("p1", PurchaseStatus.Failed)
+            repository.createPending(purchase("p1", PurchaseStatus.Pending))
+            repository.update(failed)
+
+            assertEquals(DataResult.Success<Purchase?>(failed), repository.findById("p1"))
+            assertEquals(DataResult.Success<Purchase?>(null), repository.findById("unknown"))
+        }
+
+    @Test
+    fun `AC-28 - dado falha do banco quando buscar por id entao devolve StorageFailure`() =
+        runTest(dispatcher) {
+            val repository = repository(FailingPurchaseDao())
+
+            assertEquals(DataResult.Failure(TicketingError.StorageFailure), repository.findById("p1"))
+        }
+
+    @Test
     fun `AC-15 - dado compra inexistente quando atualizar entao devolve StorageFailure`() =
         runTest(dispatcher) {
             val database = newDatabase()
@@ -362,6 +383,8 @@ private class FailingPurchaseDao : PurchaseDao() {
     override fun observeOpen(openStatuses: List<String>): Flow<PurchaseEntity?> = failing()
 
     override suspend fun findOpen(openStatuses: List<String>): PurchaseEntity? = throw SQLiteException("disk I/O error")
+
+    override suspend fun findById(id: String): PurchaseEntity? = throw SQLiteException("disk I/O error")
 
     override fun observeQuantitiesByStatus(status: String): Flow<List<EventQuantity>> = failing()
 

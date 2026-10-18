@@ -37,6 +37,11 @@ import javax.inject.Inject
  * and end the payment session (`gateway.finish()`). `Unreadable` never becomes Approved or Failed: it starts the
  * recovery (BR-25).
  *
+ * Late approval (BR-29): an `Approved` response whose `reference` is not the open purchase's (or with no open purchase)
+ * is applied to the purchase it names when that purchase is `Failed`/`NotFound` (the lookup found nothing, then the
+ * terminal finished the payment) and the paid amount equals its total. Only the repository is updated: the open
+ * purchase and the gateway session belong to another payment and stay untouched.
+ *
  * Lookup algorithm (BR-15), applied only to a purchase in [PurchaseStatus.Recovering]. `LookupPage.page` is the
  * 0-based index that was requested (the data layer normalizes Cielo's numbering). Cielo lists orders from the oldest
  * to the newest, and the purchase is among the most recent, so after page 0 the search goes from the last page
@@ -60,17 +65,68 @@ class HandlePaymentOutcomeUseCase
         suspend operator fun invoke(outcome: PaymentOutcome): DataResult<Unit> =
             when (val open = repository.findOpen()) {
                 is DataResult.Failure -> open
-                is DataResult.Success -> open.value?.let { handle(it, outcome) } ?: discard(NO_OPEN_PURCHASE)
+                is DataResult.Success -> handleOpen(open.value, outcome)
             }
 
-        private suspend fun handle(
-            purchase: Purchase,
+        private suspend fun handleOpen(
+            purchase: Purchase?,
             outcome: PaymentOutcome,
         ): DataResult<Unit> =
             when {
-                outcome.reference != null && outcome.reference != purchase.reference -> discard(REFERENCE_MISMATCH)
-                else -> apply(purchase, outcome)
+                purchase == null -> {
+                    approveLate(outcome, NO_OPEN_PURCHASE)
+                }
+
+                outcome.reference != null && outcome.reference != purchase.reference -> {
+                    approveLate(outcome, REFERENCE_MISMATCH)
+                }
+
+                else -> {
+                    apply(purchase, outcome)
+                }
             }
+
+        private suspend fun approveLate(
+            outcome: PaymentOutcome,
+            discardReason: String,
+        ): DataResult<Unit> {
+            val approved = outcome as? PaymentOutcome.Approved
+            val reference = approved?.reference ?: return discard(discardReason)
+            return when (val found = repository.findById(reference.value)) {
+                is DataResult.Failure -> {
+                    found
+                }
+
+                is DataResult.Success -> {
+                    val failed = found.value?.takeIf { it.isLateApprovable(approved) }
+                    if (failed == null) discard(discardReason) else saveLateApproval(failed, approved)
+                }
+            }
+        }
+
+        private fun Purchase.isLateApprovable(approved: PaymentOutcome.Approved): Boolean =
+            status == PurchaseStatus.Failed &&
+                failureReason == FailureReason.NotFound &&
+                approved.amount == total
+
+        private suspend fun saveLateApproval(
+            purchase: Purchase,
+            approved: PaymentOutcome.Approved,
+        ): DataResult<Unit> {
+            val saved =
+                repository.update(
+                    purchase.copy(
+                        status = PurchaseStatus.Approved,
+                        failureReason = null,
+                        transaction = approved.transaction,
+                        updatedAt = clock.instant(),
+                    ),
+                )
+            if (saved is DataResult.Success) {
+                logger.info("late_approval reference=${purchase.reference.value}")
+            }
+            return saved
+        }
 
         private suspend fun apply(
             purchase: Purchase,
