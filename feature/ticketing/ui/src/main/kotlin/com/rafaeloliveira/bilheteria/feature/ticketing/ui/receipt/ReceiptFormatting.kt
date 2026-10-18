@@ -16,12 +16,12 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt
 
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.PtBr
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatTime24
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 private const val DATE_PATTERN = "dd/MM/yyyy"
-private const val TIME_PATTERN = "HH:mm"
 
 /** Absolute date and time of an instant, in two parts so the localized "às" stays in a string resource. */
 internal data class ReceiptDateTime(
@@ -36,5 +36,5 @@ internal data class ReceiptDateTime(
 internal fun Instant.toReceiptDateTime(zone: ZoneId): ReceiptDateTime =
     ReceiptDateTime(
         date = DateTimeFormatter.ofPattern(DATE_PATTERN, PtBr).withZone(zone).format(this),
-        time = DateTimeFormatter.ofPattern(TIME_PATTERN, PtBr).withZone(zone).format(this),
+        time = formatTime24(atZone(zone)),
     )

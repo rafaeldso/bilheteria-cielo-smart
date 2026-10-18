@@ -21,10 +21,6 @@ import androidx.compose.ui.platform.LocalResources
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
-
-private const val TIME_PATTERN = "HH:mm"
 
 /**
  * Day, month and time of an instant to be read aloud as "15 de outubro às 09:00", so TalkBack does not read
@@ -41,8 +37,8 @@ internal fun Instant.toSpokenDateTime(zone: ZoneId): SpokenDateTime {
     val local = atZone(zone)
     return SpokenDateTime(
         day = local.dayOfMonth,
-        monthName = local.month.getDisplayName(TextStyle.FULL, PtBr),
-        time = DateTimeFormatter.ofPattern(TIME_PATTERN, PtBr).format(local),
+        monthName = monthName(local.monthValue),
+        time = formatTime24(local),
     )
 }
 

@@ -77,14 +77,15 @@ Cada tarefa: `UiState`/`UiEvent` exatamente como no plano §4, ViewModel com um 
 ## Fase 4 — UI (lote E, paralelo; depois T24 sequencial)
 Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado da UI Spec, strings em arquivo próprio por tela
 (`res/values/strings_<tela>.xml`) para não haver conflito entre workers.
-- [ ] **T20** [P] SCR-01 Eventos à venda (chips de mês, cabeçalho fixo) + testes de UI · AC-02, AC-03, AC-22, AC-23
-- [ ] **T21** [P] SCR-02 Compra (stepper, `Loading`, `AwaitingPayment`, `Recovering`, 5 variantes de erro, `Unavailable`, voltar bloqueado) + testes de UI · AC-06, AC-08, AC-26
-- [ ] **T22** [P] SCR-03 Comprovante (3 estados + `Loading` e `Error`, data absoluta) + testes de UI · AC-16, AC-19, AC-27
-- [ ] **T23** [P] SCR-04 Histórico + testes de UI · AC-20, AC-21
+- [x] **T20** [P] SCR-01 Eventos à venda (chips de mês, cabeçalho fixo) + testes de UI · AC-02, AC-03, AC-22, AC-23
+- [x] **T21** [P] SCR-02 Compra (stepper, `Loading`, `AwaitingPayment`, `Recovering`, 5 variantes de erro, `Unavailable`, voltar bloqueado) + testes de UI · AC-06, AC-08, AC-26
+- [x] **T22** [P] SCR-03 Comprovante (3 estados + `Loading` e `Error`, data absoluta) + testes de UI · AC-16, AC-19, AC-27
+- [x] **T23** [P] SCR-04 Histórico + testes de UI · AC-20, AC-21
 - [ ] **T24** Navegação: rotas em `:api`, grafo da feature, `NavHost` no `app`, navegação como estado, retorno do callback para a
   tela certa, `Completed` navega com `popUpTo<PurchaseRoute> { inclusive = true }` (plan §4) · **Pronto quando:** app abre na SCR-01 e percorre as 4 telas; `assertModuleGraph` verde
 
 **Pronto quando (T20–T23):** todos os estados da UI Spec com preview; testes de UI passam; `compose-ui-reviewer` sem bloqueante.
+> Testes de UI Compose e screenshot de previews ficam fora de foco por decisão do humano; os ACs seguem cobertos pelos testes de ViewModel (T16–T19) e a lógica pura nova por testes JVM.
 
 ## Fase 5 — Dispositivo
 - [ ] **T25** Journeys no AVD Android 10 com `lio-emulator` (skill `verify-on-device`): aprovado, cancelado, erro, app fechado durante

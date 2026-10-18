@@ -16,13 +16,13 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.history
 
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.PtBr
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatTime24
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.monthName
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
 
-private val TimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm", PtBr)
 private val DayMonthFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM", PtBr)
 
 /**
@@ -58,7 +58,7 @@ internal fun historyMoment(
     val purchase = createdAt.atZone(zone)
     val date: LocalDate = purchase.toLocalDate()
     val today: LocalDate = now.atZone(zone).toLocalDate()
-    val time = TimeFormatter.format(purchase)
+    val time = formatTime24(purchase)
     return when (date) {
         today -> {
             HistoryMoment.Today(time)
@@ -72,7 +72,7 @@ internal fun historyMoment(
             HistoryMoment.OtherDay(
                 shortDate = DayMonthFormatter.format(purchase),
                 day = date.dayOfMonth,
-                monthName = date.month.getDisplayName(TextStyle.FULL, PtBr),
+                monthName = monthName(date.monthValue),
                 time = time,
             )
         }

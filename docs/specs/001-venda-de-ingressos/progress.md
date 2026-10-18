@@ -7,11 +7,11 @@
 **Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.2.0 (Aprovada) · **UI Spec:** v0.4.2 (Aprovada) · **Branch:** `main` (commits locais do lote C em diante, sem push)
 
 ## Estado atual
-- **Última etapa concluída:** T15 e lote D (T16–T19) commitados localmente; revisão em 3 rodadas (arch, test, compose, security)
-- **Próxima etapa:** lote E (T20–T23, telas Compose) → T24.
+- **Última etapa concluída:** lote E (T20–T23, telas Compose) commitado localmente; revisão em 2 rodadas (compose-ui, architecture, ui-design) sem bloqueante
+- **Próxima etapa:** T24 (navegação) → T25.
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
-- **Último sensor:** `verify.sh standard` → verde (exit 0) em 2026-10-18 (lote D, commit 6fd913f)
+- **Último sensor:** `verify.sh standard` → verde (exit 0) em 2026-10-18 (lote E)
 
 ## Decisões da implementação
 | Data | Decisão | Motivo | Afeta spec/plano? |
@@ -36,6 +36,9 @@
 | 2026-10-18 | Rodada extra de revisão (3ª) com worker Sonnet, autorizada pelo humano | Achado de cobrança dupla no `settle()` | Não |
 
 ## Bloqueios e perguntas abertas
+- [ ] **Decisão do humano (lote E):** (1) saída do comprovante em `Error` vindo da venda (hoje só o voltar do sistema; recomendação: seta "Voltar para eventos"); (2) ícone do botão "Voltar para eventos" no `Unavailable` (`DsErrorState` fixa `Refresh`; precisa de `actionIcon` no core); (3) registrar `DsStatusMessage` no catálogo e na §5; (4) UI Spec 0.4.3: chaves reais da §4.4 (`ticketing_status_*`/`common_retry` em `strings_common.xml`, `ticketing_history_datetime_today/yesterday/other`, `ticketing_purchase_event_*`, `*_spoken_*`), cabeçalho do snapshot sem "disponíveis", "Data do evento" absoluta, dia da semana por extenso, ícones substitutos, "Tentar de novo" × "Tentar novamente" (spec §6 × UI Spec).
+- [ ] Sugestões do lote E: `spokenBody` no `DsStatusMessage` e rótulo falado do retry do `DsErrorState` (valor por extenso); "de 2026" no falado do comprovante; `heading` do resultado do comprovante com `mergeDescendants` (conferir no TalkBack, T25); `Year` do EventList congelado na virada do ano; `HistoryItem.status` já como `SaleResult` no mapper; `OtherDay` carregar `SpokenDateTime`; mover testes de `SpokenDateTime`; previews Font 2x dos Empty; live region do comprovante re-anuncia na rotação (ver origem na T24); sensores propostos: chaves da §4.4 × `strings_*.xml`, `ZoneId.systemDefault`/`Clock.system*` só em `*Route.kt`, `NumberFormat`/`DateTimeFormatter.ofPattern` só em `ui.format`, `UnusedResources` como erro.
+- [ ] T24: `ClockModule` fornece UTC; passar a `systemDefaultZone` para domain (agrupa por mês) e UI (`Clock` das Routes) usarem o mesmo fuso; uma única fonte de `Clock` para as Routes.
 - [x] Spec 1.2.0 e UI Spec 0.4.2 aprovadas pelo humano em 2026-10-18 (o S-09 passa a cobrir AC-25..27).
 - [ ] Backlog do lote D: `UuidReferenceGenerator` + teste de formato/unicidade; `toString` mascarado em `Purchase`/`TransactionData`; `purchaseId` (= `reference`) no `SavedStateHandle` enquanto aberta; `recoverPending` não atômico (`findOpen`+`update`, CAS no DAO); `clampQuantity` → `QuantityLimits`; `Loading` do EventList piscando ao reassinar; filtro de mês fora do `SavedStateHandle`; chaves `"eventId"`/`"purchaseId"` ligadas às rotas `:api` na T24 (`toRoute`); feedback visual em "Consultar de novo"; `MonthGroup` duplicado (ui × domain).
 - [ ] Sugestões da revisão final (aprovada): trocar o `check()` de `toFailedState` por ramo defensivo (`Error(RecoveryFailed)`) para não derrubar o app; ignorar no `settle` um `Finished` de id diferente da última tentativa (motivo de falha obsoleto, sem risco de dinheiro); teste `Finished(Failed)` + catálogo `Unknown` → `Loading`; contador de tentativas no `LookupFailingGateway`; renomear o teste "prevalece a compra" sem prefixo AC-26.
@@ -57,6 +60,7 @@
 ## Log de sessões
 | Data | Ferramenta / agente | Resumo |
 |---|---|---|
+| 2026-10-18 | Claude Code + 5× `android-implementer` + revisores (compose-ui, arch, ui-design) | Lote E (T20 ∥ T21 ∥ T22 ∥ T23) + 2 rodadas de revisão; standard verde |
 | 2026-10-17 | Claude Code + `general-purpose` (sonnet) | Spike Cielo → research.md |
 | 2026-10-17 | Claude Code (sessão principal) | Spec 0.1.0 → 1.0.0 com 12 perguntas respondidas pelo humano |
 | 2026-10-18 | Claude Code + 3× `android-implementer` | Lote B (T09 → T10 ∥ T11), sensores fast verdes |
