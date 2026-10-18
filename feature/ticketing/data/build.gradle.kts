@@ -18,15 +18,29 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Cielo credentials (plan §4, Q12): Gradle properties from ~/.gradle/gradle.properties or -P, never versioned.
+// The defaults are fictitious so the emulator and CI build without secrets. The token ends up inside the APK
+// (accepted risk, plan §7); this is why it is also redacted from toString() and logs.
+val cieloClientId = providers.gradleProperty("cielo.clientId").orElse("fake-client-id")
+val cieloAccessToken = providers.gradleProperty("cielo.accessToken").orElse("fake-access-token")
+
+fun String.asBuildConfigString(): String = "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
 android {
     namespace = "com.rafaeloliveira.bilheteria.feature.ticketing.data"
     testOptions { unitTests.isIncludeAndroidResources = true }
+    buildFeatures { buildConfig = true } // only CIELO_* below; no other module turns this on for credentials
+    defaultConfig {
+        buildConfigField("String", "CIELO_CLIENT_ID", cieloClientId.get().asBuildConfigString())
+        buildConfigField("String", "CIELO_ACCESS_TOKEN", cieloAccessToken.get().asBuildConfigString())
+    }
 }
 
 dependencies {
     implementation(projects.feature.ticketing.domain)
     implementation(projects.core.database)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.core.ktx) // NotificationCompat/ServiceCompat for the foreground service (minSdk 24)
     testImplementation(testFixtures(projects.feature.ticketing.domain))
     // Room in-memory tests need the Android framework (SQLite) on the JVM: Robolectric via the vintage engine.
     testImplementation(libs.robolectric)

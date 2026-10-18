@@ -109,7 +109,10 @@ internal data class PaymentRequestDto(
     val reference: String,
     val items: List<ItemRequestDto>,
     val value: String,
-)
+) {
+    /** Redacted: carries the access token and the client id. */
+    override fun toString(): String = "PaymentRequestDto(<redacted>)"
+}
 
 @Serializable
 internal data class ItemRequestDto(
@@ -126,4 +129,7 @@ internal data class LookupRequestDto(
     val page: Int,
     @SerialName("clientID") val clientId: String,
     val accessToken: String,
-)
+) {
+    /** Redacted: carries the access token and the client id. */
+    override fun toString(): String = "LookupRequestDto(<redacted>)"
+}

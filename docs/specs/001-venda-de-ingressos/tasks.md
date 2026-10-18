@@ -59,7 +59,7 @@
 - [x] **T14** [P] `CieloRequestEncoder` e `CieloResponseParser` + testes com fixtures da doc da Cielo (sucesso, erro `code` 1–4,
   desconhecido, ilegível, listagem com `reference`, campos sensíveis ignorados, limite de tamanho) · BR-09, BR-11–14, BR-25 ·
   AC-07, AC-09–AC-15 · **Pronto quando:** URI igual ao research §12; `bin`/`mask`/`document` nunca chegam ao modelo
-- [ ] **T15** `CieloDeepLinkGateway` (intent explícita com allowlist de pacote), `CieloCallbackActivity`, `PaymentForegroundService`,
+- [x] **T15** `CieloDeepLinkGateway` (intent explícita com allowlist de pacote), `CieloCallbackActivity`, `PaymentForegroundService`,
   `CieloCredentials` (propriedades Gradle → `BuildConfig`, fictícias por padrão), manifest (`<queries>`, `cs_integration_type`,
   permissões FGS) e DI · BR-09, BR-14, BR-15, BR-25 · AC-07, AC-12 · Depende de T12, T14 · **Pronto quando:** testes do gateway
   (app ausente, pacote fora da allowlist) passam; `security-reviewer` sem bloqueante; lint/mobsfscan sem achado novo

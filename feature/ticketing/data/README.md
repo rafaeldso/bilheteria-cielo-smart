@@ -16,6 +16,10 @@ Nada público: tudo `internal`, ligado por Hilt.
 ## Invariantes
 - `lio://`, Base64 e DTOs Cielo só no pacote `cielo` (Konsist). Resposta bruta da Cielo nunca logada nem persistida.
 
+- Credenciais Cielo: propriedades Gradle `cielo.clientId` e `cielo.accessToken` (`~/.gradle/gradle.properties` ou `-P`; nunca
+  versionadas) viram `BuildConfig`; sem elas o build usa valores fictícios. O gateway só envia o `lio://` ao pacote resolvido que
+  está na allowlist (`com.ads.lio.uriappclient`, `br.com.cielosmart.orderservice`), com intent explícita.
+
 ## Como testar
 ```bash
 ./gradlew :feature:ticketing:data:testDebugUnitTest
