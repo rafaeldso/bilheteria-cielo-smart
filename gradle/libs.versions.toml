@@ -12,6 +12,7 @@ minSdk = "24"
 # AndroidX (template oficial `android create empty-activity`; BOM atualizado)
 androidxCore = "1.18.0"
 androidxActivity = "1.13.0"
+androidxSplashscreen = "1.2.0"
 androidxLifecycle = "2.11.0"
 androidxComposeBom = "2026.09.00"
 androidxNavigation = "2.10.2"
@@ -39,6 +40,7 @@ moduleGraphAssertion = "2.9.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidxSplashscreen" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }

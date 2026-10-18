@@ -37,6 +37,7 @@ dependencies {
     implementation(projects.feature.ticketing.data) // só para agregar o grafo de DI (architecture.md)
     implementation(projects.feature.ticketing.ui)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.timber)

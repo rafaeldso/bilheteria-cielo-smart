@@ -29,6 +29,7 @@
             android:exported="true"
             android:launchMode="singleInstance"
             android:taskAffinity=""
+            android:theme="@style/Theme.Bilheteria.Starting"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

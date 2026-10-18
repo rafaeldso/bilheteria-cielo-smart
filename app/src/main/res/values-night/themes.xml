@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Dark window background, so the cold start and the fade between screens do not flash light (T24 review). -->
     <style name="Theme.Bilheteria" parent="android:Theme.Material.NoActionBar" />
+
+    <style name="Theme.Bilheteria.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.Bilheteria</item>
+        <!-- Dark surface: light system bar icons. -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+    </style>
 </resources>

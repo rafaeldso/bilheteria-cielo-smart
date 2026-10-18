@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Token `color.surface` (docs/design/tokens/color.light.tokens.json): splash background. -->
+    <color name="splash_background">#F6FAFE</color>
+</resources>

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Theme.Bilheteria" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Splash screen (SplashScreen API via core-splashscreen): launcher icon on the surface color, then the app theme. -->
+    <style name="Theme.Bilheteria.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.Bilheteria</item>
+        <!-- Light surface: dark system bar icons, so the clock and navigation keys stay visible. -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+    </style>
 </resources>
