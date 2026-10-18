@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.Instant
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 /** Guards the real `assets/events.json` shipped in the APK (BR-22..BR-24 need 3+ months of events). */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,7 +67,7 @@ class BundledCatalogAssetTest {
         runTest(dispatcher) {
             val months =
                 bundledEvents()
-                    .map { it.startsAt.atOffset(ZoneOffset.UTC).let { date -> date.year to date.monthValue } }
+                    .map { it.startsAt.atZone(ZONE).let { date -> date.year to date.monthValue } }
                     .toSet()
 
             assertTrue(months.size >= MIN_MONTHS, "Expected at least $MIN_MONTHS months, got $months")
@@ -85,6 +85,7 @@ class BundledCatalogAssetTest {
         const val MIN_EVENTS = 7
         const val MIN_MONTHS = 3
         const val SMALL_STOCK = 10
+        val ZONE: ZoneId = ZoneId.of("America/Sao_Paulo")
         val FIRST_DAY: Instant = Instant.parse("2026-11-01T00:00:00Z")
         val LAST_DAY_EXCLUSIVE: Instant = Instant.parse("2027-04-01T00:00:00Z")
     }

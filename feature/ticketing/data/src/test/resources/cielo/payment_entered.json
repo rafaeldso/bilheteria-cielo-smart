@@ -1,0 +1,47 @@
+{
+  "id": "6b1f7a2e-0000-4000-8000-00000000a001",
+  "createdAt": "2026-10-18T14:03:10.123Z",
+  "updatedAt": "2026-10-18T14:03:42.456Z",
+  "status": "ENTERED",
+  "type": "PAYMENT",
+  "reference": "0b8f2d1c-1111-4222-8333-444455556666",
+  "price": 10000,
+  "paidAmount": 0,
+  "pendingAmount": 0,
+  "notes": "",
+  "merchantCode": "0000000000000000",
+  "accessKey": "fake-access-key-must-not-leak",
+  "items": [
+    {
+      "id": "item-1",
+      "name": "Show de teste",
+      "quantity": 2,
+      "sku": "evt-001",
+      "unitOfMeasure": "unidade",
+      "unitPrice": 5000
+    }
+  ],
+  "payments": [
+    {
+      "id": "pay-1",
+      "amount": 10000,
+      "authCode": "123456",
+      "cieloCode": "987654",
+      "brand": "mock_brand",
+      "mask": "411111******1111",
+      "merchantCode": "0000000000000000",
+      "terminal": "00000000",
+      "paymentFields": {
+        "statusCode": "1",
+        "pan": "411111******1111",
+        "bin": "411111",
+        "document": "11222333000181",
+        "clientName": "FULANO DE TAL FICTICIO",
+        "merchantName": "LOJA FICTICIA",
+        "merchantAddress": "RUA FICTICIA 1",
+        "finalCryptogram": "FAKECRYPTOGRAM",
+        "signatureBytes": "FAKESIGNATURE"
+      }
+    }
+  ]
+}

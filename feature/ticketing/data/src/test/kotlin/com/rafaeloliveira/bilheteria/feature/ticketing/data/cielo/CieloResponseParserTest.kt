@@ -71,9 +71,7 @@ class CieloResponseParserTest {
 
     @Test
     fun `AC-09 - dado pagamento Pix statusCode 0 quando processar entao Approved`() {
-        val pix = fixture("payment_approved.json").replace("\"statusCode\": \"1\"", "\"statusCode\": \"0\"")
-
-        val outcome = parser.parse(cieloBase64(pix))
+        val outcome = parseFixture("payment_approved_pix.json")
 
         assertTrue(outcome is PaymentOutcome.Approved)
     }
@@ -92,9 +90,7 @@ class CieloResponseParserTest {
 
     @Test
     fun `AC-09 - dado status ENTERED com pagamento autorizado quando processar entao classifica pelo pagamento`() {
-        val entered = fixture("payment_approved.json").replace("\"status\": \"PAID\"", "\"status\": \"ENTERED\"")
-
-        val outcome = parser.parse(cieloBase64(entered))
+        val outcome = parseFixture("payment_entered.json")
 
         assertTrue(outcome is PaymentOutcome.Approved)
     }
