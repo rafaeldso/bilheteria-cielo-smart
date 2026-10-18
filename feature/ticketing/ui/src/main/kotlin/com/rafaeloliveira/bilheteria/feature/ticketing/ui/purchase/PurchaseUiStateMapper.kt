@@ -85,11 +85,29 @@ internal data class PurchaseInputs(
 /** Pure mapping from the ViewModel inputs to the [PurchaseUiState] (plan §4, spec section 6). */
 internal fun PurchaseInputs.toUiState(): PurchaseUiState =
     when {
-        open is OpenPurchase.Present -> open.purchase.toOpenState(recovery)
-        open is OpenPurchase.Unknown -> PurchaseUiState.Loading
-        open is OpenPurchase.Unreadable -> withEvent { eventState(it, PurchaseErrorReason.RecoveryFailed) }
-        outcome is AttemptOutcome.Finished -> outcome.purchase.toFinishedState()
-        else -> withEvent { eventState(it, (outcome as? AttemptOutcome.Failed)?.reason) }
+        open is OpenPurchase.Present -> {
+            open.purchase.toOpenState(recovery)
+        }
+
+        open is OpenPurchase.Unknown -> {
+            PurchaseUiState.Loading
+        }
+
+        open is OpenPurchase.Unreadable -> {
+            withEvent { eventState(it, PurchaseErrorReason.RecoveryFailed) }
+        }
+
+        outcome is AttemptOutcome.Finished && outcome.purchase.status.isSale -> {
+            PurchaseUiState.Completed(outcome.purchase.id)
+        }
+
+        outcome is AttemptOutcome.Finished -> {
+            withEvent { outcome.purchase.toFailedState() }
+        }
+
+        else -> {
+            withEvent { eventState(it, (outcome as? AttemptOutcome.Failed)?.reason) }
+        }
     }
 
 private fun PurchaseInputs.withEvent(state: (AvailableEvent) -> PurchaseUiState): PurchaseUiState =
@@ -157,25 +175,11 @@ private fun Purchase.toOpenState(recovery: Recovery = Recovery.Idle): PurchaseUi
         }
     }
 
-private fun Purchase.toFinishedState(): PurchaseUiState =
-    when {
-        status.isSale -> {
-            PurchaseUiState.Completed(id)
-        }
-
-        status == PurchaseStatus.Failed -> {
-            PurchaseUiState.Error(
-                toSummary(),
-                quantity,
-                total,
-                failureReason.toErrorReason(),
-            )
-        }
-
-        else -> {
-            toOpenState()
-        }
-    }
+/** A finished attempt that is not a sale is `Failed`: the settle only runs once no purchase is open (BR-15). */
+private fun Purchase.toFailedState(): PurchaseUiState {
+    check(status == PurchaseStatus.Failed) { "unreachable: a settled attempt is a sale or Failed, not $status" }
+    return PurchaseUiState.Error(toSummary(), quantity, total, failureReason.toErrorReason())
+}
 
 private fun FailureReason?.toErrorReason(): PurchaseErrorReason =
     when (this) {

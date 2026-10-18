@@ -15,12 +15,16 @@
  */
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.purchase
 
+import com.rafaeloliveira.bilheteria.core.common.DataResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.error.TicketingError
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.FailureReason
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.LookupOrder
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PaymentOutcome
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseReference
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.payment.PaymentGateway
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePaymentGateway
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aTransaction
 import kotlinx.coroutines.test.runTest
@@ -132,7 +136,7 @@ internal class PurchaseRecoveryViewModelTest : PurchaseViewModelTestBase() {
         }
 
     @Test
-    fun `AC-25 - dado consulta que falha quando tentar de novo entao repete a consulta sem abrir pagamento`() =
+    fun `AC-25 - dado falha ao ler a compra na recuperacao quando tentar de novo entao repete a consulta sem pagar`() =
         runTest {
             val pending = aPurchase(reference = FIRST_REFERENCE, event = event, quantity = 2)
             val repository = repositoryWith(pending)
@@ -156,6 +160,69 @@ internal class PurchaseRecoveryViewModelTest : PurchaseViewModelTestBase() {
                 assertEquals(listOf(0), gateway.lookupRequests)
                 assertEquals(PurchaseStatus.Recovering, repository.all.single().status)
                 assertTrue(gateway.paymentRequests.isEmpty())
+            }
+        }
+
+    @Test
+    fun `AC-25 - dado falha na consulta a Cielo quando tentar de novo entao repete a consulta sem abrir pagamento`() =
+        runTest {
+            val pending = aPurchase(reference = FIRST_REFERENCE, event = event, quantity = 2)
+            val repository = repositoryWith(pending)
+            val failing = LookupFailingGateway(gateway)
+            val viewModel = createViewModel(repository, paymentGateway = failing)
+            observing(viewModel) {
+                val total = Money(2 * UNIT_PRICE_CENTS)
+                val failed = PurchaseUiState.Error(summary(null), 2, total, PurchaseErrorReason.RecoveryFailed)
+                assertEquals(failed, latest(viewModel))
+                assertEquals(PurchaseStatus.Recovering, repository.all.single().status)
+                assertTrue(gateway.paymentRequests.isEmpty())
+
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                assertEquals(failed, latest(viewModel))
+                assertEquals(PurchaseStatus.Recovering, repository.all.single().status)
+                assertTrue(gateway.lookupRequests.isEmpty())
+                assertTrue(gateway.paymentRequests.isEmpty())
+
+                failing.lookupFails = false
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                assertEquals(PurchaseUiState.Recovering(summary(null), 2, total), latest(viewModel))
+                assertEquals(listOf(0), gateway.lookupRequests)
+                assertTrue(gateway.paymentRequests.isEmpty())
+            }
+        }
+
+    @Test
+    fun `AC-25 - dado falha ao reler a compra apos tentativa quando tentar de novo entao repete a leitura`() =
+        runTest {
+            val stored = repositoryWith()
+            val repository = UnreadableOpenPurchaseRepository(stored).apply { readable = true }
+            val viewModel = createViewModel(repository)
+            observing(viewModel) {
+                latest(viewModel)
+                viewModel.onEvent(PurchaseUiEvent.OnPay)
+                latest(viewModel)
+                assertEquals(1, gateway.paymentRequests.size)
+                val attempt = stored.all.single()
+
+                repository.recordReadable = false
+                stored.update(attempt.copy(status = PurchaseStatus.Failed))
+                val total = Money(UNIT_PRICE_CENTS)
+                val unknown = PurchaseUiState.Error(summary(), 1, total, PurchaseErrorReason.RecoveryFailed)
+                assertEquals(unknown, latest(viewModel))
+
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                assertEquals(unknown, latest(viewModel))
+                assertEquals(1, gateway.paymentRequests.size)
+
+                repository.recordReadable = true
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                val failed = PurchaseUiState.Error(summary(null), 1, total, PurchaseErrorReason.Generic)
+                assertEquals(failed, latest(viewModel))
+                assertEquals(1, gateway.paymentRequests.size)
             }
         }
 
@@ -206,5 +273,19 @@ internal class PurchaseRecoveryViewModelTest : PurchaseViewModelTestBase() {
 
                 assertEquals(PurchaseUiState.Completed(FIRST_REFERENCE), latest(viewModel))
             }
+        }
+}
+
+/** Gateway whose Cielo lookup fails while [lookupFails] is set (BR-26); the rest goes to the [delegate]. */
+private class LookupFailingGateway(
+    private val delegate: FakePaymentGateway,
+) : PaymentGateway by delegate {
+    var lookupFails: Boolean = true
+
+    override suspend fun requestLookup(page: Int): DataResult<Unit> =
+        if (lookupFails) {
+            DataResult.Failure(TicketingError.StorageFailure)
+        } else {
+            delegate.requestLookup(page)
         }
 }

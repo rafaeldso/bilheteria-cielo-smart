@@ -58,7 +58,13 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
  * state becomes `Completed` (a sale, to the receipt) or `Error` (`Failed`, with a new attempt allowed). An open
  * purchase left from a previous run goes to the Cielo lookup before any new charge (BR-15). While that lookup cannot be
  * completed, or the open purchase cannot be read, the state is `Error(RecoveryFailed)` and "Tentar novamente" repeats
- * the reading and the lookup: a payment is never started until the open purchase is known (BR-10, BR-26).
+ * the reading and the lookup: a payment is never started until the open purchase is known (BR-10, BR-26). The same
+ * holds when the record of the attempt cannot be read after it settled: the outcome is unknown, so it is an
+ * `Error(RecoveryFailed)` whose retry reads again (AC-25).
+ *
+ * Exception to AP-22 (plan §4): the open purchase and the catalog are collected from `init`, not through
+ * `stateIn(WhileSubscribed)` alone, because the recovery of an open purchase (BR-15) must run even when no UI is
+ * subscribed. Only [uiState] is shared with `WhileSubscribed`.
  */
 @HiltViewModel
 internal class PurchaseViewModel
@@ -191,7 +197,10 @@ internal class PurchaseViewModel
                     }
 
                     is DataResult.Failure -> {
-                        outcome.value = AttemptOutcome.Failed(PurchaseErrorReason.Generic)
+                        // How the attempt ended is unknown: it may have been charged, so never offer a new payment
+                        // (BR-26). "Tentar novamente" reads the open purchase and the record again.
+                        open.value = OpenPurchase.Unreadable
+                        return
                     }
                 }
             }

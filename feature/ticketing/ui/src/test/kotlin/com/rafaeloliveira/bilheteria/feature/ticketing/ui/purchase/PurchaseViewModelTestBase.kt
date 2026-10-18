@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.Clock
 import java.time.ZoneOffset
@@ -110,6 +111,13 @@ internal abstract class PurchaseViewModelTestBase {
         }
     }
 
+    /** BR-10, BR-27: whatever the screen shows, "Pagar" opens no payment. */
+    protected fun TestScope.assertPayOpensNoPayment(viewModel: PurchaseViewModel) {
+        viewModel.onEvent(PurchaseUiEvent.OnPay)
+        advanceUntilIdle()
+        assertTrue(gateway.paymentRequests.isEmpty())
+    }
+
     /** Runs everything pending on the test dispatcher and returns what the (subscribed) state holds. */
     protected fun TestScope.latest(viewModel: PurchaseViewModel): PurchaseUiState {
         advanceUntilIdle()
@@ -118,13 +126,22 @@ internal abstract class PurchaseViewModelTestBase {
 }
 
 /**
- * Repository whose open purchase cannot be read until [readable] is set: the real flow emits the failure and ends
- * (BR-26). Every other operation goes to the in-memory [delegate].
+ * Repository whose open purchase cannot be read until [readable] is set, and whose single-purchase record cannot be
+ * read until [recordReadable] is set: the real flow emits the failure and ends (BR-26). Every other operation goes to
+ * the in-memory [delegate].
  */
 internal class UnreadableOpenPurchaseRepository(
     private val delegate: FakePurchaseRepository,
 ) : PurchaseRepository by delegate {
     var readable: Boolean = false
+    var recordReadable: Boolean = true
+
+    override fun observePurchase(id: String): Flow<DataResult<Purchase>> =
+        if (recordReadable) {
+            delegate.observePurchase(id)
+        } else {
+            flowOf(DataResult.Failure(TicketingError.StorageFailure))
+        }
 
     override fun observeOpenPurchase(): Flow<DataResult<Purchase?>> =
         if (readable) {

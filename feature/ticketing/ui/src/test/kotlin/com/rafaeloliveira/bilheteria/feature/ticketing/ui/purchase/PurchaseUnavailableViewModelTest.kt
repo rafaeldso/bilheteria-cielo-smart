@@ -16,6 +16,9 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.purchase
 
 import androidx.lifecycle.SavedStateHandle
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.FailureReason
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,11 +33,7 @@ internal class PurchaseUnavailableViewModelTest : PurchaseViewModelTestBase() {
             val viewModel = createViewModel(repositoryWith())
             observing(viewModel) {
                 assertEquals(PurchaseUiState.Unavailable, latest(viewModel))
-
-                viewModel.onEvent(PurchaseUiEvent.OnPay)
-                latest(viewModel)
-
-                assertTrue(gateway.paymentRequests.isEmpty())
+                assertPayOpensNoPayment(viewModel)
             }
         }
 
@@ -44,6 +43,7 @@ internal class PurchaseUnavailableViewModelTest : PurchaseViewModelTestBase() {
             val viewModel = createViewModel(repositoryWith(), SavedStateHandle(mapOf("eventId" to "inexistente")))
             observing(viewModel) {
                 assertEquals(PurchaseUiState.Unavailable, latest(viewModel))
+                assertPayOpensNoPayment(viewModel)
             }
         }
 
@@ -53,6 +53,7 @@ internal class PurchaseUnavailableViewModelTest : PurchaseViewModelTestBase() {
             val viewModel = createViewModel(repositoryWith(soldOut(remaining = 0)))
             observing(viewModel) {
                 assertEquals(PurchaseUiState.Unavailable, latest(viewModel))
+                assertPayOpensNoPayment(viewModel)
             }
         }
 
@@ -62,6 +63,7 @@ internal class PurchaseUnavailableViewModelTest : PurchaseViewModelTestBase() {
             val viewModel = createViewModel(repositoryWith(), SavedStateHandle())
             observing(viewModel) {
                 assertEquals(PurchaseUiState.Unavailable, latest(viewModel))
+                assertPayOpensNoPayment(viewModel)
             }
         }
 
@@ -72,10 +74,44 @@ internal class PurchaseUnavailableViewModelTest : PurchaseViewModelTestBase() {
             val pending = aPurchase(reference = FIRST_REFERENCE, event = event, quantity = 2)
             val viewModel = createViewModel(repositoryWith(pending))
             observing(viewModel) {
-                val state = latest(viewModel)
+                val total = Money(2 * UNIT_PRICE_CENTS)
 
-                assertTrue(state is PurchaseUiState.Recovering)
+                assertEquals(PurchaseUiState.Recovering(summary(null), 2, total), latest(viewModel))
                 assertTrue(gateway.paymentRequests.isEmpty())
+            }
+        }
+
+    @Test
+    fun `AC-26 - dado compra aberta ilegivel e evento ausente quando abrir a compra entao exibe indisponivel`() =
+        runTest {
+            catalog.failure()
+            val pending = aPurchase(reference = FIRST_REFERENCE, event = event, quantity = 2)
+            val viewModel = createViewModel(UnreadableOpenPurchaseRepository(repositoryWith(pending)))
+            observing(viewModel) {
+                assertEquals(PurchaseUiState.Unavailable, latest(viewModel))
+                assertPayOpensNoPayment(viewModel)
+            }
+        }
+
+    @Test
+    fun `AC-26 - dado tentativa falhou e evento removido quando abrir entao exibe indisponivel`() =
+        runTest {
+            val repository = repositoryWith()
+            val viewModel = createViewModel(repository)
+            observing(viewModel) {
+                latest(viewModel)
+                viewModel.onEvent(PurchaseUiEvent.OnPay)
+                latest(viewModel)
+                val attempt = repository.all.single()
+                catalog.failure()
+                repository.update(attempt.copy(status = PurchaseStatus.Failed, failureReason = FailureReason.Generic))
+
+                assertEquals(PurchaseUiState.Unavailable, latest(viewModel))
+
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                assertEquals(PurchaseUiState.Unavailable, latest(viewModel))
+                assertEquals(1, gateway.paymentRequests.size)
             }
         }
 }

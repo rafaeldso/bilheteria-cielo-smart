@@ -123,9 +123,9 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 | AC-22 | T05, T16, T20 | `AC-22 - dado eventos em dois meses quando abrir entao agrupa por mes` |
 | AC-23 | T05, T16, T20 | `AC-23 - dado filtro de mes quando selecionar dezembro entao so eventos de dezembro` |
 | AC-24 | T05, T16 | `AC-24 - dado mes esgotado quando voltar a lista entao filtro volta para todos` |
-| AC-25 | T17 | `AC-25 - dado consulta que falha quando tentar de novo entao repete a consulta sem cobrar` |
-| AC-26 | T17, T21 | `AC-26 - dado evento indisponivel sem compra aberta quando abrir compra entao exibe indisponivel` |
-| AC-27 | T18, T22 | `AC-27 - dado comprovante ilegivel quando tentar de novo entao repete a leitura` |
+| AC-25 | T17 | `AC-25 - dado falha na consulta a Cielo quando tentar de novo entao repete a consulta sem abrir pagamento` |
+| AC-26 | T17, T21 | `AC-26 - dado catalogo ilegivel e sem compra aberta quando abrir a compra entao exibe indisponivel` |
+| AC-27 | T18, T22 | `AC-27 - dado registro ilegivel quando tentar de novo entao volta a carregar e repete a leitura` |
 
 ## Ordem de execução e paralelismo
 | Etapa | Tarefas | Quem | Paralelo |
