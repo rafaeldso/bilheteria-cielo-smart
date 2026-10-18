@@ -3,11 +3,11 @@
 | Campo | Valor |
 |---|---|
 | **ID** | 001 |
-| **Status** | Em revisão |
+| **Status** | Aprovada |
 | **Versão** | 1.2.0 |
 | **Módulo** | `feature/ticketing` (provisório; o `plan.md` confirma a divisão de módulos) |
 | **Autor** | Rafael Oliveira (com Claude Code) |
-| **Links** | [case_android.md](../../../case_android.md) · [research.md](research.md) · Design ([ui-spec.md](ui-spec.md) v0.4.0 aprovada · [prancha](design/mockups.html)) |
+| **Links** | [case_android.md](../../../case_android.md) · [research.md](research.md) · Design ([ui-spec.md](ui-spec.md) v0.4.2 aprovada · [prancha](design/mockups.html)) |
 
 > Esta spec descreve **o quê** e **por quê**. Detalhes de implementação ficam no `plan.md`.
 > Fonte dos requisitos: o case (RF-1…RF-5, RNFs), a documentação oficial da Cielo Smart resumida no
@@ -448,7 +448,7 @@ E tentar novamente repete a leitura
 - [x] Todos os estados de UI e eventos estão mapeados
 - [x] Dados classificados (PII / cartão)
 - [x] Nenhum `[PRECISA ESCLARECIMENTO]` aberto
-- [x] Design disponível (quando houver UI): `ui-spec.md` v0.4.0 aprovada em 2026-10-17
+- [x] Design disponível (quando houver UI): `ui-spec.md` v0.4.2 aprovada em 2026-10-18
 
 ## 12. Changelog
 | Versão | Data | Autor | Mudança |
@@ -459,3 +459,4 @@ E tentar novamente repete a leitura
 | 1.1.0 | 2026-10-17 | Rafael Oliveira (com Claude Code) | Navegação por mês (Q13): US-09, BR-22…BR-24, AC-22…AC-24, `OnMonthSelected`. Pendentes P1/P3 da UI Spec |
 | 1.1.0 | 2026-10-17 | Rafael Oliveira | Aprovada com P1 e P3 da UI Spec: BR-25 (resposta ilegível consulta a Cielo antes de nova cobrança; AC-14 reescrito); BR-15 define o destino quando o pagamento não é encontrado (AC-15) |
 | 1.2.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Estados presos achados na revisão do lote D: BR-26/AC-25 (consulta que falha → erro com retry da consulta), BR-27/AC-26 (`PurchaseUiState.Unavailable`), BR-28/AC-27 (`ReceiptUiState.Error`). Decisão humana na revisão |
+| 1.2.0 | 2026-10-18 | Rafael Oliveira | Aprovada (BR-26..28, AC-25..27) |

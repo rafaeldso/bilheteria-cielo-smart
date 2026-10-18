@@ -4,11 +4,11 @@
 > fim de cada fase e antes de `/clear`. A lista de tarefas continua no [tasks.md](tasks.md).
 > Nunca registre segredos, PAN ou PII aqui.
 
-**Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.2.0 (Em revisão) · **UI Spec:** v0.4.2 (Em revisão) · **Branch:** `main` (commits locais do lote C em diante, sem push)
+**Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.2.0 (Aprovada) · **UI Spec:** v0.4.2 (Aprovada) · **Branch:** `main` (commits locais do lote C em diante, sem push)
 
 ## Estado atual
 - **Última etapa concluída:** T15 e lote D (T16–T19) commitados localmente; revisão em 3 rodadas (arch, test, compose, security)
-- **Próxima etapa:** lote E (T20–T23, telas Compose) → T24. Antes: aprovar spec 1.2.0 / UI Spec 0.4.2
+- **Próxima etapa:** lote E (T20–T23, telas Compose) → T24.
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
 - **Último sensor:** `verify.sh standard` → verde (exit 0) em 2026-10-18 (lote D, commit 6fd913f)
@@ -36,7 +36,7 @@
 | 2026-10-18 | Rodada extra de revisão (3ª) com worker Sonnet, autorizada pelo humano | Achado de cobrança dupla no `settle()` | Não |
 
 ## Bloqueios e perguntas abertas
-- [ ] **Aprovar** spec 1.2.0 e UI Spec 0.4.2 (status "Em revisão"); depois o `check-traceability.sh` passa a cobrir AC-25..27 (hoje o S-09 ignora specs em revisão).
+- [x] Spec 1.2.0 e UI Spec 0.4.2 aprovadas pelo humano em 2026-10-18 (o S-09 passa a cobrir AC-25..27).
 - [ ] Backlog do lote D: `UuidReferenceGenerator` + teste de formato/unicidade; `toString` mascarado em `Purchase`/`TransactionData`; `purchaseId` (= `reference`) no `SavedStateHandle` enquanto aberta; `recoverPending` não atômico (`findOpen`+`update`, CAS no DAO); `clampQuantity` → `QuantityLimits`; `Loading` do EventList piscando ao reassinar; filtro de mês fora do `SavedStateHandle`; chaves `"eventId"`/`"purchaseId"` ligadas às rotas `:api` na T24 (`toRoute`); feedback visual em "Consultar de novo"; `MonthGroup` duplicado (ui × domain).
 - [ ] Sugestões da revisão final (aprovada): trocar o `check()` de `toFailedState` por ramo defensivo (`Error(RecoveryFailed)`) para não derrubar o app; ignorar no `settle` um `Finished` de id diferente da última tentativa (motivo de falha obsoleto, sem risco de dinheiro); teste `Finished(Failed)` + catálogo `Unknown` → `Loading`; contador de tentativas no `LookupFailingGateway`; renomear o teste "prevalece a compra" sem prefixo AC-26.
 - [ ] Sensores propostos (harness-improve): Konsist `*UiState` com `@Immutable`; declarações do `ui` `internal`; regra contra `launch{collect}` em `init`; teste de propriedade `Error` × `retry()`; imports não usados em teste; nome de teste da rastreabilidade existir.

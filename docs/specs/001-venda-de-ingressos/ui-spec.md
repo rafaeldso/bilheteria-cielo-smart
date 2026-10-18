@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | **Spec** | [spec.md](spec.md) (versão: 1.2.0) |
-| **Status** | Em revisão |
+| **Status** | Aprovada |
 | **Versão** | 0.4.2 |
 | **Fidelidade** | Prancha hi-fi + protótipo (G) |
 | **Prancha** | [design/mockups.html](design/mockups.html) · revisão local: http://127.0.0.1:8766/specs/001-venda-de-ingressos/design/mockups.html (`python3 -m http.server 8766` em `docs/`) |
@@ -428,3 +428,4 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | 0.4.0 | 2026-10-17 | Rafael Oliveira (com Claude Code) | P1 e P3 aprovadas (spec 1.1.0): resposta ilegível vai para `Recovering` (variante de erro removida); "pagamento anterior não encontrado" deixa de ser proposta; texto de `Recovering` cobre os dois casos |
 | 0.4.1 | 2026-10-18 | Rafael Oliveira (com Claude Code) | `DsQuantityStepper`: API ganha `decrementDescription`/`incrementDescription` para rotular os botões −/+ no TalkBack (achado na T11) |
 | 0.4.2 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Spec 1.2.0: SCR-02 ganha `Loading`, `Unavailable` (BR-27), variante de `Error` da consulta que falhou (BR-26) e `Completed` como sinal de navegação com `popUpTo`; SCR-03 ganha `Loading` e `Error` (BR-28). Prancha não atualizada: os estados novos reutilizam `DsErrorState`/`DsLoadingSkeleton` |
+| 0.4.2 | 2026-10-18 | Rafael Oliveira | Aprovada (estados `Loading`/`Unavailable`/`Error` da SCR-02 e `Loading`/`Error` da SCR-03; prancha não alterada) |
