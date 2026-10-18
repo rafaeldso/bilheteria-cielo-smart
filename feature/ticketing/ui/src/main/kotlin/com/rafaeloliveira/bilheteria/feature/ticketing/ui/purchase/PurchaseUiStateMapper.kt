@@ -1,0 +1,165 @@
+/*
+ * Copyright 2026 Rafael Oliveira
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.rafaeloliveira.bilheteria.feature.ticketing.ui.purchase
+
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.AvailableEvent
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.FailureReason
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.QuantityLimits
+
+/** What the ViewModel knows about the open purchase (`Pending` or `Recovering`, BR-10). */
+internal sealed interface OpenPurchase {
+    /** Nothing was read yet: the screen must not offer "Pay" (BR-10). */
+    data object Unknown : OpenPurchase
+
+    data object None : OpenPurchase
+
+    /** The open purchase could not be read; a new payment is not safe, so the screen shows an error. */
+    data object Unreadable : OpenPurchase
+
+    data class Present(
+        val purchase: Purchase,
+    ) : OpenPurchase
+}
+
+/** How the last payment attempt ended, when it is not (or no longer) the open purchase. */
+internal sealed interface AttemptOutcome {
+    data object None : AttemptOutcome
+
+    /** The attempt reached a final status: a sale goes to the receipt, `Failed` allows a new attempt (BR-14, BR-15). */
+    data class Finished(
+        val purchase: Purchase,
+    ) : AttemptOutcome
+
+    /** The attempt failed before any purchase record could settle it (not stored, app missing). */
+    data class Failed(
+        val reason: PurchaseErrorReason,
+    ) : AttemptOutcome
+}
+
+/** Everything the screen state is derived from. */
+internal data class PurchaseInputs(
+    val open: OpenPurchase,
+    val outcome: AttemptOutcome,
+    val event: AvailableEvent?,
+    val quantity: Int,
+)
+
+/** Pure mapping from the ViewModel inputs to the [PurchaseUiState] (plan §4, spec section 6). */
+internal fun PurchaseInputs.toUiState(): PurchaseUiState =
+    when {
+        open is OpenPurchase.Present -> open.purchase.toOpenState()
+        open is OpenPurchase.Unknown -> PurchaseUiState.Loading
+        outcome is AttemptOutcome.Finished -> outcome.purchase.toFinishedState()
+        else -> event?.let { eventState(it) } ?: PurchaseUiState.Loading
+    }
+
+/** Quantity actually offered: the saved value kept inside BR-07 for the current stock. */
+internal fun clampQuantity(
+    quantity: Int,
+    available: Int,
+): Int = quantity.coerceIn(QuantityLimits.MIN, maxOf(QuantityLimits.MIN, QuantityLimits.max(available)))
+
+private fun PurchaseInputs.eventState(available: AvailableEvent): PurchaseUiState {
+    val selected = clampQuantity(quantity, available.available)
+    val total = available.event.unitPrice * selected
+    val failure =
+        (outcome as? AttemptOutcome.Failed)?.reason
+            ?: if (open is OpenPurchase.Unreadable) PurchaseErrorReason.Generic else null
+    return when {
+        failure != null -> PurchaseUiState.Error(available.toSummary(), selected, total, failure)
+        else -> editing(available, selected, total)
+    }
+}
+
+private fun editing(
+    available: AvailableEvent,
+    quantity: Int,
+    total: Money,
+): PurchaseUiState.Editing {
+    val canIncrement = QuantityLimits.canIncrement(quantity, available.available)
+    return PurchaseUiState.Editing(
+        event = available.toSummary(),
+        quantity = quantity,
+        canDecrement = QuantityLimits.canDecrement(quantity),
+        canIncrement = canIncrement,
+        limitHint = if (canIncrement) null else limitHint(available.available),
+        total = total,
+    )
+}
+
+private fun limitHint(available: Int): LimitHint =
+    if (available < QuantityLimits.MAX_PER_PURCHASE) {
+        LimitHint.OnlyAvailable(available)
+    } else {
+        LimitHint.MaxPerPurchase(QuantityLimits.MAX_PER_PURCHASE)
+    }
+
+private fun Purchase.toOpenState(): PurchaseUiState =
+    when (status) {
+        PurchaseStatus.Recovering -> PurchaseUiState.Recovering(toSummary(), quantity, total)
+        else -> PurchaseUiState.AwaitingPayment(toSummary(), quantity, total)
+    }
+
+private fun Purchase.toFinishedState(): PurchaseUiState =
+    when {
+        status.isSale -> {
+            PurchaseUiState.Completed(id)
+        }
+
+        status == PurchaseStatus.Failed -> {
+            PurchaseUiState.Error(
+                toSummary(),
+                quantity,
+                total,
+                failureReason.toErrorReason(),
+            )
+        }
+
+        else -> {
+            toOpenState()
+        }
+    }
+
+private fun FailureReason?.toErrorReason(): PurchaseErrorReason =
+    when (this) {
+        FailureReason.TerminalAppUnavailable -> PurchaseErrorReason.NoCieloApp
+        FailureReason.Authentication -> PurchaseErrorReason.Authentication
+        FailureReason.NotFound -> PurchaseErrorReason.RecoveryNotFound
+        FailureReason.Generic, null -> PurchaseErrorReason.Generic
+    }
+
+private fun AvailableEvent.toSummary() =
+    EventSummary(
+        id = event.id,
+        name = event.name,
+        startsAt = event.startsAt,
+        venue = event.venue,
+        unitPrice = event.unitPrice,
+        available = available,
+    )
+
+private fun Purchase.toSummary() =
+    EventSummary(
+        id = eventId,
+        name = eventName,
+        startsAt = eventStartsAt,
+        venue = venue,
+        unitPrice = unitPrice,
+        available = null,
+    )
