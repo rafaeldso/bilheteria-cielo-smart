@@ -1,0 +1,31 @@
+<journey name="AC-09, AC-16 - Venda aprovada">
+  <description>
+    Pré-requisito: AVD Android 10 com o app e o lio-emulator instalados; app Cielo recém-iniciado (sem pedido abandonado). Execução: skill android-cli (Journeys); lio-emulator 1.61.8 no AVD Android 10.
+  </description>
+  <actions>
+    <action>
+      Open the Bilheteria app and verify the screen "Eventos à venda" is shown
+    </action>
+    <action>
+      Tap the event "Noite de Jazz no Parque"
+    </action>
+    <action>
+      Verify the screen "Compra" shows the button "Pagar R$ 80,00 no terminal"
+    </action>
+    <action>
+      Tap the button "Pagar R$ 80,00 no terminal"
+    </action>
+    <action>
+      In the Cielo emulator, tap "Pagar" and then "Sucesso"
+    </action>
+    <action>
+      Verify the screen "Comprovante" shows "Pagamento aprovado", the status "Aprovada" and no card number
+    </action>
+    <action>
+      Press the system Back button and verify the screen "Eventos à venda" is shown, not the purchase screen
+    </action>
+    <action>
+      Verify the available count of "Noite de Jazz no Parque" decreased by 1
+    </action>
+  </actions>
+</journey>

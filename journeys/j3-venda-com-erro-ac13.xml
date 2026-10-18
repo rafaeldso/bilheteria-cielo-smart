@@ -1,0 +1,16 @@
+<journey name="AC-13 - Venda com erro">
+  <description>
+    Mesmo pré-requisito da J1. Execução: skill android-cli (Journeys); lio-emulator 1.61.8 no AVD Android 10.
+  </description>
+  <actions>
+    <action>
+      Open the Bilheteria app, tap "Noite de Jazz no Parque" and tap "Pagar R$ 80,00 no terminal"
+    </action>
+    <action>
+      In the Cielo emulator, tap "Pagar" and then "Erro"
+    </action>
+    <action>
+      Verify the screen "Compra" shows "Não foi possível concluir o pagamento" and the button "Tentar pagar R$ 80,00 de novo"
+    </action>
+  </actions>
+</journey>

@@ -1,0 +1,25 @@
+<journey name="AC-22, AC-23 - Filtro de mês">
+  <description>
+    Fonte 200% opcional: `adb shell settings put system font_scale 2.0` (restaurar para 1.0 depois). Execução: skill android-cli (Journeys); lio-emulator 1.61.8 no AVD Android 10.
+  </description>
+  <actions>
+    <action>
+      Open the Bilheteria app and verify the chip "Todos" is selected
+    </action>
+    <action>
+      Tap the chip "Dez"
+    </action>
+    <action>
+      Verify only events of "dezembro de 2026" are listed
+    </action>
+    <action>
+      Tap the event "Orquestra Jovem de Verão" and then tap "Voltar para eventos"
+    </action>
+    <action>
+      Verify the chip "Dez" is still selected
+    </action>
+    <action>
+      Tap the chip "Todos" and verify events of all months are listed
+    </action>
+  </actions>
+</journey>

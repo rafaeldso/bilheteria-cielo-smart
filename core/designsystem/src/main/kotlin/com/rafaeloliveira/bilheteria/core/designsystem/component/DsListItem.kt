@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -50,12 +51,16 @@ import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 private val ItemMinHeight = 72.dp
 private val LeadingIconSize = 20.dp
 
+/** From this font scale the trailing content moves below the texts: side by side the text column gets too narrow. */
+private const val STACKED_TRAILING_FONT_SCALE = 1.5f
+
 /**
  * List row of the design system: optional 40dp circular leading icon (`secondaryContainer`), a headline in
  * `labelLarge`, an optional supporting line in `bodyMedium` and an optional trailing column aligned to the end.
  *
- * Headline and supporting line wrap up to two lines each; the trailing content never truncates, so with large
- * fonts the text column gives way first. The whole row is one node: when [onClick] is set it is clickable as a
+ * Headline and supporting line wrap up to two lines each; the trailing content never truncates. With font scale
+ * of 1.5 or more the trailing content moves below the texts (start aligned with them), so the text column keeps
+ * the full width instead of being squeezed. The whole row is one node: when [onClick] is set it is clickable as a
  * button (ripple included) and its descendants are merged, read by TalkBack as a single item.
  *
  * @param headline main text (e.g. event name), already localized.
@@ -80,32 +85,74 @@ fun DsListItem(
     showTopDivider: Boolean = false,
     trailing: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
-    val spacing = BilheteriaTheme.spacing
+    val rowModifier = itemRowModifier(BilheteriaTheme.spacing, onClick, spokenLabel)
+    val stackTrailing = trailing != null && LocalDensity.current.fontScale >= STACKED_TRAILING_FONT_SCALE
     Column(modifier = modifier.fillMaxWidth()) {
         if (showTopDivider) {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
+        if (stackTrailing && trailing != null) {
+            StackedItem(headline, supportingText, leadingIcon, trailing, rowModifier)
+        } else {
+            SideBySideItem(headline, supportingText, leadingIcon, trailing, rowModifier)
+        }
+    }
+}
+
+@Composable
+private fun SideBySideItem(
+    headline: String,
+    supportingText: String?,
+    leadingIcon: ImageVector?,
+    trailing: (@Composable ColumnScope.() -> Unit)?,
+    modifier: Modifier,
+) {
+    val spacing = BilheteriaTheme.spacing
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(spacing.lg),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (leadingIcon != null) {
+            LeadingCircle(icon = leadingIcon)
+        }
+        ItemTexts(headline = headline, supportingText = supportingText, modifier = Modifier.weight(1f))
+        if (trailing != null) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(spacing.xs),
+                horizontalAlignment = Alignment.End,
+                content = trailing,
+            )
+        }
+    }
+}
+
+@Composable
+private fun StackedItem(
+    headline: String,
+    supportingText: String?,
+    leadingIcon: ImageVector?,
+    trailing: @Composable ColumnScope.() -> Unit,
+    modifier: Modifier,
+) {
+    val spacing = BilheteriaTheme.spacing
+    val trailingStart = if (leadingIcon != null) BilheteriaTheme.sizes.iconLarge + spacing.lg else 0.dp
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
         Row(
-            modifier = itemRowModifier(spacing = spacing, onClick = onClick, spokenLabel = spokenLabel),
             horizontalArrangement = Arrangement.spacedBy(spacing.lg),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (leadingIcon != null) {
                 LeadingCircle(icon = leadingIcon)
             }
-            ItemTexts(
-                headline = headline,
-                supportingText = supportingText,
-                modifier = Modifier.weight(1f),
-            )
-            if (trailing != null) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(spacing.xs),
-                    horizontalAlignment = Alignment.End,
-                    content = trailing,
-                )
-            }
+            ItemTexts(headline = headline, supportingText = supportingText, modifier = Modifier.weight(1f))
         }
+        Column(
+            modifier = Modifier.padding(start = trailingStart),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs),
+            horizontalAlignment = Alignment.Start,
+            content = trailing,
+        )
     }
 }
 
@@ -198,6 +245,7 @@ private fun DsListItemTwoLinesPreview() {
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
+@Preview(name = "Font 2x", fontScale = 2f)
 @Composable
 private fun DsListItemEventPreview() {
     DsPreviewSurface(padded = false) {

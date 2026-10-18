@@ -1,0 +1,19 @@
+<journey name="AC-10 - Venda cancelada">
+  <description>
+    Mesmo pré-requisito da J1. Execução: skill android-cli (Journeys); lio-emulator 1.61.8 no AVD Android 10.
+  </description>
+  <actions>
+    <action>
+      Open the Bilheteria app, tap "Noite de Jazz no Parque" and tap "Pagar R$ 80,00 no terminal"
+    </action>
+    <action>
+      In the Cielo emulator, tap "Pagar" and then "Cancelado"
+    </action>
+    <action>
+      Verify the screen "Comprovante" shows "Pagamento cancelado" and the status "Cancelada"
+    </action>
+    <action>
+      Verify the screen has no authorization code, NSU or brand
+    </action>
+  </actions>
+</journey>

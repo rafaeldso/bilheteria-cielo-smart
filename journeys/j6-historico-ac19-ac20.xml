@@ -1,0 +1,22 @@
+<journey name="AC-19, AC-20 - Histórico de compras">
+  <description>
+    Pelo menos uma venda feita (J1 ou J2). Execução: skill android-cli (Journeys); lio-emulator 1.61.8 no AVD Android 10.
+  </description>
+  <actions>
+    <action>
+      Open the Bilheteria app and tap "Histórico de compras"
+    </action>
+    <action>
+      Verify the screen "Histórico de compras" lists the purchases, newest first
+    </action>
+    <action>
+      Tap the first purchase
+    </action>
+    <action>
+      Verify the screen "Comprovante" shows the button "Voltar ao histórico" and does not show "Nova venda"
+    </action>
+    <action>
+      Press the system Back button and verify the screen "Histórico de compras" is shown
+    </action>
+  </actions>
+</journey>

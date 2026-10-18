@@ -1,0 +1,16 @@
+<journey name="AC-15 - App fechado durante o pagamento">
+  <description>
+    Fechar o app exige `adb shell am force-stop com.rafaeloliveira.bilheteria.debug` (sem estado salvo) ou `kill -9` como root no emulador (com estado salvo). Execução: skill android-cli (Journeys); lio-emulator 1.61.8 no AVD Android 10.
+  </description>
+  <actions>
+    <action>
+      Open the Bilheteria app, tap "Noite de Jazz no Parque" and tap "Pagar R$ 80,00 no terminal"
+    </action>
+    <action>
+      Force-stop the Bilheteria app while the Cielo emulator is on screen, then open the Bilheteria app again
+    </action>
+    <action>
+      Verify the screen "Compra" shows "Pagamento anterior não encontrado" and the button "Tentar pagar R$ 80,00 de novo"
+    </action>
+  </actions>
+</journey>
