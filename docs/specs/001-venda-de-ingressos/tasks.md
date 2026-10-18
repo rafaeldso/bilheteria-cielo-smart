@@ -22,9 +22,9 @@
 - [x] **T03** Scaffold (skill `android-feature-scaffold`): `feature:ticketing:{api,domain,data,ui}` e `core:database`, registro no
   `settings`, dependências no `app`; Konsist da ADR-0010 (`lio://`, `Base64` e DTOs Cielo só em `..data.cielo..`) ·
   **Pronto quando:** módulos compilam vazios, grafo de módulos (`assertModuleGraph`) e Konsist verdes
-- [ ] **T04** Contratos do domain (plano §4): `model/` (Money, PurchaseReference, Event, AvailableEvent, EventMonth, Purchase,
+- [x] **T04** Contratos do domain (plano §4): `model/` (Money, PurchaseReference, Event, AvailableEvent, EventMonth, Purchase,
   PurchaseStatus, FailureReason, TransactionData, PaymentOutcome com KDoc do mapeamento Q8), `repository/`, `payment/PaymentGateway`,
-  `error/TicketingError`, assinaturas vazias dos use cases · BR-06, BR-08, BR-13, BR-14 · **Pronto quando:** compila em JVM puro e
+  `error/TicketingError` (sem stubs de use case: corpos `TODO()` seriam barrados pelo detekt; cada worker cria o seu) · BR-06, BR-08, BR-13, BR-14 · **Pronto quando:** compila em JVM puro e
   bate com o plano; fakes de `PurchaseRepository`/`PaymentGateway`/`EventCatalogRepository` em `testFixtures` do domain
 
 ## Fase 1 — Domain (lote A, paralelo) e design system (lote B, paralelo)

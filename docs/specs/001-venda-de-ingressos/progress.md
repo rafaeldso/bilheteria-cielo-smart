@@ -4,16 +4,15 @@
 > fim de cada fase e antes de `/clear`. A lista de tarefas continua no [tasks.md](tasks.md).
 > Nunca registre segredos, PAN ou PII aqui.
 
-**Tamanho:** G · **Fase SDD:** 3 Planejar · **Spec:** v1.1.0 (Aprovada) · **UI Spec:** v0.4.0 (Aprovada) · **Branch:** `main` (pushed)
+**Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.1.0 (Aprovada) · **UI Spec:** v0.4.0 (Aprovada) · **Branch:** `main` (pushed)
 
 ## Estado atual
-- **Última etapa concluída:** Fase 2.5 — design aprovado (UI Spec 0.4.0, 3 rodadas do `ui-design-reviewer`); spec 1.1.0 (navegação por mês, BR-25)
-- **Próxima etapa:** Fase 0 — T01 (validar emulador Cielo) → T02 → T03 → T04, na sessão principal (`tasks.md` aprovado em 2026-10-17)
-- **CI:** `ci`/`release` verdes no GitHub; `security` com correções aplicadas localmente (cache do release, `taskAffinity`, gitleaks `-v`), ainda não enviadas
-- **Feito na Fase 3:** URIs/JSONs conferidos na fonte (research §12); `plan.md` escrito
-- **Pendente de código:** aplicar a paleta A em `core:designsystem` (tokens mudam em 3 lugares; a skill de design não escreve código) — primeira tarefa de UI do `tasks.md`
+- **Última etapa concluída:** Fase 0 (T01–T04): emulador validado, catálogo/build-logic, 5 módulos, contratos do domain + fakes em `testFixtures`
+- **Próxima etapa:** Fase 1 — lote A (T05–T08) e lote B (T09–T11) via `/implement-parallel` (manual)
+- **CI:** correções de `security` enviadas; confirmar verde após o próximo push
+- **Pendente de código:** aplicar a paleta A em `core:designsystem` (tokens mudam em 3 lugares; a skill de design não escreve código) — T09 (lote B)
 - **Arquivos em andamento:** nenhum
-- **Último sensor:** não se aplica (só documentos)
+- **Último sensor:** `verify.sh full` → verde em 2026-10-18
 
 ## Decisões da implementação
 | Data | Decisão | Motivo | Afeta spec/plano? |

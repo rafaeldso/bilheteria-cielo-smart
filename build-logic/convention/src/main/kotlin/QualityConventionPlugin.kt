@@ -65,6 +65,8 @@ class QualityConventionPlugin : Plugin<Project> {
         extensions.configure<KoverProjectExtension> {
             currentProject {
                 instrumentation { disabledForAll.set(!coverage) }
+                // Shared fakes and builders are test code: they must not count as production coverage.
+                sources { excludedSourceSets.add("testFixtures") }
             }
             if (minimum != null) {
                 reports { verify { rule { minBound(minimum) } } }

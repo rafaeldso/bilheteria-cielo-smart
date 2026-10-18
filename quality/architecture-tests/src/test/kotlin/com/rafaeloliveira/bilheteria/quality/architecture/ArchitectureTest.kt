@@ -122,7 +122,8 @@ class ArchitectureTest {
         production.files
             .filter { it.packagee?.name?.startsWith(BASE) == true && ".data.cielo" !in it.packagee?.name.orEmpty() }
             .assertFalse(additionalMessage = CIELO_ISOLATED) {
-                "lio://" in it.text || it.hasImport { import -> import.name == "android.util.Base64" }
+                // String literals only: KDoc may mention the deep link when documenting the contract.
+                "\"lio://" in it.text || it.hasImport { import -> import.name == "android.util.Base64" }
             }
     }
 
