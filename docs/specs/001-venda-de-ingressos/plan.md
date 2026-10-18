@@ -123,13 +123,15 @@ sequenceDiagram
     RP->>R: marca Pending como Recovering
     RP->>G: requestLookup(page = 0)
     G->>C: lio://orders?request=base64(pageSize=5,page=0)&urlCallback=order://response
-    C-->>H: results[] (via callback)
-    H->>R: achou reference? → grava status encontrado
-    H->>G: não achou e há próxima página dentro do limite → requestLookup(page + 1)
-    H->>R: esgotou o limite → Failed + motivo "não encontrado" (volta à compra com retry)
+    C-->>H: results[] + totalPages (via callback, sem abrir tela)
+    H->>G: pede as ÚLTIMAS páginas (a listagem vem do mais antigo para o mais recente), de trás para frente
+    H->>R: achou o reference com pagamento statusCode 1/0 e amount = total → Approved
+    H->>R: achou o reference sem pagamento → Failed (nada cobrado; retry seguro)
+    H->>R: não achou nas 4 últimas páginas (20 pedidos mais recentes) → Failed + "não encontrado"
 ```
-Limite de busca: **4 páginas (20 pedidos mais recentes)**. A doc não informa a ordenação da listagem; se não for por data,
-o limite vira risco (§11) e a tarefa de validação no emulador ajusta.
+Validado no emulador (research §13): a listagem responde sem abrir tela, vem em ordem crescente de criação, e o `status` do
+pedido não é confiável (`ENTERED` mesmo pago); por isso a decisão usa o pagamento (`statusCode` e `amount`). A numeração da
+página na resposta parece começar em 1: o gateway lê `totalPages` e calcula as páginas pedidas sem supor a base, conferido na T25.
 
 ## 4. Contratos
 ### Domain
@@ -162,7 +164,7 @@ data class Purchase(
  */
 sealed interface PaymentOutcome {
     val reference: PurchaseReference?
-    data class Approved(override val reference: PurchaseReference?, val paidAmount: Money, val transaction: TransactionData) : PaymentOutcome
+    data class Approved(override val reference: PurchaseReference?, val amount: Money, val transaction: TransactionData) : PaymentOutcome // amount = payments[].amount (paidAmount vem 0)
     data class Declined(override val reference: PurchaseReference?) : PaymentOutcome
     data class Cancelled(override val reference: PurchaseReference?) : PaymentOutcome
     data class Failed(override val reference: PurchaseReference?, val reason: FailureReason) : PaymentOutcome
@@ -217,12 +219,12 @@ class ObservePurchaseHistoryUseCase   // BR-18, BR-20, BR-21
   Base64 → `lio://payment?request=…&urlCallback=order://response`. `Intent(ACTION_VIEW)` com `FLAG_ACTIVITY_NEW_TASK`;
   `resolveActivity == null` ou `ActivityNotFoundException` → `TerminalAppUnavailable` (AC-12).
 - **Cielo, entrada** (`CieloCallbackActivity`, exported, intent-filter `VIEW`/`DEFAULT`/`BROWSABLE`, scheme `order`, host `response`,
-  `launchMode="singleTask"`, sem UI): lê `response` → Base64 → `CieloResponseParser` → `HandlePaymentOutcomeUseCase` → traz a
-  `MainActivity` de volta → `finish()`. Parser tolerante (`ignoreUnknownKeys`), lê **só** `id`, `reference`, `status`, `paidAmount`,
+  `launchMode="singleInstance"` e `taskAffinity=""` (mobsfscan/StrandHogg 2.0), sem UI): lê `response` → Base64 → `CieloResponseParser` → `HandlePaymentOutcomeUseCase` → traz a
+  `MainActivity` de volta → `finish()`. Parser tolerante (`ignoreUnknownKeys`), lê **só** `id`, `reference`, `status`, `payments[].amount`,
   `payments[].{authCode, cieloCode, brand, paymentFields.statusCode}`, e `code` no erro. Classificação pelo JSON, não pelo `responsecode`.
 - **Foreground service** (`PaymentForegroundService`, `exported=false`, `foregroundServiceType="dataSync"`): iniciado antes do
   deep link, parado no `finish()` do gateway. Notificação sem valor nem dados do comprador.
-- **Manifest (data):** `<queries>` com `com.ads.lio.uriappclient` e intent `VIEW` scheme `lio`; `<meta-data cs_integration_type=uri>`;
+- **Manifest (data):** `<queries>` com `com.ads.lio.uriappclient`, `br.com.cielosmart.orderservice` e intent `VIEW` scheme `lio`; `<meta-data cs_integration_type=uri>`;
   permissões `FOREGROUND_SERVICE` e `FOREGROUND_SERVICE_DATA_SYNC`. Sem `INTERNET`.
 - **Credenciais** (`CieloCredentials`): `clientId` e `accessToken` lidos de propriedades Gradle `cielo.clientId`/`cielo.accessToken`
   (`~/.gradle/gradle.properties` ou `-P`, nunca versionadas) para `BuildConfig` do `feature:ticketing:data`, com valores fictícios
@@ -309,7 +311,7 @@ aceito como detalhe técnico, sem AC.
 | Retorno `{code:3}` | `PaymentOutcome.Declined` | `ReceiptUiState.Declined` | Nova venda |
 | Retorno `{code:2}`, `{code:4}`, código desconhecido | `PaymentOutcome.Failed(Generic/Authentication)` | `Error(Generic/Authentication)` | Tentar pagar de novo |
 | Base64/JSON ilegível, campos obrigatórios ausentes | `PaymentOutcome.Unreadable` | `Recovering` → consulta (BR-25) | — |
-| Aprovado com `reference` ou valor diferentes da compra aberta | descartado + log de segurança | Sem mudança (continua aguardando/recuperando) | — |
+| Aprovado com `reference` ou `payments[].amount` diferentes da compra aberta | descartado + log de segurança | Sem mudança (continua aguardando/recuperando) | — |
 | Callback sem compra aberta | descartado + log | — | — |
 | Consulta sem o `reference` em 4 páginas | `PaymentOutcome` → `Failed(NotFound)` | `Error(RecoveryNotFound)` | Tentar pagar de novo |
 
@@ -347,10 +349,10 @@ token por MDM/configuração gerenciada da Cielo Store.
 
 | Ameaça | Cenário | Mitigação | Prova |
 |---|---|---|---|
-| Spoofing | App malicioso no aparelho envia `order://response` com "aprovado" falso | Só aplica resultado se houver compra aberta **e** `reference` e `paidAmount` baterem com ela; caso contrário descarta e loga | Testes do `HandlePaymentOutcomeUseCase` (respostas forjadas) |
+| Spoofing | App malicioso no aparelho envia `order://response` com "aprovado" falso | Só aplica resultado se houver compra aberta **e** `reference` e `payments[].amount` baterem com ela; caso contrário descarta e loga | Testes do `HandlePaymentOutcomeUseCase` (respostas forjadas) |
 | Tampering | Resposta adulterada/corrompida | Parser estrito nos campos usados; ilegível → `Recovering` + consulta (BR-25), nunca `Approved` | AC-14, testes do parser |
 | Repudiation | Operador contesta uma venda | Compra registrada com `reference`, horário e dados da transação; histórico | AC-18 |
-| Information disclosure | Outro app intercepta o `lio://payment` (contém o token); resposta com `bin`/`mask` vazando em log | Intent explícita para o pacote resolvido em allowlist (`com.ads.lio.uriappclient` + pacote do emulador, **validar no emulador**); parser descarta campos sensíveis; detekt `SensitiveDataInLog` | Teste do gateway; sensor S-05 |
+| Information disclosure | Outro app intercepta o `lio://payment` (contém o token); resposta com `bin`/`mask` vazando em log | Intent explícita para o pacote resolvido em allowlist (`com.ads.lio.uriappclient` no terminal, `br.com.cielosmart.orderservice` no emulador, research §13); parser descarta campos sensíveis; detekt `SensitiveDataInLog` | Teste do gateway; sensor S-05 |
 | Denial of service | Respostas gigantes ou em loop no callback | Limite de tamanho da resposta; callback sem compra aberta é ignorado | Teste do parser |
 | Elevation of privilege | Callback abrir telas internas com dados forjados | Callback não navega por parâmetro; só grava resultado validado e traz a `MainActivity` | Revisão (`security-reviewer`) |
 
@@ -383,11 +385,11 @@ Nome de todo teste cita o `AC-xx` (S-09). Cobertura pelos limites do testing.md 
 ## 11. Riscos
 | Risco | Probabilidade | Impacto | Mitigação |
 |---|---|---|---|
-| Emulador recusar credenciais fictícias | Média | Alto | Tarefa de validação logo no início; se recusar, cadastro no Portal Cielo (Q12) |
-| Pacote do `lio-emulator` diferente de `com.ads.lio.uriappclient` (afeta `<queries>` e allowlist) | Média | Médio | Descobrir o pacote ao instalar (`adb shell pm list packages`) e incluí-lo na allowlist |
-| `lio://orders` sem ordenação por data, ou abrindo UI a cada página | Média | Médio | Validar no emulador; ajustar limite de páginas e o texto de `Recovering` |
-| Código devolvido pelo botão "Error" do emulador não ser 3 | Alta | Baixo | Capturar e documentar no README; a demo de "Negada" depende disso (limitação da Cielo, Q8) |
-| Unidade de `unitPrice` | Baixa | Médio | Enviar em centavos (exemplo da tabela da doc); validar no emulador |
+| ~~Emulador recusar credenciais fictícias~~ | — | — | **Resolvido na T01:** aceitas (research §13) |
+| ~~Pacote do emulador diferente~~ | — | — | **Resolvido na T01:** `br.com.cielosmart.orderservice`, na allowlist |
+| Ordenação e base de página do `lio://orders` | Baixa | Médio | **T01:** sem tela, ordem crescente → varrer as últimas páginas; base da página conferida na T25 |
+| "Negada" não demonstrável no emulador | Certa (T01: "Erro" = código 2) | Baixo | Regra coberta por teste unitário; limitação no README |
+| ~~Unidade de `unitPrice`~~ | — | — | **Resolvido na T01:** centavos |
 | `ReceiptUiState.Loading` fora da spec | — | Baixo | Aceito como detalhe técnico (2026-10-17) |
 | Datas fixas no JSON envelhecerem (evento "passado" some da lista) | Média | Médio | Datas de nov/2026 a mar/2027; README explica como editar o JSON |
 | Token extraível do APK | Alta (é inerente) | Baixo no case | Explicado no ADR-0010; valores fictícios; melhoria futura F1 no roadmap (configuração gerenciada) |

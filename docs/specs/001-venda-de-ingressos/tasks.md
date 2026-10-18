@@ -11,7 +11,7 @@
 > - Pacote base: `com.rafaeloliveira.bilheteria`. Feature: `feature/ticketing/{api,domain,data,ui}`.
 
 ## Fase 0 — Fundação da feature (sequencial, sessão principal)
-- [ ] **T01** Validar o emulador Cielo antes de codar: instalar `lio-emulator.apk` 1.61.8 no AVD Android 10, descobrir o pacote
+- [x] **T01** Validar o emulador Cielo antes de codar: instalar `lio-emulator.apk` 1.61.8 no AVD Android 10, descobrir o pacote
   (`adb shell pm list packages`), abrir um `lio://payment` montado à mão com credenciais fictícias e ver se a tela de pagamento aparece;
   testar se `lio://orders` abre UI ou responde direto · Riscos do plano §11 · **Pronto quando:** achados registrados no `research.md` §13
   (pacote, credenciais, comportamento do `orders`)

@@ -68,4 +68,4 @@ Exceções Bloqueantes exigem aprovação do code owner de segurança.
 
 | ID | Achado (ferramenta/regra) | Local | Severidade | Justificativa | Mitigação | Dono | Aprovado por | Expira em |
 |---|---|---|---|---|---|---|---|---|
-| — | *(nenhum)* | | | | | | | |
+| RA-001 | Gitleaks `generic-api-key` (falso positivo) | `scripts/harness/selftest.sh:65` (também no histórico, commit `75be0cd`) | — | Valor `abcd1234efgh5678` é chave falsa: fixture que prova que o sensor S-01 detecta segredo hardcoded | `.gitleaks.toml` libera só esse valor exato; `gitleaks:allow` na linha | Rafael Oliveira | Rafael Oliveira (2026-10-17) | Revisar se a fixture mudar |

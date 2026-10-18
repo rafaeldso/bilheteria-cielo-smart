@@ -264,3 +264,34 @@ Leitura direta (`.md`) de `…/pagamento`, `…/recuperando-dados`, `…/listage
   o exemplo de erro usa `responsecode=2`, o de pagamento `responsecode=0`. O app registra só `order://response` e classifica pelo JSON,
   não pelo `responsecode`. Confirmar no emulador.
 - `…/deep-link-exemplo-de-codigo` não tem código: só aponta samples React Native e Flutter.
+
+## 13. Validação no emulador (T01, 2026-10-18)
+AVD Android 10 (API 29, arm64) com `lio-emulator.apk` 1.61.8. Respostas capturadas do logcat do emulador
+(`order-manager-sdk-library: calling integrator url callback`), decodificadas com campos sensíveis ocultados.
+- **Pacote do emulador:** `br.com.cielosmart.orderservice` (terminal real: `com.ads.lio.uriappclient`). Allowlist e `<queries>` incluem os dois.
+- **Credenciais fictícias aceitas** (`clientID`/`accessToken` falsos abrem a tela de pagamento e devolvem resultado). Q12 resolvida para o case.
+- **`value` em centavos confirmado:** `"10000"` → "R$ 100,00". `unitPrice` em centavos (`5000`) aceito e devolvido igual.
+- **Telas:** `lio://payment` abre "Cielo Emulador" (valor, débito/crédito, à vista, loja) → "Pagar" → "Qual cenário deseja simular?": **Sucesso, Cancelado, Erro**.
+- **Respostas:**
+
+| Escolha | Retorno | Status no app |
+|---|---|---|
+| Sucesso | `order://response?response=…&responsecode=0`; pedido com `status:"PAID"`, `reference` igual ao enviado, `price:10000`, **`paidAmount:0`**, `payments[0].amount:10000`, `paymentFields.statusCode:"1"`, `brand:"mock_brand"`, `authCode`, `cieloCode` | Aprovada |
+| Cancelado | `{"code":1,"reason":"CANCELADO PELO USUÁRIO"}` com `responsecode=0` | Cancelada |
+| Erro | `{"code":2,"reason":"Falha no processo de pagamento"}` | Falhou (genérico) |
+
+- **Consequências para o plano:**
+  1. Conferir o valor por **`payments[].amount`**, não por `paidAmount` (vem 0 num pagamento aprovado).
+  2. **"Negada" (código 3) não é simulável no emulador**: o botão "Erro" devolve código 2. A regra fica coberta por teste unitário; limitação documentada no README.
+  3. `responsecode` vem 0 até em cancelamento: classificar só pelo JSON (já previsto).
+  4. O Base64 do retorno vem com quebras de linha (`Base64.DEFAULT`): o decodificador precisa tolerá-las.
+- **Mais dados sensíveis na resposta de sucesso:** `paymentFields.clientName` (nome do portador), `finalCryptogram`, `signatureBytes`,
+  além de `pan`, `bin`, `mask`, `document`, `merchantName`/`merchantAddress`, `accessKey`. Nada disso é lido, logado ou persistido.
+- **`lio://orders`:** responde direto pelo callback, **sem abrir tela** (~90 ms). A resposta é grande e o logcat a corta (~4 KB),
+  então a leitura completa fica para a T25, com a activity de callback do app. No trecho lido:
+  - o pedido aprovado aparece com o nosso `reference` (recuperação viável);
+  - **ordem crescente de criação** (mais antigo primeiro): para achar o pagamento recente é preciso ir às **últimas** páginas;
+  - pedido feito com `page: 0` voltou `currentPage: 1` (numeração da resposta possivelmente a partir de 1);
+  - `status` dos pedidos na listagem aparece como `"ENTERED"`, mesmo para o que foi pago: **não confiar no `status` do pedido**;
+    considerar aprovado só com pagamento `statusCode` 1 (ou 0, Pix) e `amount` igual ao total.
+- O emulador cria um pedido também para tentativas canceladas e com erro (sem pagamento): pedido sem pagamento = nada cobrado.

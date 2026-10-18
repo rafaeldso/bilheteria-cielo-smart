@@ -1,0 +1,14 @@
+# Gitleaks (S-14): regras padrão + uma exceção restrita.
+# Exceção aprovada pelo humano em 2026-10-17: a chave falsa "abcd1234efgh5678" é fixture do
+# scripts/harness/selftest.sh, que testa se o sensor S-01 detecta segredo hardcoded. O comentário
+# gitleaks:allow na linha cobre commits novos; esta entrada cobre o histórico já enviado.
+# Só este valor exato é liberado: qualquer outro segredo, inclusive no selftest, continua bloqueado.
+title = "bilheteria gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fixture do selftest do harness (chave falsa que testa o sensor S-01)"
+regexTarget = "secret"
+regexes = ['''^abcd1234efgh5678$''']
