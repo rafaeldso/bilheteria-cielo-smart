@@ -26,10 +26,11 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import java.time.Instant
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 // Fictional data, the same as the board (design/mockups.html): events, venues and amounts are invented.
-private val PreviewFormats = EventListFormats(zoneId = ZoneOffset.UTC, currentYear = 2026)
+// The zone is fixed, so the previews show the same times whatever the machine that renders them.
+private val PreviewFormats = EventListFormats(zoneId = ZoneId.of("America/Sao_Paulo"), currentYear = 2026)
 
 private val November = EventMonth(2026, 11)
 private val December = EventMonth(2026, 12)
@@ -56,19 +57,19 @@ private fun previewEvent(
 
 private val NovemberEvents =
     listOf(
-        previewEvent("Noite de Jazz no Parque", "2026-11-15T20:00:00Z", "Concha Acústica Municipal", 5_000, 48),
-        previewEvent("Stand-up: Rindo à Toa", "2026-11-21T21:30:00Z", "Teatro do Centro", 6_000, 120),
-        previewEvent("Orquestra Jovem: Clássicos do Cinema", "2026-11-30T17:00:00Z", "Auditório da Cidade", 3_500, 3),
+        previewEvent("Noite de Jazz no Parque", "2026-11-15T23:00:00Z", "Concha Acústica Municipal", 5_000, 48),
+        previewEvent("Stand-up: Rindo à Toa", "2026-11-22T00:30:00Z", "Teatro do Centro", 6_000, 120),
+        previewEvent("Orquestra Jovem: Clássicos do Cinema", "2026-11-30T20:00:00Z", "Auditório da Cidade", 3_500, 3),
     )
 private val DecemberEvents =
     listOf(
-        previewEvent("Coral de Fim de Ano na Praça", "2026-12-12T19:00:00Z", "Praça Central", 2_000, 200),
-        previewEvent("Festival Indie Verão", "2026-12-19T18:00:00Z", "Arena Central", 8_000, 300),
+        previewEvent("Coral de Fim de Ano na Praça", "2026-12-12T22:00:00Z", "Praça Central", 2_000, 200),
+        previewEvent("Festival Indie Verão", "2026-12-19T21:00:00Z", "Arena Central", 8_000, 300),
     )
 private val JanuaryEvents =
     listOf(
-        previewEvent("Circo Lona Azul", "2027-01-10T16:00:00Z", "Parque de Exposições", 4_000, 150),
-        previewEvent("Peça: A Casa das Sete Portas", "2027-01-24T20:00:00Z", "Teatro do Centro", 5_500, 80),
+        previewEvent("Circo Lona Azul", "2027-01-10T19:00:00Z", "Parque de Exposições", 4_000, 150),
+        previewEvent("Peça: A Casa das Sete Portas", "2027-01-24T23:00:00Z", "Teatro do Centro", 5_500, 80),
     )
 
 private val AllMonths = persistentListOf(MonthOption(November), MonthOption(December), MonthOption(January))

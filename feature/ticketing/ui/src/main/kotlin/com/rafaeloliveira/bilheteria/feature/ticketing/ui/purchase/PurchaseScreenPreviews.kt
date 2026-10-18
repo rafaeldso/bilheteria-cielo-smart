@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import java.time.Instant
+import java.time.ZoneId
 
 // One preview pair (Light and Dark) per state of the UI Spec, with the fictitious data of the board
 // (docs/specs/001-venda-de-ingressos/design/mockups.html).
@@ -29,6 +30,10 @@ private const val PREVIEW_WIDTH_DP = 360
 private const val PREVIEW_HEIGHT_DP = 780
 private const val UNIT_PRICE_CENTS = 5_000L
 private const val LARGE_FONT_SCALE = 2f
+private const val MAX_PER_PURCHASE = 10
+
+// A fixed zone, so the previews show the same time whatever the machine that renders them (20:00 here).
+private val previewZone: ZoneId = ZoneId.of("America/Sao_Paulo")
 
 private val previewEvent =
     EventSummary(
@@ -63,6 +68,16 @@ private val previewLimit =
         total = Money(UNIT_PRICE_CENTS * 3),
     )
 
+private val previewMaxPerPurchase =
+    PurchaseUiState.Editing(
+        event = previewEvent,
+        quantity = MAX_PER_PURCHASE,
+        canDecrement = true,
+        canIncrement = false,
+        limitHint = LimitHint.MaxPerPurchase(max = MAX_PER_PURCHASE),
+        total = Money(UNIT_PRICE_CENTS * MAX_PER_PURCHASE),
+    )
+
 private fun previewError(reason: PurchaseErrorReason) =
     PurchaseUiState.Error(
         event = previewSnapshot,
@@ -74,7 +89,7 @@ private fun previewError(reason: PurchaseErrorReason) =
 @Composable
 private fun PreviewPurchase(state: PurchaseUiState) {
     BilheteriaTheme {
-        PurchaseScreen(uiState = state, onEvent = {}, onNavigateUp = {}, onBackToEvents = {})
+        PurchaseScreen(uiState = state, zone = previewZone, onEvent = {}, onNavigateUp = {}, onBackToEvents = {})
     }
 }
 
@@ -92,6 +107,11 @@ private fun PurchaseEditingPreview() = PreviewPurchase(previewEditing)
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
 @Composable
 private fun PurchaseEditingLimitPreview() = PreviewPurchase(previewLimit)
+
+@Preview(name = "Light", widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
+@Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
+@Composable
+private fun PurchaseEditingMaxPerPurchasePreview() = PreviewPurchase(previewMaxPerPurchase)
 
 @Preview(name = "Font 2x", fontScale = LARGE_FONT_SCALE, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
 @Composable

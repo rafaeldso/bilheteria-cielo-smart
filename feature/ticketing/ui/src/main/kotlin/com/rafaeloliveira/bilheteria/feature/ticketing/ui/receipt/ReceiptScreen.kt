@@ -50,6 +50,8 @@ import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.SaleResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenMoney
 import java.time.ZoneId
 
 /**
@@ -57,20 +59,22 @@ import java.time.ZoneId
  * Every state of the spec has its own branch: [ReceiptUiState.Loading], the three results and
  * [ReceiptUiState.Error]. The screen scrolls, so nothing is cut at 200% font.
  *
- * Dates are absolute and in pt-BR, in [zoneId] (the receipt can be reopened days later).
+ * Dates are absolute and in pt-BR, in [zoneId] (the receipt can be reopened days later). The screen never reads the
+ * clock: the Route decides the zone.
  *
- * @param origin sale shows "Nova venda"; history shows the back arrow ([onNavigateUp]).
+ * @param origin sale shows "Nova venda" and announces the result; history shows the back arrow ([onNavigateUp]) and
+ * stays silent, because the operator opened the receipt on purpose.
+ * @param zoneId zone used to show the instants.
  * @param onNavigateUp the back arrow of the history origin (navigation, not a [ReceiptUiEvent]).
- * @param zoneId zone used to show the instants; the device zone by default.
  */
 @Composable
 internal fun ReceiptScreen(
     uiState: ReceiptUiState,
     origin: ReceiptOrigin,
+    zoneId: ZoneId,
     onEvent: (ReceiptUiEvent) -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    zoneId: ZoneId = ZoneId.systemDefault(),
 ) {
     Scaffold(
         modifier = modifier,
@@ -114,7 +118,7 @@ private fun ReceiptBody(
     onEvent: (ReceiptUiEvent) -> Unit,
     zoneId: ZoneId,
 ) {
-    val showNewSale = origin == ReceiptOrigin.Sale
+    val fromSale = origin == ReceiptOrigin.Sale
     val onNewSaleClick = { onEvent(ReceiptUiEvent.OnNewSale) }
     when (uiState) {
         ReceiptUiState.Loading -> {
@@ -135,36 +139,40 @@ private fun ReceiptBody(
         }
 
         is ReceiptUiState.Approved -> {
-            ReceiptContent(ReceiptOutcome.Approved, uiState.receipt, zoneId, showNewSale, onNewSaleClick)
+            ReceiptContent(SaleResult.Approved, uiState.receipt, zoneId, fromSale, onNewSaleClick)
         }
 
         is ReceiptUiState.Declined -> {
-            ReceiptContent(ReceiptOutcome.Declined, uiState.receipt, zoneId, showNewSale, onNewSaleClick)
+            ReceiptContent(SaleResult.Declined, uiState.receipt, zoneId, fromSale, onNewSaleClick)
         }
 
         is ReceiptUiState.Cancelled -> {
-            ReceiptContent(ReceiptOutcome.Cancelled, uiState.receipt, zoneId, showNewSale, onNewSaleClick)
+            ReceiptContent(SaleResult.Cancelled, uiState.receipt, zoneId, fromSale, onNewSaleClick)
         }
     }
 }
 
-/** Reading order (ui-spec 4.6): result block, then the field list, then the way out. */
+/**
+ * Reading order (ui-spec 4.6): result block, then the field list, then the way out. [fromSale] is true right after
+ * the payment: only then the result is announced and "Nova venda" is offered.
+ */
 @Composable
 private fun ReceiptContent(
-    outcome: ReceiptOutcome,
+    outcome: SaleResult,
     receipt: ReceiptData,
     zoneId: ZoneId,
-    showNewSale: Boolean,
+    fromSale: Boolean,
     onNewSaleClick: () -> Unit,
 ) {
     val rows = remember(receipt, outcome, zoneId) { receipt.toRows(outcome, zoneId) }
+    val total = remember(receipt.total) { receipt.total.toAmount() }
     Column(
         modifier = Modifier.fillMaxWidth().padding(BilheteriaTheme.spacing.lg),
         verticalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.lg),
     ) {
-        ReceiptResult(outcome = outcome, total = receipt.total.toAmount())
-        DsKeyValueList(items = rows.map { it.toKeyValue() })
-        if (showNewSale) {
+        ReceiptResult(outcome = outcome, total = total, announce = fromSale)
+        DsKeyValueList(items = rememberKeyValues(rows))
+        if (fromSale) {
             DsButton(
                 text = stringResource(R.string.ticketing_receipt_new_sale),
                 onClick = onNewSaleClick,
@@ -176,23 +184,25 @@ private fun ReceiptContent(
 }
 
 /**
- * Badge, total and result message as one announced block: a status (polite) for an approval, an alert
- * (assertive) for a decline or a cancellation. The total is spoken in full ("100 reais"), not as "R$ 100,00".
+ * Badge, total and result message as one block: a status (polite) for an approval, an alert (assertive) for a
+ * decline or a cancellation, announced only when [announce] (right after the payment; reopening a receipt from the
+ * history is silent). The total is spoken in full ("100 reais"), not as "R$ 100,00".
  */
 @Composable
 private fun ReceiptResult(
-    outcome: ReceiptOutcome,
+    outcome: SaleResult,
     total: ReceiptValue.Amount,
+    announce: Boolean,
 ) {
-    val spokenTotal = total.spoken.asSpokenText()
+    val spokenTotal = spokenMoney(total.spoken)
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .semantics(mergeDescendants = true) { liveRegion = outcome.liveRegion },
+                .semantics(mergeDescendants = true) { if (announce) liveRegion = outcome.liveRegion },
         verticalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.sm),
     ) {
-        DsStatusBadge(text = stringResource(outcome.statusRes()), variant = outcome.badge)
+        DsStatusBadge(text = stringResource(outcome.statusRes), variant = outcome.badge)
         Text(
             text = total.formatted,
             modifier = Modifier.clearAndSetSemantics { text = AnnotatedString(spokenTotal) },

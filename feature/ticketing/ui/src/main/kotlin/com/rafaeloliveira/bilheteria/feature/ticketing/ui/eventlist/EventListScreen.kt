@@ -17,12 +17,7 @@ package com.rafaeloliveira.bilheteria.feature.ticketing.ui.eventlist
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -35,12 +30,13 @@ import com.rafaeloliveira.bilheteria.core.designsystem.component.DsLoadingSkelet
 import com.rafaeloliveira.bilheteria.core.designsystem.component.DsTopAppBar
 import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.ScrollableState
 
 /**
  * SCR-01 "Eventos à venda" (UI Spec 4): stateless, one explicit branch per [EventListUiState].
  *
  * @param uiState what to draw.
- * @param formats how dates and prices are written (pt-BR, display zone).
+ * @param formats how month labels and event dates are written (pt-BR, display zone); the screen never reads the clock.
  * @param onEvent receives the user actions of the spec; navigation is handled by the caller (the route).
  */
 @Composable
@@ -100,23 +96,9 @@ private fun ColumnScope.EventListError(onRetryClick: () -> Unit) {
         DsErrorState(
             title = stringResource(R.string.ticketing_events_error_title),
             body = stringResource(R.string.ticketing_events_error_body),
-            retryLabel = stringResource(R.string.ticketing_events_retry),
+            retryLabel = stringResource(R.string.ticketing_common_retry),
             onRetryClick = onRetryClick,
             icon = DsIcons.EventBusy,
         )
-    }
-}
-
-/** Empty and error messages are short, but at 200% font they can outgrow a small screen: let them scroll. */
-@Composable
-private fun ColumnScope.ScrollableState(content: @Composable () -> Unit) {
-    Column(
-        modifier =
-            Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .windowInsetsPadding(WindowInsets.navigationBars),
-    ) {
-        content()
     }
 }

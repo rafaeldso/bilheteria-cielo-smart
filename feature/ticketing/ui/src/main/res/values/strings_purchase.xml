@@ -21,7 +21,10 @@
     <string name="ticketing_purchase_loading">Carregando a compra</string>
 
     <!-- Event header: day, time, venue / price, availability -->
-    <string name="ticketing_purchase_event_when">%1$s · %2$s · %3$s</string>
+    <!-- %1$s = dia da semana abreviado (dom.), %2$d = dia, %3$s = mês abreviado (nov), %4$s = hora (20:00), %5$s = local. -->
+    <string name="ticketing_purchase_event_when">%1$s, %2$d %3$s · %4$s · %5$s</string>
+    <!-- Header read by TalkBack: nome, data por extenso, local, valor por ingresso (e ingressos disponíveis). -->
+    <string name="ticketing_purchase_event_a11y">%1$s, %2$s, %3$s, %4$s</string>
     <string name="ticketing_purchase_unit_price">%1$s por ingresso · %2$s</string>
     <string name="ticketing_purchase_unit_price_only">%1$s por ingresso</string>
     <plurals name="ticketing_purchase_available">
@@ -49,17 +52,6 @@
     <string name="ticketing_purchase_total_detail">%1$s × %2$s</string>
     <string name="ticketing_purchase_total_spoken">Total %1$s, %2$s de %3$s</string>
     <string name="ticketing_purchase_pay">Pagar %s no terminal</string>
-
-    <!-- Money read aloud: "100 reais e 50 centavos" -->
-    <plurals name="ticketing_purchase_spoken_reais">
-        <item quantity="one">%d real</item>
-        <item quantity="other">%d reais</item>
-    </plurals>
-    <plurals name="ticketing_purchase_spoken_centavos">
-        <item quantity="one">%d centavo</item>
-        <item quantity="other">%d centavos</item>
-    </plurals>
-    <string name="ticketing_purchase_spoken_reais_and_centavos">%1$s e %2$s</string>
 
     <!-- AwaitingPayment -->
     <string name="ticketing_purchase_awaiting_title">Conclua o pagamento no terminal</string>

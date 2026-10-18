@@ -39,7 +39,7 @@ internal enum class Recovery {
     /** Nothing failed (the lookup is not needed, was requested, or is under way). */
     Idle,
 
-    /** The lookup could not be completed: only "Tentar novamente" (the lookup again) leaves this state. */
+    /** The lookup could not be completed: only "Consultar de novo" (the lookup again) leaves this state. */
     Failed,
 }
 

@@ -22,8 +22,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.Clock
 import java.time.Year
-import java.time.ZoneId
 
 /**
  * Stateful entry of SCR-01: connects [EventListViewModel] to [EventListScreen].
@@ -34,6 +34,8 @@ import java.time.ZoneId
  *
  * @param onEventSelected called with the event id to open SCR-02.
  * @param onOpenHistory called to open SCR-04.
+ * @param clock source of the zone and of the current year; the default is the system clock and zone. The screen
+ * itself never reads the clock: the route resolves it once and hands the zone and the year down.
  */
 @Composable
 internal fun EventListRoute(
@@ -41,15 +43,12 @@ internal fun EventListRoute(
     onOpenHistory: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: EventListViewModel = hiltViewModel(),
+    clock: Clock = Clock.systemDefaultZone(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnEventSelected by rememberUpdatedState(onEventSelected)
     val currentOnOpenHistory by rememberUpdatedState(onOpenHistory)
-    val formats =
-        remember {
-            val zone = ZoneId.systemDefault()
-            EventListFormats(zoneId = zone, currentYear = Year.now(zone).value)
-        }
+    val formats = remember(clock) { EventListFormats(zoneId = clock.zone, currentYear = Year.now(clock).value) }
     val onEvent =
         remember(viewModel) {
             { event: EventListUiEvent ->

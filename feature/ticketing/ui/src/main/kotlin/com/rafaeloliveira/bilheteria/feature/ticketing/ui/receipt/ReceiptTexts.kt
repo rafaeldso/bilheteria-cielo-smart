@@ -15,44 +15,52 @@
  */
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt
 
+import android.content.res.Resources
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalResources
 import com.rafaeloliveira.bilheteria.core.designsystem.component.DsKeyValue
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.SaleResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenDateTimeText
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenMoneyText
 
 // Resource lookup of the receipt: the pure model (ReceiptRows) decides what is shown, these functions say in which
 // words. Kept apart so the model stays testable on the JVM without resources.
 
 @StringRes
-internal fun ReceiptOutcome.statusRes(): Int =
+internal fun SaleResult.titleRes(): Int =
     when (this) {
-        ReceiptOutcome.Approved -> R.string.ticketing_receipt_status_approved
-        ReceiptOutcome.Declined -> R.string.ticketing_receipt_status_declined
-        ReceiptOutcome.Cancelled -> R.string.ticketing_receipt_status_cancelled
+        SaleResult.Approved -> R.string.ticketing_receipt_approved_title
+        SaleResult.Declined -> R.string.ticketing_receipt_declined_title
+        SaleResult.Cancelled -> R.string.ticketing_receipt_cancelled_title
     }
 
 @StringRes
-internal fun ReceiptOutcome.titleRes(): Int =
+internal fun SaleResult.bodyRes(): Int =
     when (this) {
-        ReceiptOutcome.Approved -> R.string.ticketing_receipt_approved_title
-        ReceiptOutcome.Declined -> R.string.ticketing_receipt_declined_title
-        ReceiptOutcome.Cancelled -> R.string.ticketing_receipt_cancelled_title
+        SaleResult.Approved -> R.string.ticketing_receipt_approved_body
+        SaleResult.Declined -> R.string.ticketing_receipt_declined_body
+        SaleResult.Cancelled -> R.string.ticketing_receipt_cancelled_body
     }
 
-@StringRes
-internal fun ReceiptOutcome.bodyRes(): Int =
-    when (this) {
-        ReceiptOutcome.Approved -> R.string.ticketing_receipt_approved_body
-        ReceiptOutcome.Declined -> R.string.ticketing_receipt_declined_body
-        ReceiptOutcome.Cancelled -> R.string.ticketing_receipt_cancelled_body
-    }
-
-/** One row for `DsKeyValueList`; amounts also carry the text TalkBack reads ("Total, 100 reais"). */
+/**
+ * The rows as `DsKeyValueList` items, built again only when the rows or the resources change, not at every
+ * recomposition (the strings do not depend on anything else).
+ */
 @Composable
-internal fun ReceiptRow.toKeyValue(): DsKeyValue {
-    val label = stringResource(field.labelRes)
+internal fun rememberKeyValues(rows: List<ReceiptRow>): List<DsKeyValue> {
+    val resources = LocalResources.current
+    return remember(rows, resources) { rows.map { it.toKeyValue(resources) } }
+}
+
+/**
+ * One row for `DsKeyValueList`. Amounts and dates also carry the text TalkBack reads ("Total, 100 reais";
+ * "Data do evento, 15 de novembro às 20:00").
+ */
+internal fun ReceiptRow.toKeyValue(resources: Resources): DsKeyValue {
+    val label = resources.getString(field.labelRes)
     return when (val content = value) {
         is ReceiptValue.Text -> {
             DsKeyValue(label = label, value = content.text)
@@ -61,52 +69,33 @@ internal fun ReceiptRow.toKeyValue(): DsKeyValue {
         is ReceiptValue.Tickets -> {
             DsKeyValue(
                 label = label,
-                value = pluralStringResource(R.plurals.ticketing_receipt_tickets, content.count, content.count),
+                value = resources.getQuantityString(R.plurals.ticketing_receipt_tickets, content.count, content.count),
             )
         }
 
         is ReceiptValue.Amount -> {
-            DsKeyValue(label = label, value = content.formatted, spokenValue = content.spoken.asSpokenText())
+            DsKeyValue(
+                label = label,
+                value = content.formatted,
+                spokenValue = resources.spokenMoneyText(content.spoken),
+            )
         }
 
         is ReceiptValue.Moment -> {
             DsKeyValue(
                 label = label,
                 value =
-                    stringResource(
+                    resources.getString(
                         R.string.ticketing_receipt_datetime_format,
                         content.dateTime.date,
                         content.dateTime.time,
                     ),
+                spokenValue = resources.spokenDateTimeText(content.spoken),
             )
         }
 
         is ReceiptValue.Result -> {
-            DsKeyValue(label = label, value = stringResource(content.outcome.statusRes()))
-        }
-    }
-}
-
-/** "100 reais", "10 reais e 50 centavos" or "50 centavos": the words come from plural resources. */
-@Composable
-internal fun SpokenMoney.asSpokenText(): String {
-    val reaisText = pluralStringResource(R.plurals.ticketing_receipt_spoken_reais, reaisQuantity, reais)
-    val centavosText = pluralStringResource(R.plurals.ticketing_receipt_spoken_centavos, centavos, centavos)
-    return when {
-        hasReaisAndCentavos -> {
-            stringResource(
-                R.string.ticketing_receipt_spoken_reais_and_centavos,
-                reaisText,
-                centavosText,
-            )
-        }
-
-        onlyCentavos -> {
-            centavosText
-        }
-
-        else -> {
-            reaisText
+            DsKeyValue(label = label, value = resources.getString(content.outcome.statusRes))
         }
     }
 }

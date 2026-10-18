@@ -36,21 +36,28 @@ import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatBrl
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenMoney
+import java.time.ZoneId
 
-/** `Editing`: event, quantity, total and "Pagar" (ui-spec SCR-02, section 4.1; AC-04 to AC-06). */
+/**
+ * `Editing`: event, quantity, total and "Pagar" (ui-spec SCR-02, section 4.1; AC-04 to AC-06). The event day and
+ * time are shown in [zone].
+ */
 @Composable
 internal fun EditingContent(
     state: PurchaseUiState.Editing,
+    zone: ZoneId,
     onEvent: (PurchaseUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = BilheteriaTheme.spacing
-    val total = remember(state.total) { state.total.format() }
+    val total = remember(state.total) { state.total.formatBrl() }
     Column(
         modifier = modifier.padding(spacing.lg),
         verticalArrangement = Arrangement.spacedBy(spacing.lg),
     ) {
-        EventHeader(event = state.event)
+        EventHeader(event = state.event, zone = zone)
         Text(
             text = stringResource(R.string.ticketing_purchase_quantity),
             style = MaterialTheme.typography.labelMedium,
@@ -59,9 +66,13 @@ internal fun EditingContent(
         QuantityStepper(state = state, onEvent = onEvent)
         state.limitHint?.let { LimitHintMessage(hint = it) }
         PurchaseTotal(unitPrice = state.event.unitPrice, quantity = state.quantity, total = state.total)
+        // The amount is read in words ("Pagar 100 reais no terminal"); only the description changes, so the button
+        // keeps its role and its click action.
+        val spokenPay = stringResource(R.string.ticketing_purchase_pay, spokenMoney(state.total))
         DsButton(
             text = stringResource(R.string.ticketing_purchase_pay, total),
             onClick = { onEvent(PurchaseUiEvent.OnPay) },
+            modifier = Modifier.semantics { contentDescription = spokenPay },
             fillMaxWidth = true,
             leadingIcon = DsIcons.PointOfSale,
         )
@@ -112,10 +123,10 @@ private fun PurchaseTotal(
     total: Money,
 ) {
     val tickets = ticketsText(quantity)
-    val unit = remember(unitPrice) { unitPrice.format() }
+    val unit = remember(unitPrice) { unitPrice.formatBrl() }
     DsSummaryCard(
         label = stringResource(R.string.ticketing_purchase_total),
-        value = remember(total) { total.format() },
+        value = remember(total) { total.formatBrl() },
         supportingText = stringResource(R.string.ticketing_purchase_total_detail, tickets, unit),
         spokenLabel =
             stringResource(

@@ -28,6 +28,8 @@ import com.rafaeloliveira.bilheteria.core.designsystem.component.DsStatusMessage
 import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatBrl
+import java.time.ZoneId
 
 /**
  * `AwaitingPayment`: the payment is open on the terminal. "Pagar" stays on screen but disabled, so a repeated tap
@@ -36,13 +38,14 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
 @Composable
 internal fun AwaitingPaymentContent(
     state: PurchaseUiState.AwaitingPayment,
+    zone: ZoneId,
     onEvent: (PurchaseUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = BilheteriaTheme.spacing
-    val total = remember(state.total) { state.total.format() }
+    val total = remember(state.total) { state.total.formatBrl() }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(spacing.lg)) {
-        EventHeader(event = state.event, modifier = Modifier.padding(spacing.lg))
+        EventHeader(event = state.event, zone = zone, modifier = Modifier.padding(spacing.lg))
         DsStatusMessage(
             icon = DsIcons.PointOfSale,
             title = stringResource(R.string.ticketing_purchase_awaiting_title),

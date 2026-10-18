@@ -23,8 +23,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,6 +38,8 @@ import com.rafaeloliveira.bilheteria.core.designsystem.component.DsTopAppBar
 import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.ScrollableState
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.toSaleResult
 import kotlinx.collections.immutable.ImmutableList
 import java.time.Instant
 import java.time.ZoneId
@@ -75,25 +75,27 @@ internal fun PurchaseHistoryScreen(
                     HistoryList(items = uiState.items, now = now, zone = zone, onEvent = onEvent)
                 }
 
-                // Scrolls so the title, text and button stay reachable at 200% font.
+                // Scrolls so the title, text and button stay reachable at 200% font, clear of the navigation bar.
                 PurchaseHistoryUiState.Empty -> {
-                    DsEmptyState(
-                        title = stringResource(R.string.ticketing_history_empty_title),
-                        body = stringResource(R.string.ticketing_history_empty_body),
-                        modifier = Modifier.verticalScroll(rememberScrollState()),
-                        icon = DsIcons.ReceiptLong,
-                    )
+                    ScrollableState {
+                        DsEmptyState(
+                            title = stringResource(R.string.ticketing_history_empty_title),
+                            body = stringResource(R.string.ticketing_history_empty_body),
+                            icon = DsIcons.ReceiptLong,
+                        )
+                    }
                 }
 
                 PurchaseHistoryUiState.Error -> {
-                    DsErrorState(
-                        title = stringResource(R.string.ticketing_history_error_title),
-                        body = stringResource(R.string.ticketing_history_error_body),
-                        retryLabel = stringResource(R.string.ticketing_history_retry),
-                        onRetryClick = { onEvent(PurchaseHistoryUiEvent.OnRetry) },
-                        modifier = Modifier.verticalScroll(rememberScrollState()),
-                        icon = DsIcons.History,
-                    )
+                    ScrollableState {
+                        DsErrorState(
+                            title = stringResource(R.string.ticketing_history_error_title),
+                            body = stringResource(R.string.ticketing_history_error_body),
+                            retryLabel = stringResource(R.string.ticketing_common_retry),
+                            onRetryClick = { onEvent(PurchaseHistoryUiEvent.OnRetry) },
+                            icon = DsIcons.History,
+                        )
+                    }
                 }
             }
         }
@@ -144,7 +146,7 @@ private fun HistoryList(
         }
         itemsIndexed(items, key = { _, item -> item.id }, contentType = { _, _ -> ITEM_CONTENT_TYPE }) { index, item ->
             // A status that is not a sale never reaches here (BR-18); it is skipped rather than mislabeled.
-            val status = item.status.toHistoryStatus()
+            val status = item.status.toSaleResult()
             if (status != null) {
                 HistoryItemRow(
                     item = item,

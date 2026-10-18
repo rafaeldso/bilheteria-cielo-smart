@@ -38,37 +38,9 @@
     <string name="ticketing_events_item_supporting_format">%1$s, %2$d %3$s · %4$s · %5$s</string>
     <!-- Item lido pelo TalkBack: nome, data, local, valor por ingresso, ingressos disponíveis. -->
     <string name="ticketing_events_item_a11y">%1$s, %2$s, %3$s, %4$s por ingresso, %5$s</string>
-    <!-- %1$s = dia da semana por extenso, %2$d = dia, %3$s = mês por extenso, %4$s = hora falada. -->
-    <string name="ticketing_events_spoken_date_format">%1$s, %2$d de %3$s, %4$s</string>
-    <plurals name="ticketing_events_spoken_hour">
-        <item quantity="one">à %d hora</item>
-        <item quantity="many">às %d horas</item>
-        <item quantity="other">às %d horas</item>
-    </plurals>
-    <plurals name="ticketing_events_spoken_hour_minutes">
-        <item quantity="one">à %1$d e %2$d</item>
-        <item quantity="many">às %1$d e %2$d</item>
-        <item quantity="other">às %1$d e %2$d</item>
-    </plurals>
-    <string name="ticketing_events_spoken_midnight">à meia-noite</string>
-    <string name="ticketing_events_spoken_midnight_minutes">à meia-noite e %d</string>
-    <plurals name="ticketing_events_spoken_reais">
-        <item quantity="one">%s real</item>
-        <item quantity="many">%s reais</item>
-        <item quantity="other">%s reais</item>
-    </plurals>
-    <plurals name="ticketing_events_spoken_centavos">
-        <item quantity="one">%d centavo</item>
-        <item quantity="many">%d centavos</item>
-        <item quantity="other">%d centavos</item>
-    </plurals>
-    <!-- %1$s = reais falados, %2$s = centavos falados. -->
-    <string name="ticketing_events_spoken_price_with_centavos">%1$s e %2$s</string>
-    <string name="ticketing_events_spoken_price_zero">0 reais</string>
     <string name="ticketing_events_loading">Carregando eventos</string>
     <string name="ticketing_events_empty_title">Nenhum evento à venda</string>
     <string name="ticketing_events_empty_body">Eventos com data futura e ingressos disponíveis aparecem aqui.</string>
     <string name="ticketing_events_error_title">Não foi possível carregar os eventos</string>
     <string name="ticketing_events_error_body">Os dados dos eventos não puderam ser lidos. Tente de novo.</string>
-    <string name="ticketing_events_retry">Tentar de novo</string>
 </resources>

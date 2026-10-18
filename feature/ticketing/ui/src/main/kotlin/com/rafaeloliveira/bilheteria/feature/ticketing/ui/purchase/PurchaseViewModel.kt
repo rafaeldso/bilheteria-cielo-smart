@@ -57,7 +57,7 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
  * The screen follows the local record: the open purchase decides `AwaitingPayment`/`Recovering`; when it settles the
  * state becomes `Completed` (a sale, to the receipt) or `Error` (`Failed`, with a new attempt allowed). An open
  * purchase left from a previous run goes to the Cielo lookup before any new charge (BR-15). While that lookup cannot be
- * completed, or the open purchase cannot be read, the state is `Error(RecoveryFailed)` and "Tentar novamente" repeats
+ * completed, or the open purchase cannot be read, the state is `Error(RecoveryFailed)` and "Consultar de novo" repeats
  * the reading and the lookup: a payment is never started until the open purchase is known (BR-10, BR-26). The same
  * holds when the record of the attempt cannot be read after it settled: the outcome is unknown, so it is an
  * `Error(RecoveryFailed)` whose retry reads again (AC-25).
@@ -165,7 +165,7 @@ internal class PurchaseViewModel
             savedStateHandle[PURCHASE_ID_KEY] = purchase.id
             open.value = OpenPurchase.Present(purchase)
             // Left open by an earlier run: ask Cielo before allowing any new charge (BR-15). A failed lookup is only
-            // repeated by the operator ("Tentar novamente"), never automatically.
+            // repeated by the operator ("Consultar de novo"), never automatically.
             if (lookupPending && recovery.value == Recovery.Idle) lookUpPending()
         }
 
@@ -198,7 +198,7 @@ internal class PurchaseViewModel
 
                     is DataResult.Failure -> {
                         // How the attempt ended is unknown: it may have been charged, so never offer a new payment
-                        // (BR-26). "Tentar novamente" reads the open purchase and the record again.
+                        // (BR-26). "Consultar de novo" reads the open purchase and the record again.
                         open.value = OpenPurchase.Unreadable
                         return
                     }
@@ -208,7 +208,7 @@ internal class PurchaseViewModel
         }
 
         /**
-         * "Tentar novamente" repeats whatever is unknown before paying (BR-26): the reading of the open purchase, then
+         * "Consultar de novo" repeats whatever is unknown before paying (BR-26): the reading of the open purchase, then
          * the Cielo lookup. Only an error that left no pending doubt starts a new payment.
          */
         private fun retry() {

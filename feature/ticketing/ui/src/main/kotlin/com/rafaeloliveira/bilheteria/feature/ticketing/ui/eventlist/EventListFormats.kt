@@ -17,25 +17,15 @@ package com.rafaeloliveira.bilheteria.feature.ticketing.ui.eventlist
 
 import androidx.compose.runtime.Immutable
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.EventMonth
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
-import java.math.BigDecimal
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.text.NumberFormat
-import java.time.DayOfWeek
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.EventDateParts
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.PtBr
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.fullEventDate
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.monthName
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.shortEventDate
 import java.time.Instant
-import java.time.Month
 import java.time.ZoneId
-import java.time.format.TextStyle
-import java.util.Locale
 
-private val PT_BR: Locale = Locale.forLanguageTag("pt-BR")
 private const val ABBREVIATION_LENGTH = 3
-private const val CENTS_PER_REAL = 100
-private const val CURRENCY_SYMBOL = "R$"
-private const val NO_BREAK_SPACE = ' '
-private const val PRICE_PATTERN = "#,##0.00"
-private const val CENTS_SCALE = 2
 
 /** A month for a chip or a header: [name] in pt-BR and the [year] when it must be shown (null when it must not). */
 internal data class MonthLabel(
@@ -44,38 +34,9 @@ internal data class MonthLabel(
 )
 
 /**
- * Day and time of an event in the display zone. [weekday] and [month] are abbreviated ("sáb.", "nov") or in full
- * ("sábado", "novembro") depending on the factory that built it.
- */
-internal data class EventDateParts(
-    val weekday: String,
-    val day: Int,
-    val month: String,
-    val hour: Int,
-    val minute: Int,
-) {
-    /** 24-hour clock, "20:00". */
-    val time: String get() = "${hour.toString().padStart(
-        TIME_DIGITS,
-        '0',
-    )}:${minute.toString().padStart(TIME_DIGITS, '0')}"
-
-    private companion object {
-        const val TIME_DIGITS = 2
-    }
-}
-
-/** A price split to be read aloud ("50 reais e 90 centavos"): [reaisText] is grouped ("1.250"). */
-internal data class SpokenAmount(
-    val reais: Long,
-    val reaisText: String,
-    val centavos: Int,
-)
-
-/**
- * pt-BR formats of SCR-01. Everything uses an explicit `Locale` (never the device default) and `java.time`, so the
- * result is the same on the terminal, on a phone and in the JVM tests. The words around the values ("às", "de",
- * "reais") live in `strings_eventlist.xml`; this class only yields the values and the names of days and months.
+ * What is specific to SCR-01: month chips and headers, and the event date in the display zone. Amounts and the
+ * spoken texts are shared with the other screens (`ui.format`). Everything uses an explicit pt-BR locale (never the
+ * device default) and `java.time`, so the result is the same on the terminal, on a phone and in the JVM tests.
  *
  * @property zoneId zone to show event times in; it must be the zone the domain uses to group by month (BR-22).
  * @property currentYear year of the clock; chips of other years show the year (ui-spec 4.4).
@@ -88,7 +49,7 @@ internal data class EventListFormats(
     /** Chip label: "Nov", or "Jan" with year 2027 when it is not the current year. */
     fun monthChip(month: EventMonth): MonthLabel =
         MonthLabel(
-            name = monthName(month.month).take(ABBREVIATION_LENGTH).replaceFirstChar { it.titlecase(PT_BR) },
+            name = monthName(month.month).take(ABBREVIATION_LENGTH).replaceFirstChar { it.titlecase(PtBr) },
             year = month.year.takeIf { it != currentYear },
         )
 
@@ -96,43 +57,8 @@ internal data class EventListFormats(
     fun monthHeader(month: EventMonth): MonthLabel = MonthLabel(name = monthName(month.month), year = month.year)
 
     /** Abbreviated day for the item line: "sáb.", 15, "nov", 20:00. */
-    fun shortDate(startsAt: Instant): EventDateParts {
-        val parts = fullDate(startsAt)
-        return parts.copy(
-            weekday = parts.weekday.take(ABBREVIATION_LENGTH) + ".",
-            month = parts.month.take(ABBREVIATION_LENGTH),
-        )
-    }
+    fun shortDate(startsAt: Instant): EventDateParts = startsAt.shortEventDate(zoneId)
 
     /** Day in full for TalkBack: "sábado", 15, "novembro", 20:00. */
-    fun fullDate(startsAt: Instant): EventDateParts {
-        val local = startsAt.atZone(zoneId)
-        return EventDateParts(
-            weekday = weekdayName(local.dayOfWeek),
-            day = local.dayOfMonth,
-            month = monthName(local.monthValue),
-            hour = local.hour,
-            minute = local.minute,
-        )
-    }
-
-    /** Price on screen: "R$ 1.250,00" with a no-break space so the symbol never wraps away from the digits. */
-    fun price(money: Money): String =
-        CURRENCY_SYMBOL + NO_BREAK_SPACE +
-            DecimalFormat(PRICE_PATTERN, DecimalFormatSymbols(PT_BR))
-                .format(BigDecimal.valueOf(money.cents, CENTS_SCALE))
-
-    /** Price split for TalkBack. */
-    fun spokenPrice(money: Money): SpokenAmount {
-        val reais = money.cents / CENTS_PER_REAL
-        return SpokenAmount(
-            reais = reais,
-            reaisText = NumberFormat.getIntegerInstance(PT_BR).format(reais),
-            centavos = (money.cents % CENTS_PER_REAL).toInt(),
-        )
-    }
-
-    private fun monthName(month: Int): String = Month.of(month).getDisplayName(TextStyle.FULL, PT_BR).lowercase(PT_BR)
-
-    private fun weekdayName(day: DayOfWeek): String = day.getDisplayName(TextStyle.FULL, PT_BR).lowercase(PT_BR)
+    fun fullDate(startsAt: Instant): EventDateParts = startsAt.fullEventDate(zoneId)
 }

@@ -16,24 +16,16 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt
 
 import androidx.annotation.StringRes
-import androidx.compose.ui.semantics.LiveRegionMode
-import com.rafaeloliveira.bilheteria.core.designsystem.component.DsStatusBadgeVariant
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.SaleResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.SpokenDateTime
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.SpokenMoney
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatBrl
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.toSpokenDateTime
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.toSpokenMoney
+import java.time.Instant
 import java.time.ZoneId
-
-/**
- * Result of the sale shown by the receipt. It decides the badge and how the result is announced (ui-spec 4.6):
- * an approval is a status (polite); a decline or cancellation needs the operator's attention (assertive).
- */
-internal enum class ReceiptOutcome(
-    val badge: DsStatusBadgeVariant,
-    val liveRegion: LiveRegionMode,
-) {
-    Approved(DsStatusBadgeVariant.Success, LiveRegionMode.Polite),
-    Declined(DsStatusBadgeVariant.Error, LiveRegionMode.Assertive),
-    Cancelled(DsStatusBadgeVariant.Neutral, LiveRegionMode.Assertive),
-}
 
 /**
  * Fields of the receipt, in display order (BR-16). There is deliberately no card number field: Cielo never sends
@@ -56,7 +48,7 @@ internal enum class ReceiptField(
     Nsu(R.string.ticketing_receipt_field_nsu),
 }
 
-/** Value of a row, still without resources: the screen turns it into text with `stringResource`. */
+/** Value of a row, still without resources: `toKeyValue` turns it into text. */
 internal sealed interface ReceiptValue {
     data class Text(
         val text: String,
@@ -71,12 +63,14 @@ internal sealed interface ReceiptValue {
         val spoken: SpokenMoney,
     ) : ReceiptValue
 
+    /** An instant: [dateTime] for the eyes ("17/10/2026 às 14:32"), [spoken] for TalkBack ("17 de outubro"). */
     data class Moment(
         val dateTime: ReceiptDateTime,
+        val spoken: SpokenDateTime,
     ) : ReceiptValue
 
     data class Result(
-        val outcome: ReceiptOutcome,
+        val outcome: SaleResult,
     ) : ReceiptValue
 }
 
@@ -91,20 +85,20 @@ internal data class ReceiptRow(
  * omitted when Cielo did not send it.
  */
 internal fun ReceiptData.toRows(
-    outcome: ReceiptOutcome,
+    outcome: SaleResult,
     zone: ZoneId,
 ): List<ReceiptRow> =
     buildList {
         add(ReceiptRow(ReceiptField.PurchaseNumber, ReceiptValue.Text(purchaseNumber)))
         add(ReceiptRow(ReceiptField.Event, ReceiptValue.Text(eventName)))
-        add(ReceiptRow(ReceiptField.EventDate, ReceiptValue.Moment(eventStartsAt.toReceiptDateTime(zone))))
+        add(ReceiptRow(ReceiptField.EventDate, eventStartsAt.toMoment(zone)))
         add(ReceiptRow(ReceiptField.Venue, ReceiptValue.Text(venue)))
         add(ReceiptRow(ReceiptField.Quantity, ReceiptValue.Tickets(quantity)))
         add(ReceiptRow(ReceiptField.UnitPrice, unitPrice.toAmount()))
         add(ReceiptRow(ReceiptField.Total, total.toAmount()))
-        add(ReceiptRow(ReceiptField.PurchasedAt, ReceiptValue.Moment(purchasedAt.toReceiptDateTime(zone))))
+        add(ReceiptRow(ReceiptField.PurchasedAt, purchasedAt.toMoment(zone)))
         add(ReceiptRow(ReceiptField.Status, ReceiptValue.Result(outcome)))
-        if (outcome == ReceiptOutcome.Approved) transaction?.let { addAll(it.toRows()) }
+        if (outcome == SaleResult.Approved) transaction?.let { addAll(it.toRows()) }
     }
 
 private fun ReceiptTransaction.toRows(): List<ReceiptRow> =
@@ -114,6 +108,9 @@ private fun ReceiptTransaction.toRows(): List<ReceiptRow> =
         add(ReceiptRow(ReceiptField.Nsu, ReceiptValue.Text(nsu)))
     }
 
+private fun Instant.toMoment(zone: ZoneId): ReceiptValue.Moment =
+    ReceiptValue.Moment(dateTime = toReceiptDateTime(zone), spoken = toSpokenDateTime(zone))
+
 /** Amount ready for the screen: pt-BR text for the eyes and its parts for the screen reader. */
 internal fun Money.toAmount(): ReceiptValue.Amount =
-    ReceiptValue.Amount(formatted = formatForReceipt(), spoken = toSpokenMoney())
+    ReceiptValue.Amount(formatted = formatBrl(), spoken = toSpokenMoney())

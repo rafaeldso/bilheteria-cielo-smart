@@ -24,11 +24,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.rafaeloliveira.bilheteria.core.designsystem.component.DsErrorState
 import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatBrl
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenMoney
+import java.time.ZoneId
 
 /**
  * `Error`: what failed, the quantity and total of the purchase, and the retry. The error is an alert and the focus
@@ -37,18 +42,21 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
 @Composable
 internal fun ErrorContent(
     state: PurchaseUiState.Error,
+    zone: ZoneId,
     onEvent: (PurchaseUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val total = remember(state.total) { state.total.format() }
+    val total = remember(state.total) { state.total.formatBrl() }
     val retryLabel =
         when (state.reason.retryAction()) {
             RetryAction.PayAgain -> stringResource(R.string.ticketing_purchase_retry_pay, total)
             RetryAction.CheckAgain -> stringResource(R.string.ticketing_purchase_retry_recovery)
         }
-    val summary = stringResource(R.string.ticketing_purchase_error_summary, ticketsText(state.quantity), total)
+    val tickets = ticketsText(state.quantity)
+    val summary = stringResource(R.string.ticketing_purchase_error_summary, tickets, total)
+    val spokenSummary = stringResource(R.string.ticketing_purchase_error_summary, tickets, spokenMoney(state.total))
     Column(modifier = modifier) {
-        EventHeader(event = state.event, modifier = Modifier.padding(BilheteriaTheme.spacing.lg))
+        EventHeader(event = state.event, zone = zone, modifier = Modifier.padding(BilheteriaTheme.spacing.lg))
         DsErrorState(
             title = stringResource(state.reason.titleRes()),
             body = stringResource(state.reason.bodyRes()),
@@ -58,6 +66,7 @@ internal fun ErrorContent(
             supportingContent = {
                 Text(
                     text = summary,
+                    modifier = Modifier.semantics { contentDescription = spokenSummary },
                     style = MaterialTheme.typography.bodyMedium.tabular(),
                     color = MaterialTheme.colorScheme.onSurface,
                 )

@@ -16,7 +16,7 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.eventlist
 
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.EventMonth
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.EventDateParts
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -24,7 +24,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Locale
 
-/** Pure formats of SCR-01: pt-BR names and numbers must not depend on the device default locale. */
+/** Pure formats of SCR-01: pt-BR names must not depend on the device default locale. Amounts: `MoneyFormatTest`. */
 class EventListFormatsTest {
     private val utc = EventListFormats(zoneId = ZoneOffset.UTC, currentYear = 2026)
 
@@ -95,29 +95,13 @@ class EventListFormatsTest {
     }
 
     @Test
-    fun `preco usa real com virgula decimal e ponto de milhar`() {
-        assertEquals("R$ 50,00", utc.price(Money(5_000)))
-        assertEquals("R$ 1.250,00", utc.price(Money(125_000)))
-        assertEquals("R$ 0,05", utc.price(Money(5)))
-    }
-
-    @Test
     fun `formatos independem do locale padrao do aparelho`() {
         val previous = Locale.getDefault()
         try {
             Locale.setDefault(Locale.US)
-
-            assertEquals("R$ 1.250,00", utc.price(Money(125_000)))
             assertEquals("sábado", utc.fullDate(saturdayEvening).weekday)
         } finally {
             Locale.setDefault(previous)
         }
-    }
-
-    @Test
-    fun `preco falado separa reais e centavos`() {
-        assertEquals(SpokenAmount(reais = 50, reaisText = "50", centavos = 90), utc.spokenPrice(Money(5_090)))
-        assertEquals(SpokenAmount(reais = 1_250, reaisText = "1.250", centavos = 0), utc.spokenPrice(Money(125_000)))
-        assertEquals(SpokenAmount(reais = 0, reaisText = "0", centavos = 5), utc.spokenPrice(Money(5)))
     }
 }

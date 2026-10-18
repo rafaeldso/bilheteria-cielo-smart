@@ -15,7 +15,6 @@
  */
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.history
 
-import androidx.annotation.StringRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +28,11 @@ import com.rafaeloliveira.bilheteria.core.designsystem.component.DsStatusBadge
 import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.SaleResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.SpokenDateTime
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatBrl
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenDateTime
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenMoney
 import java.time.Instant
 import java.time.ZoneId
 
@@ -39,7 +43,7 @@ import java.time.ZoneId
 @Composable
 internal fun HistoryItemRow(
     item: HistoryItem,
-    status: HistoryStatus,
+    status: SaleResult,
     now: Instant,
     zone: ZoneId,
     showTopDivider: Boolean,
@@ -47,9 +51,9 @@ internal fun HistoryItemRow(
     modifier: Modifier = Modifier,
 ) {
     val moment = remember(item.createdAt, now, zone) { historyMoment(item.createdAt, now, zone) }
-    val total = remember(item.total) { formatMoney(item.total) }
+    val total = remember(item.total) { item.total.formatBrl() }
     val quantity = pluralStringResource(R.plurals.ticketing_history_quantity, item.quantity, item.quantity)
-    val statusText = stringResource(status.label())
+    val statusText = stringResource(status.statusRes)
     DsListItem(
         headline = item.eventName,
         modifier = modifier,
@@ -62,7 +66,7 @@ internal fun HistoryItemRow(
                 item.eventName,
                 moment.spokenText(),
                 quantity,
-                item.total.toSpokenMoney().spokenText(),
+                spokenMoney(item.total),
                 statusText,
             ),
         showTopDivider = showTopDivider,
@@ -72,23 +76,15 @@ internal fun HistoryItemRow(
             style = MaterialTheme.typography.labelLarge.tabular(),
             color = MaterialTheme.colorScheme.onSurface,
         )
-        DsStatusBadge(text = statusText, variant = status.badgeVariant())
+        DsStatusBadge(text = statusText, variant = status.badge)
     }
 }
 
-@StringRes
-private fun HistoryStatus.label(): Int =
+private fun SaleResult.icon(): ImageVector =
     when (this) {
-        HistoryStatus.Approved -> R.string.ticketing_history_status_approved
-        HistoryStatus.Declined -> R.string.ticketing_history_status_declined
-        HistoryStatus.Cancelled -> R.string.ticketing_history_status_cancelled
-    }
-
-private fun HistoryStatus.icon(): ImageVector =
-    when (this) {
-        HistoryStatus.Approved -> DsIcons.CheckCircle
-        HistoryStatus.Declined -> DsIcons.Block
-        HistoryStatus.Cancelled -> DsIcons.Cancel
+        SaleResult.Approved -> DsIcons.CheckCircle
+        SaleResult.Declined -> DsIcons.Block
+        SaleResult.Cancelled -> DsIcons.Cancel
     }
 
 /** "hoje às 14:32", "ontem às 18:10" or "15/10 às 09:00". */
@@ -109,18 +105,6 @@ private fun HistoryMoment.spokenText(): String =
         }
 
         is HistoryMoment.OtherDay -> {
-            stringResource(R.string.ticketing_history_datetime_other_spoken, day, monthName, time)
+            spokenDateTime(SpokenDateTime(day = day, monthName = monthName, time = time))
         }
     }
-
-/** "100 reais", "1 real e 5 centavos" or "50 centavos". */
-@Composable
-private fun SpokenMoney.spokenText(): String {
-    val reaisText = if (hasReais) pluralStringResource(R.plurals.ticketing_history_spoken_reais, reais, reais) else ""
-    val centsText = if (hasCents) pluralStringResource(R.plurals.ticketing_history_spoken_cents, cents, cents) else ""
-    return when {
-        hasReais && hasCents -> stringResource(R.string.ticketing_history_spoken_reais_and_cents, reaisText, centsText)
-        hasReais -> reaisText
-        else -> centsText
-    }
-}

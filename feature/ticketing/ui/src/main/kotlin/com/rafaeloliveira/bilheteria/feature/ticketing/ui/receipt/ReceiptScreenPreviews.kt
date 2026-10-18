@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import java.time.Instant
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 // One Light/Dark pair per ReceiptUiState (compose-ui.md, section 11), plus the approved receipt at 200% font.
 // The data is fictional: no real card, NSU or buyer.
@@ -31,7 +31,7 @@ private const val PREVIEW_HEIGHT_DP = 900
 private const val PREVIEW_UNIT_CENTS = 5_000L
 private const val PREVIEW_TOTAL_CENTS = 10_000L
 private const val PREVIEW_FONT_SCALE = 2f
-private val PreviewZone = ZoneOffset.ofHours(-3)
+private val PreviewZone: ZoneId = ZoneId.of("America/Sao_Paulo")
 
 private val PreviewReceipt =
     ReceiptData(

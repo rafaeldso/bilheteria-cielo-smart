@@ -67,7 +67,7 @@ internal sealed interface PurchaseUiState {
 
 /**
  * Which message the `Error` state shows (ui-spec SCR-02). [RecoveryFailed] is a lookup that could not be completed
- * (BR-26): "Tentar novamente" repeats the lookup and never opens a payment.
+ * (BR-26): "Consultar de novo" repeats the lookup and never opens a payment.
  */
 internal enum class PurchaseErrorReason { NoCieloApp, Generic, Authentication, RecoveryNotFound, RecoveryFailed }
 

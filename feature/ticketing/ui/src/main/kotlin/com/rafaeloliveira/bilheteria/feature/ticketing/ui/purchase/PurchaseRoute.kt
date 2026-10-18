@@ -23,6 +23,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.Clock
 
 /**
  * SCR-02 Compra, stateful: the only place that knows the ViewModel and the navigation callbacks.
@@ -31,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * screen from the back stack, so back from the receipt does not reopen the purchase.
  * @param onBackToEvents "Voltar para eventos" of the `Unavailable` state.
  * @param onNavigateUp the back arrow of the top app bar.
+ * @param clock source of the zone the event day and time are shown in; the default is the system clock and zone.
  */
 @Composable
 internal fun PurchaseRoute(
@@ -39,6 +41,7 @@ internal fun PurchaseRoute(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PurchaseViewModel = hiltViewModel(),
+    clock: Clock = Clock.systemDefaultZone(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnCompleted by rememberUpdatedState(onCompleted)
@@ -53,6 +56,7 @@ internal fun PurchaseRoute(
 
     PurchaseScreen(
         uiState = uiState,
+        zone = clock.zone,
         onEvent = viewModel::onEvent,
         onNavigateUp = onNavigateUp,
         onBackToEvents = onBackToEvents,

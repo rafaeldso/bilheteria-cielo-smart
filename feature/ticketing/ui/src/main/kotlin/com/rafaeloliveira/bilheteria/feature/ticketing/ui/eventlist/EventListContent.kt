@@ -50,6 +50,9 @@ import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.AvailableEvent
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.EventMonth
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatBrl
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenEventDate
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenMoney
 import kotlinx.collections.immutable.ImmutableList
 
 /**
@@ -196,7 +199,7 @@ private fun EventItem(
         showTopDivider = showTopDivider,
     ) {
         Text(
-            text = remember(event.unitPrice, formats) { formats.price(event.unitPrice) },
+            text = remember(event.unitPrice) { event.unitPrice.formatBrl() },
             style = MaterialTheme.typography.labelLarge.tabular(),
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -216,46 +219,15 @@ private fun spokenLabel(
 ): String {
     val event = item.event
     val date = remember(event.startsAt, formats) { formats.fullDate(event.startsAt) }
-    val price = remember(event.unitPrice, formats) { formats.spokenPrice(event.unitPrice) }
     return stringResource(
         R.string.ticketing_events_item_a11y,
         event.name,
-        stringResource(
-            R.string.ticketing_events_spoken_date_format,
-            date.weekday,
-            date.day,
-            date.month,
-            spokenTime(date),
-        ),
+        spokenEventDate(date),
         event.venue,
-        spokenPrice(price),
+        spokenMoney(event.unitPrice),
         pluralStringResource(R.plurals.ticketing_events_available_spoken, item.available, item.available),
     )
 }
-
-@Composable
-private fun spokenTime(date: EventDateParts): String =
-    when {
-        date.hour == 0 && date.minute == 0 -> stringResource(R.string.ticketing_events_spoken_midnight)
-        date.hour == 0 -> stringResource(R.string.ticketing_events_spoken_midnight_minutes, date.minute)
-        date.minute == 0 -> pluralStringResource(R.plurals.ticketing_events_spoken_hour, date.hour, date.hour)
-        else -> pluralStringResource(R.plurals.ticketing_events_spoken_hour_minutes, date.hour, date.hour, date.minute)
-    }
-
-@Composable
-private fun spokenPrice(price: SpokenAmount): String {
-    if (price.reais == 0L && price.centavos == 0) return stringResource(R.string.ticketing_events_spoken_price_zero)
-    val centavos = pluralStringResource(R.plurals.ticketing_events_spoken_centavos, price.centavos, price.centavos)
-    if (price.reais == 0L) return centavos
-    val reais = pluralStringResource(R.plurals.ticketing_events_spoken_reais, price.reais.toCount(), price.reaisText)
-    return if (price.centavos == 0) {
-        reais
-    } else {
-        stringResource(R.string.ticketing_events_spoken_price_with_centavos, reais, centavos)
-    }
-}
-
-private fun Long.toCount(): Int = coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
 
 @Composable
 private fun monthText(

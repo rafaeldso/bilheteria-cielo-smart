@@ -31,15 +31,19 @@ import com.rafaeloliveira.bilheteria.core.designsystem.component.DsLoadingSkelet
 import com.rafaeloliveira.bilheteria.core.designsystem.component.DsTopAppBar
 import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import java.time.ZoneId
 
 /**
  * SCR-02 Compra, stateless: renders every [PurchaseUiState] and reports user intent. [onNavigateUp] and
  * [onBackToEvents] are navigation, not events (ui-spec section 3); the Route owns the system back.
  * The content scrolls so nothing is cut at 200% font.
+ *
+ * @param zone zone the event day and time are shown in; the screen never reads the clock, the Route decides it.
  */
 @Composable
 internal fun PurchaseScreen(
     uiState: PurchaseUiState,
+    zone: ZoneId,
     onEvent: (PurchaseUiEvent) -> Unit,
     onNavigateUp: () -> Unit,
     onBackToEvents: () -> Unit,
@@ -51,7 +55,7 @@ internal fun PurchaseScreen(
         containerColor = MaterialTheme.colorScheme.surface,
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).fillMaxSize().verticalScroll(rememberScrollState())) {
-            PurchaseBody(uiState = uiState, onEvent = onEvent, onBackToEvents = onBackToEvents)
+            PurchaseBody(uiState = uiState, zone = zone, onEvent = onEvent, onBackToEvents = onBackToEvents)
         }
     }
 }
@@ -78,6 +82,7 @@ private fun PurchaseTopBar(
 @Composable
 private fun PurchaseBody(
     uiState: PurchaseUiState,
+    zone: ZoneId,
     onEvent: (PurchaseUiEvent) -> Unit,
     onBackToEvents: () -> Unit,
 ) {
@@ -91,11 +96,11 @@ private fun PurchaseBody(
         }
 
         is PurchaseUiState.Editing -> {
-            EditingContent(state = uiState, onEvent = onEvent)
+            EditingContent(state = uiState, zone = zone, onEvent = onEvent)
         }
 
         is PurchaseUiState.AwaitingPayment -> {
-            AwaitingPaymentContent(state = uiState, onEvent = onEvent)
+            AwaitingPaymentContent(state = uiState, zone = zone, onEvent = onEvent)
         }
 
         is PurchaseUiState.Recovering -> {
@@ -103,7 +108,7 @@ private fun PurchaseBody(
         }
 
         is PurchaseUiState.Error -> {
-            ErrorContent(state = uiState, onEvent = onEvent)
+            ErrorContent(state = uiState, zone = zone, onEvent = onEvent)
         }
 
         PurchaseUiState.Unavailable -> {

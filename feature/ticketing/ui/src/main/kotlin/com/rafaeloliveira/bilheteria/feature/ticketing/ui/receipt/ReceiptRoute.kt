@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.Clock
 
 /**
  * Stateful entry of SCR-03 (`ReceiptRoute(purchaseId)`): connects the [ReceiptViewModel] to the stateless
@@ -33,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * @param origin sale or history; decides which way out is shown.
  * @param onNewSale leaves the receipt for a new sale (back to the event list).
  * @param onNavigateUp leaves the receipt for the history.
+ * @param clock source of the zone the dates are shown in; the default is the system clock and zone.
  */
 @Composable
 internal fun ReceiptRoute(
@@ -41,6 +43,7 @@ internal fun ReceiptRoute(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReceiptViewModel = hiltViewModel(),
+    clock: Clock = Clock.systemDefaultZone(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnNewSale by rememberUpdatedState(onNewSale)
@@ -56,6 +59,7 @@ internal fun ReceiptRoute(
     ReceiptScreen(
         uiState = uiState,
         origin = origin,
+        zoneId = clock.zone,
         onEvent = onEvent,
         onNavigateUp = onNavigateUp,
         modifier = modifier,

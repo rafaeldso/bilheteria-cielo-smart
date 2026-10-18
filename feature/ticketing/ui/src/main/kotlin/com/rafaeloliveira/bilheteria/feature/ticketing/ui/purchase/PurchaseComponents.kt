@@ -25,28 +25,34 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.formatBrl
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.fullEventDate
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.shortEventDate
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenEventDate
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenMoney
 import java.time.ZoneId
 
 /**
- * Event name, day, time, venue and unit price, read by TalkBack as one block. The day and time are in the device
- * zone, where the terminal is (the event happens next to it).
+ * Event name, day, time, venue and unit price, read by TalkBack as one sentence with the date in full ("domingo, 15
+ * de novembro, às 20 horas") and the price in words. The day and time are in [zone], where the terminal is (the
+ * event happens next to it); the caller decides it, the header never reads the clock.
  */
 @Composable
 internal fun EventHeader(
     event: EventSummary,
+    zone: ZoneId,
     modifier: Modifier = Modifier,
 ) {
-    val zone = remember { ZoneId.systemDefault() }
-    val day = remember(event.startsAt, zone) { event.startsAt.formatEventDay(zone) }
-    val time = remember(event.startsAt, zone) { event.startsAt.formatEventTime(zone) }
-    val unitPrice = remember(event.unitPrice) { event.unitPrice.format() }
+    val shortDate = remember(event.startsAt, zone) { event.startsAt.shortEventDate(zone) }
+    val unitPrice = remember(event.unitPrice) { event.unitPrice.formatBrl() }
+    val spokenLabel = eventSpokenLabel(event = event, zone = zone)
     Column(
-        modifier = modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = spokenLabel },
         verticalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.xs),
     ) {
         Text(
@@ -55,7 +61,15 @@ internal fun EventHeader(
             color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
-            text = stringResource(R.string.ticketing_purchase_event_when, day, time, event.venue),
+            text =
+                stringResource(
+                    R.string.ticketing_purchase_event_when,
+                    shortDate.weekday,
+                    shortDate.day,
+                    shortDate.month,
+                    shortDate.time,
+                    event.venue,
+                ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -65,6 +79,22 @@ internal fun EventHeader(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+/** "Noite de Jazz, domingo, 15 de novembro, às 20 horas, Concha, 50 reais por ingresso · 48 disponíveis". */
+@Composable
+private fun eventSpokenLabel(
+    event: EventSummary,
+    zone: ZoneId,
+): String {
+    val fullDate = remember(event.startsAt, zone) { event.startsAt.fullEventDate(zone) }
+    return stringResource(
+        R.string.ticketing_purchase_event_a11y,
+        event.name,
+        spokenEventDate(fullDate),
+        event.venue,
+        unitPriceLine(spokenMoney(event.unitPrice), event.available),
+    )
 }
 
 /** The stock is not part of the purchase snapshot, so the line only carries the price then (`available` null). */
@@ -86,27 +116,3 @@ private fun unitPriceLine(
 /** "2 ingressos". */
 @Composable
 internal fun ticketsText(count: Int): String = pluralStringResource(R.plurals.ticketing_purchase_tickets, count, count)
-
-/** An amount as TalkBack should say it: "100 reais", "100 reais e 50 centavos". */
-@Composable
-internal fun spokenMoney(money: Money): String {
-    val parts = money.spoken()
-    val reais = minOf(parts.reais, Int.MAX_VALUE.toLong()).toInt()
-    return when {
-        parts.centavos == 0 -> {
-            pluralStringResource(R.plurals.ticketing_purchase_spoken_reais, reais, reais)
-        }
-
-        parts.reais == 0L -> {
-            pluralStringResource(R.plurals.ticketing_purchase_spoken_centavos, parts.centavos, parts.centavos)
-        }
-
-        else -> {
-            stringResource(
-                R.string.ticketing_purchase_spoken_reais_and_centavos,
-                pluralStringResource(R.plurals.ticketing_purchase_spoken_reais, reais, reais),
-                pluralStringResource(R.plurals.ticketing_purchase_spoken_centavos, parts.centavos, parts.centavos),
-            )
-        }
-    }
-}
