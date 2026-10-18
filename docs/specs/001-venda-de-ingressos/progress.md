@@ -8,7 +8,7 @@
 
 ## Estado atual
 - **Última etapa concluída:** lote C (T12–T14) commitado (ba3c3d9, 2708982, 62fa628) + correções da revisão (5aef7b1, 585b46b)
-- **Próxima etapa:** decidir spoofing de erro sem `reference` (abaixo) → T15
+- **Próxima etapa:** T15 (decidir antes: `di/` vs módulo Hilt por pacote)
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
 - **Último sensor:** `verify.sh standard` → verde em 2026-10-18 (lote C)
@@ -23,10 +23,11 @@
 | 2026-10-18 | Pedido na listagem com o nosso `reference` e valor diferente → `Failed`/NotFound | Enviamos o valor exato; divergência indica resposta forjada; aprovar abriria fraude | Não (anti-spoofing do plano §7) |
 | 2026-10-18 | T10/T11 rodaram após T09 (dependem de cores estendidas e `DsIconButton`) | Lote B não era totalmente independente | Não |
 | 2026-10-18 | detekt `ForbiddenImport` excluído em testes data/ui + Konsist (JUnit 4 só com `@RunWith`; sem Log/Date) | Room in-memory exige Robolectric/JUnit 4 (aprovado pelo humano) | testing.md |
+| 2026-10-18 | Erro Cielo forjado sem `reference` = risco aceito | Consulta não distingue em andamento de cancelado; exige app malicioso no terminal gerenciado | Plano §7 |
 | 2026-10-18 | Teto de 10 (BR-07) ligado ao `StartPurchase` na integração | T05 e T06 rodaram em paralelo sem dependência | Não |
 
 ## Bloqueios e perguntas abertas
-- [ ] **Decisão humana (security, Importante):** erro Cielo sem `reference` (`{code:1}` forjado) encerra compra Pending. Opções: erro → `Recovering` + consulta (muda spec/plano/T07) ou aceitar risco no plan §7.
+- [x] Spoofing de erro sem `reference`: **risco aceito** pelo humano (plan §7, STRIDE). Reavaliar na T25 se o emulador mostrar outro cenário.
 - [ ] Sugestões do lote C: `toString` redigido nos DTOs do encoder (token); limitar tamanho de `id`/`authCode`/`brand` no parser; pagamento com `statusCode 2` na mesma ordem; `DateTimeException` no `guarded`; log do `CatalogUnavailable`; `di/` vs módulo por pacote (decidir antes da T15); plano §4 `LookupPage` defasado; teste de JSON aninhado profundo.
 - [ ] T25: confirmar percent-encoding do Base64 na URI e numeração de página da Cielo (`FIRST_CIELO_PAGE`).
 - [x] F1 (Importante, compose-ui-reviewer): `DsTopAppBar` com `maxLines = 1` + elipse corta "Histórico de compras" em 200% (compose-ui.md:239). Opções: barra própria que cresce com a fonte ou `expandedHeight` dinâmico.
