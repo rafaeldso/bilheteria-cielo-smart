@@ -41,7 +41,7 @@
   AC-20, AC-21 · **Pronto quando:** histórico só com Approved/Declined/Cancelled, ordem decrescente; erros propagados
 
 **Lote B** (`core:designsystem`, arquivos disjuntos; um `@Preview` por variante, claro e escuro):
-- [ ] **T09** [P] Tema com a paleta A (cores dos `tokens/*.tokens.json`, extensões `success`/`warning`), tipografia e formas;
+- [x] **T09** [P] Tema com a paleta A (cores dos `tokens/*.tokens.json`, extensões `success`/`warning`), tipografia e formas;
   `DsTopAppBar`, `DsButton` (filled/tonal/outlined, largura total, desabilitado), `DsIconButton`, `DsFilterChip` (borda `outline`) ·
   **Pronto quando:** cores iguais aos tokens (teste de igualdade), detekt e compose-rules verdes
 - [ ] **T10** [P] `DsListItem`, `DsSummaryCard`, `DsStatusBadge` (sucesso/erro/neutro/alerta), `DsKeyValueList` ·

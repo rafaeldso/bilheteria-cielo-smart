@@ -21,3 +21,7 @@ plugins {
 android {
     namespace = "com.rafaeloliveira.bilheteria.core.designsystem"
 }
+
+dependencies {
+    testImplementation(libs.kotlinx.serialization.json) // reads docs/design/tokens in ThemeTokensTest
+}

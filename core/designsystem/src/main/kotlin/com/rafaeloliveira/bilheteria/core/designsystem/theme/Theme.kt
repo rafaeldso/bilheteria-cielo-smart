@@ -17,21 +17,26 @@ package com.rafaeloliveira.bilheteria.core.designsystem.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 /**
- * App theme. Placeholder: Material 3 baseline until the visual direction is approved
- * (docs/design/DESIGN.md, skill sdd-design). Dynamic color stays off to keep the identity.
+ * App theme: direction A "Ciano Smart" (docs/design/DESIGN.md). Colors, type and shapes come from
+ * the tokens in docs/design/tokens. Dynamic color stays off to keep the identity.
  */
 @Composable
 fun BilheteriaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme(),
-        content = content,
-    )
+    val colorScheme = if (darkTheme) darkBilheteriaColorScheme() else lightBilheteriaColorScheme()
+    val extendedColors = if (darkTheme) darkExtendedColors() else lightExtendedColors()
+    CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = BilheteriaTypography,
+            shapes = BilheteriaShapes,
+            content = content,
+        )
+    }
 }
