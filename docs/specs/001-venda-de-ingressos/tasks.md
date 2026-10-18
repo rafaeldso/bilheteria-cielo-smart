@@ -88,9 +88,10 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 > Testes de UI Compose e screenshot de previews ficam fora de foco por decisão do humano; os ACs seguem cobertos pelos testes de ViewModel (T16–T19) e a lógica pura nova por testes JVM.
 
 ## Fase 5 — Dispositivo
-- [ ] **T25** Journeys no AVD Android 10 com `lio-emulator` (skill `verify-on-device`): aprovado, cancelado, erro, app fechado durante
+- [x] **T25** Journeys no AVD Android 10 com `lio-emulator` (skill `verify-on-device`): aprovado, cancelado, erro, app fechado durante
   o pagamento, filtro de mês; capturar o código real do botão "Error", a unidade de `unitPrice` e a ordenação do `orders`;
   ajustar e registrar no README · AC-07, AC-09, AC-10, AC-13, AC-15 · **Pronto quando:** Journeys verdes e achados documentados
+  > Fechada em 2026-10-18 (J1–J7; J8 coberta por teste). Adiados pelo humano: TalkBack e AVD API 30+. Pendente fora do emulador: ordenação do `orders` em terminal real (plan §11).
 
 ## Fase 6 — Fechamento
 - [x] **T29** Aprovação tardia (BR-29, AC-28): `PurchaseRepository.findById` (domain, `DefaultPurchaseRepository`, DAO e fake) e ramo no `HandlePaymentOutcomeUseCase` que aprova a compra `Failed`/`NotFound` com `reference` e valor iguais, sem tocar a compra aberta nem o gateway · **Pronto quando:** testes JVM do AC-28 (aprova; mantém compra aberta; valor diferente descartado; falha por outro motivo descartada; `reference` desconhecido descartado) e `verify.sh standard` verdes
