@@ -79,6 +79,8 @@ style:
         value: 'FIXME'
   ForbiddenImport:
     active: true
+    # Robolectric (Room, Compose UI Test) only runs on JUnit 4: allowed in data/ui unit tests. See testing.md.
+    excludes: ['**/feature/*/data/src/test/**', '**/feature/*/ui/src/test/**']
     imports:
       - reason: 'Use o logger do projeto (core:common). Log direto pode vazar PII/cartão. Ver docs/harness/guides/security.md'
         value: 'android.util.Log'

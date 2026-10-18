@@ -56,7 +56,8 @@ Robolectric/dispositivo quando o comportamento depender do framework Android.
 7. **Não teste o framework** (getters, `data class` gerada, Hilt, Room gerado).
 8. **JUnit 5 em todo teste novo** (AP-48). A única exceção são testes que precisam
    de runner JUnit 4 (Robolectric, `createComposeRule`, Roborazzi). Eles rodam via
-   `junit-vintage-engine` e ficam restritos a módulos `:ui`.
+   `junit-vintage-engine` e ficam restritos aos testes unitários de módulos `:ui` e `:data`
+   (Room in-memory, plano §10); o `ForbiddenImport` do detekt exclui só esses caminhos.
 9. **Teste instável é bug, não azar.** Proibido `@Disabled`/`@Ignore`, retry automático
    ou aumentar timeout/tolerância para passar (Art. VIII.3). Corrija a causa (seção 9)
    e registre no [steering loop](../steering-loop.md).
