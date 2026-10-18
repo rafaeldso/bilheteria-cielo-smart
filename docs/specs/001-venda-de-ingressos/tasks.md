@@ -68,8 +68,8 @@
 Cada tarefa: `UiState`/`UiEvent` exatamente como no plano §4, ViewModel com um `StateFlow` e um `onEvent`, testes com Turbine.
 - [ ] **T16** [P] `EventListViewModel` · AC-01, AC-02, AC-03, AC-17, AC-22, AC-23, AC-24
 - [ ] **T17** [P] `PurchaseViewModel` (quantidade no `SavedStateHandle`, recuperação ao abrir com compra aberta) · AC-04–AC-08,
-  AC-12–AC-15
-- [ ] **T18** [P] `ReceiptViewModel` · AC-09, AC-10, AC-11, AC-16, AC-19
+  AC-12–AC-15, AC-25, AC-26 (spec 1.2.0)
+- [ ] **T18** [P] `ReceiptViewModel` · AC-09, AC-10, AC-11, AC-16, AC-19, AC-27 (spec 1.2.0)
 - [ ] **T19** [P] `PurchaseHistoryViewModel` · AC-18, AC-20, AC-21
 
 **Pronto quando (todas):** testes `AC-xx` passam; Konsist (ViewModel com um `uiState` e um `onEvent`) verde.
@@ -78,11 +78,11 @@ Cada tarefa: `UiState`/`UiEvent` exatamente como no plano §4, ViewModel com um 
 Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado da UI Spec, strings em arquivo próprio por tela
 (`res/values/strings_<tela>.xml`) para não haver conflito entre workers.
 - [ ] **T20** [P] SCR-01 Eventos à venda (chips de mês, cabeçalho fixo) + testes de UI · AC-02, AC-03, AC-22, AC-23
-- [ ] **T21** [P] SCR-02 Compra (stepper, `AwaitingPayment`, `Recovering`, 4 variantes de erro, voltar bloqueado) + testes de UI · AC-06, AC-08
-- [ ] **T22** [P] SCR-03 Comprovante (3 estados, data absoluta) + testes de UI · AC-16, AC-19
+- [ ] **T21** [P] SCR-02 Compra (stepper, `Loading`, `AwaitingPayment`, `Recovering`, 5 variantes de erro, `Unavailable`, voltar bloqueado) + testes de UI · AC-06, AC-08, AC-26
+- [ ] **T22** [P] SCR-03 Comprovante (3 estados + `Loading` e `Error`, data absoluta) + testes de UI · AC-16, AC-19, AC-27
 - [ ] **T23** [P] SCR-04 Histórico + testes de UI · AC-20, AC-21
 - [ ] **T24** Navegação: rotas em `:api`, grafo da feature, `NavHost` no `app`, navegação como estado, retorno do callback para a
-  tela certa · **Pronto quando:** app abre na SCR-01 e percorre as 4 telas; `assertModuleGraph` verde
+  tela certa, `Completed` navega com `popUpTo<PurchaseRoute> { inclusive = true }` (plan §4) · **Pronto quando:** app abre na SCR-01 e percorre as 4 telas; `assertModuleGraph` verde
 
 **Pronto quando (T20–T23):** todos os estados da UI Spec com preview; testes de UI passam; `compose-ui-reviewer` sem bloqueante.
 
@@ -123,6 +123,9 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 | AC-22 | T05, T16, T20 | `AC-22 - dado eventos em dois meses quando abrir entao agrupa por mes` |
 | AC-23 | T05, T16, T20 | `AC-23 - dado filtro de mes quando selecionar dezembro entao so eventos de dezembro` |
 | AC-24 | T05, T16 | `AC-24 - dado mes esgotado quando voltar a lista entao filtro volta para todos` |
+| AC-25 | T17 | `AC-25 - dado consulta que falha quando tentar de novo entao repete a consulta sem cobrar` |
+| AC-26 | T17, T21 | `AC-26 - dado evento indisponivel sem compra aberta quando abrir compra entao exibe indisponivel` |
+| AC-27 | T18, T22 | `AC-27 - dado comprovante ilegivel quando tentar de novo entao repete a leitura` |
 
 ## Ordem de execução e paralelismo
 | Etapa | Tarefas | Quem | Paralelo |

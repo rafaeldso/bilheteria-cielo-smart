@@ -330,6 +330,8 @@ Quando a tela de compra é aberta para um evento que não pode ser carregado
 Então é informado que o evento está indisponível, com a opção de voltar para os eventos
 E a ação de pagar não é oferecida
 ```
+> Nota (2026-10-18): se, além do evento, a leitura da compra em andamento também falhar, a tela fica em "indisponível"
+> (sem pagar); a nova tentativa é reabrir a compra, que relê a compra em andamento antes de liberar pagamento (BR-10).
 
 ### AC-27 — Comprovante que não carrega (BR-28)
 ```gherkin

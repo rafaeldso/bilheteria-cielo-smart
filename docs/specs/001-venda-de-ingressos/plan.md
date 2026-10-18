@@ -307,7 +307,9 @@ navegar num `LaunchedEffect` com `popUpTo<PurchaseRoute> { inclusive = true }`. 
 a saída da compra da pilha, sem evento interno (decisão 2026-10-18; requisito da T24 e Journey da T25). Navegação por clique
 (`OnEventSelected`, `OnOpenHistory`, `OnPurchaseSelected`, `OnNewSale`, "Voltar para eventos") não muda o estado: a `Route`
 chama o callback. Argumentos de rota são só IDs. O `SavedStateHandle` da compra guarda `eventId` (rota), a quantidade e o
-`purchaseId` da tentativa atual. Todas as declarações do `ui` são `internal`; os `sealed interface *UiState` têm `@Immutable`.
+`purchaseId` da tentativa atual. Exceção ao AP-22: o `PurchaseViewModel` coleta compra aberta e catálogo desde o `init`,
+porque a recuperação da BR-15 precisa rodar mesmo sem a UI assinando (decisão 2026-10-18). `Completed` também é decisão de
+2026-10-18 (não está na spec §6: é sinal de navegação). Todas as declarações do `ui` são `internal`; os `sealed interface *UiState` têm `@Immutable`.
 
 `ReceiptUiState.Loading` e `PurchaseUiState.Loading` não estão na seção 6 da spec: são o carregamento local. **Decisões
 (2026-10-17 e 2026-10-18):** aceitos como detalhe técnico, sem AC. `ReceiptUiState.Loading` também cobre a compra ainda em
@@ -330,6 +332,8 @@ andamento; falha, registro inexistente ou `Failed` vão para `ReceiptUiState.Err
 | Consulta sem o `reference` em 4 páginas | `PaymentOutcome` → `Failed(NotFound)` | `Error(RecoveryNotFound)` | Tentar pagar de novo |
 | Falha ao ler a compra aberta, ou `recoverPending()` com `Failure` | `StorageFailure` / falha do gateway | `Error(RecoveryFailed)` (BR-26) | Consultar de novo (repete leitura e consulta; nunca paga) |
 | Catálogo ilegível, evento inexistente ou esgotado, sem compra aberta | `CatalogUnavailable` / ausência | `PurchaseUiState.Unavailable` (BR-27) | Voltar para eventos |
+| Compra aberta ilegível **e** evento ausente | `StorageFailure` + ausência | `Unavailable` (sem pagar; nota no AC-26) | Reabrir a compra |
+| Releitura da compra falha após a tentativa (`settle`) | `StorageFailure` | `Error(RecoveryFailed)`; retry relê a compra, nunca paga | Consultar de novo |
 | `SQLiteException` ou registro inexistente ao abrir o comprovante; compra `Failed` | `StorageFailure` | `ReceiptUiState.Error` (BR-28) | Tentar de novo |
 
 Nenhum retry automático de pagamento (escrita não idempotente, error-handling.md): só por ação do operador e só depois da
