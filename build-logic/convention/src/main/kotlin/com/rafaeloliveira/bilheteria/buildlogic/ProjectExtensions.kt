@@ -49,6 +49,12 @@ internal fun Project.configureKotlin() {
 internal fun CompileOptions.configureJava() {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    // java.time with minSdk 24 (ADR-0007: Instant/Clock in domain and data).
+    isCoreLibraryDesugaringEnabled = true
+}
+
+internal fun Project.addDesugaring() {
+    dependencies { add("coreLibraryDesugaring", libs.library("desugar-jdk-libs")) }
 }
 
 /** Sensor S-08: severidades do projeto em config/lint/lint.xml. */
@@ -68,7 +74,16 @@ internal fun Project.configureUnitTests() {
         add("testImplementation", libs.library("kotlinx-coroutines-test"))
         add("testRuntimeOnly", libs.library("junit-platform-launcher"))
     }
+    // Gradle 9 fails a test task that finds classes but no tests. Android modules always put the
+    // resources R.jar on the test classpath, so a module with no src/test would fail before its
+    // first test exists. Modules with tests keep the check (it catches real misconfiguration).
+    val hasTestSources =
+        layout.projectDirectory
+            .dir("src/test")
+            .asFile
+            .exists()
     tasks.withType<Test>().configureEach {
+        failOnNoDiscoveredTests.set(hasTestSources)
         useJUnitPlatform()
         maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
     }

@@ -53,7 +53,12 @@ rootProject.name = "Bilheteria"
 
 include(":app")
 include(":core:common")
+include(":core:database")
 include(":core:designsystem")
 include(":core:testing")
+include(":feature:ticketing:api")
+include(":feature:ticketing:domain")
+include(":feature:ticketing:data")
+include(":feature:ticketing:ui")
 include(":quality:architecture-tests")
 include(":quality:detekt-rules")

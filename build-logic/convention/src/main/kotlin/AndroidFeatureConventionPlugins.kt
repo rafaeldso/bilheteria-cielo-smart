@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import com.android.build.api.dsl.LibraryExtension
 import com.rafaeloliveira.bilheteria.buildlogic.library
 import com.rafaeloliveira.bilheteria.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.project
 
@@ -32,7 +34,18 @@ class AndroidFeatureUiConventionPlugin : Plugin<Project> {
                 add("implementation", project(":core:designsystem"))
                 add("implementation", libs.library("androidx-lifecycle-runtime-compose"))
                 add("implementation", libs.library("androidx-lifecycle-viewmodel-compose"))
+                add("implementation", libs.library("androidx-navigation-compose"))
+                add("implementation", libs.library("androidx-hilt-navigation-compose"))
+                add("implementation", libs.library("kotlinx-collections-immutable"))
                 add("testImplementation", project(":core:testing"))
+                // Screen tests run on the JVM with Robolectric (JUnit 4 rule via the vintage engine; testing.md).
+                add("testImplementation", libs.library("robolectric"))
+                add("testImplementation", libs.library("androidx-compose-ui-test-junit4"))
+                add("testRuntimeOnly", libs.library("junit-vintage-engine"))
+                add("debugImplementation", libs.library("androidx-compose-ui-test-manifest"))
+            }
+            extensions.configure<LibraryExtension> {
+                testOptions { unitTests.isIncludeAndroidResources = true }
             }
         }
     }

@@ -31,6 +31,8 @@ private const val USE_CASE_SHAPE =
 private const val VIEW_MODEL_SHAPE =
     "ViewModel: apenas 'val uiState: StateFlow<...>' e 'fun onEvent(event)' públicos; " +
         "MutableStateFlow privado. Ver docs/harness/guides/compose-ui.md (AP-04)"
+private const val CIELO_ISOLATED =
+    "Deep link lio:// e Base64 da Cielo só no pacote ..data.cielo.. (ADR-0010). Use PaymentGateway fora dele."
 private const val SCREEN_STATELESS = "Passe uiState e onEvent para a Screen; só a Route conhece o ViewModel (AP-05)"
 
 /** Sensor S-06. Failure messages are written for the agent: what is wrong + how to fix + guide. */
@@ -112,6 +114,15 @@ class ArchitectureTest {
             .filter { it.packagee?.name?.let { pkg -> ".domain" in pkg || ".ui" in pkg } == true }
             .assertFalse(additionalMessage = "Mapeie DTO para modelo de domínio no data (toDomain()). AP-06") {
                 it.hasImport { import -> import.name.endsWith("Dto") }
+            }
+    }
+
+    @Test
+    fun `integracao Cielo fica isolada no pacote data cielo`() {
+        production.files
+            .filter { it.packagee?.name?.startsWith(BASE) == true && ".data.cielo" !in it.packagee?.name.orEmpty() }
+            .assertFalse(additionalMessage = CIELO_ISOLATED) {
+                "lio://" in it.text || it.hasImport { import -> import.name == "android.util.Base64" }
             }
     }
 

@@ -17,6 +17,8 @@ import com.rafaeloliveira.bilheteria.buildlogic.configureKotlin
 import com.rafaeloliveira.bilheteria.buildlogic.configureUnitTests
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.getByType
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 
 /** Pure Kotlin modules (id: app.jvm.library): feature:*:{api,domain}, core:common, quality:*. */
 class JvmLibraryConventionPlugin : Plugin<Project> {
@@ -26,6 +28,8 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
             pluginManager.apply("app.quality")
             configureKotlin()
             configureUnitTests()
+            // Feature contracts declare every public symbol on purpose (gradle.md).
+            if (path.endsWith(":api")) extensions.getByType<KotlinProjectExtension>().explicitApi()
         }
     }
 }

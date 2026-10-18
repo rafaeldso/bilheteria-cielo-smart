@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.detekt.gradlePlugin)
     implementation(libs.kover.gradlePlugin)
     implementation(libs.moduleGraphAssertion.gradlePlugin)
+    implementation(libs.room.gradlePlugin)
 }
 
 gradlePlugin {
@@ -70,6 +71,10 @@ gradlePlugin {
         register("jvmLibrary") {
             id = "app.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
+        }
+        register("androidRoom") {
+            id = "app.android.room"
+            implementationClass = "AndroidRoomConventionPlugin"
         }
         register("hilt") {
             id = "app.hilt"

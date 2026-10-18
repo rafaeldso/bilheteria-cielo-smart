@@ -15,11 +15,11 @@
   (`adb shell pm list packages`), abrir um `lio://payment` montado à mão com credenciais fictícias e ver se a tela de pagamento aparece;
   testar se `lio://orders` abre UI ou responde direto · Riscos do plano §11 · **Pronto quando:** achados registrados no `research.md` §13
   (pacote, credenciais, comportamento do `orders`)
-- [ ] **T02** Catálogo e `build-logic`: Navigation Compose, `kotlinx-serialization` (lib + plugin), Room (+ KSP, schema export),
+- [x] **T02** Catálogo e `build-logic`: Navigation Compose, `kotlinx-serialization` (lib + plugin), Room (+ KSP, schema export),
   `kotlinx-collections-immutable`, `desugar_jdk_libs` (core library desugaring nos módulos Android), `hilt-navigation-compose`,
   Robolectric, Compose UI Test, `junit-vintage-engine`; versões estáveis consultadas na fonte · Plano §2 ·
   **Pronto quando:** `./gradlew help` ok, nenhuma versão fora do catálogo, `verify.sh fast` verde
-- [ ] **T03** Scaffold (skill `android-feature-scaffold`): `feature:ticketing:{api,domain,data,ui}` e `core:database`, registro no
+- [x] **T03** Scaffold (skill `android-feature-scaffold`): `feature:ticketing:{api,domain,data,ui}` e `core:database`, registro no
   `settings`, dependências no `app`; Konsist da ADR-0010 (`lio://`, `Base64` e DTOs Cielo só em `..data.cielo..`) ·
   **Pronto quando:** módulos compilam vazios, grafo de módulos (`assertModuleGraph`) e Konsist verdes
 - [ ] **T04** Contratos do domain (plano §4): `model/` (Money, PurchaseReference, Event, AvailableEvent, EventMonth, Purchase,

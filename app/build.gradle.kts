@@ -32,6 +32,10 @@ android {
 dependencies {
     implementation(projects.core.common)
     implementation(projects.core.designsystem)
+    implementation(projects.core.database)
+    implementation(projects.feature.ticketing.api)
+    implementation(projects.feature.ticketing.data) // só para agregar o grafo de DI (architecture.md)
+    implementation(projects.feature.ticketing.ui)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.timber)

@@ -15,6 +15,7 @@
  */
 import com.android.build.api.dsl.ApplicationExtension
 import com.jraska.module.graph.assertion.GraphRulesExtension
+import com.rafaeloliveira.bilheteria.buildlogic.addDesugaring
 import com.rafaeloliveira.bilheteria.buildlogic.configureJava
 import com.rafaeloliveira.bilheteria.buildlogic.configureKotlin
 import com.rafaeloliveira.bilheteria.buildlogic.configureLint
@@ -58,6 +59,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 compileOptions.configureJava()
                 lint.configureLint(target)
             }
+            addDesugaring()
             configureKotlin()
             configureUnitTests()
             configureModuleGraph()
