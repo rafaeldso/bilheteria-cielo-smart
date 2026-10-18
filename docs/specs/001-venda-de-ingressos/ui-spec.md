@@ -4,7 +4,7 @@
 |---|---|
 | **Spec** | [spec.md](spec.md) (versão aprovada: 1.1.0) |
 | **Status** | Aprovada |
-| **Versão** | 0.4.0 |
+| **Versão** | 0.4.1 |
 | **Fidelidade** | Prancha hi-fi + protótipo (G) |
 | **Prancha** | [design/mockups.html](design/mockups.html) · revisão local: http://127.0.0.1:8766/specs/001-venda-de-ingressos/design/mockups.html (`python3 -m http.server 8766` em `docs/`) |
 | **Design system** | [DESIGN.md](../../design/DESIGN.md) v0.2.0 (direção A "Ciano Smart") · [components.md](../../design/components.md) |
@@ -347,7 +347,7 @@ Nenhum.
 - **Variantes e estados:** habilitado; botão no limite desabilitado (38% `onSurface`); componente inteiro desabilitado.
 - **Comportamento:** toque único por incremento; sem toque longo; limites recebidos por parâmetro.
 - **Acessibilidade:** grupo "Quantidade de ingressos"; valor como região viva educada ("2 ingressos"); botões com rótulo e estado desabilitado anunciado.
-- **API proposta:** `@Composable fun DsQuantityStepper(value: Int, onDecrement: () -> Unit, onIncrement: () -> Unit, canDecrement: Boolean, canIncrement: Boolean, valueDescription: String, modifier: Modifier = Modifier)`
+- **API proposta:** `@Composable fun DsQuantityStepper(value: Int, onDecrement: () -> Unit, onIncrement: () -> Unit, canDecrement: Boolean, canIncrement: Boolean, valueDescription: String, decrementDescription: String, incrementDescription: String, modifier: Modifier = Modifier)` — rótulos dos botões −/+ por parâmetro (o módulo não tem strings); o rótulo do grupo vem pelo `modifier` do chamador
 - **Classe no kit:** `.stepper`
 
 ### DsProgressIndicator (Aprovado em 2026-10-17 → `Planejado` no catálogo)
@@ -407,3 +407,4 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | 0.2.0 | 2026-10-17 | Rafael Oliveira (com Claude Code) | Revisão 1 do `ui-design-reviewer`: valor no erro e no retry, copy da resposta ilegível, datas absolutas no comprovante, chaves faltantes, contraste por tela, voltar do sistema bloqueado durante pagamento, anúncio assertivo em resultado negativo, `.t-display-small`; propostas P3/P4 |
 | 0.3.0 | 2026-10-17 | Rafael Oliveira (com Claude Code) | Navegação por mês (spec 1.1.0, US-09): filtro de mês e cabeçalhos fixos na SCR-01, prancha "Content · mês filtrado", catálogo de eventos fictício cobrindo 3 meses; componentes aprovados movidos para o kit; P4 fechada |
 | 0.4.0 | 2026-10-17 | Rafael Oliveira (com Claude Code) | P1 e P3 aprovadas (spec 1.1.0): resposta ilegível vai para `Recovering` (variante de erro removida); "pagamento anterior não encontrado" deixa de ser proposta; texto de `Recovering` cobre os dois casos |
+| 0.4.1 | 2026-10-18 | Rafael Oliveira (com Claude Code) | `DsQuantityStepper`: API ganha `decrementDescription`/`incrementDescription` para rotular os botões −/+ no TalkBack (achado na T11) |

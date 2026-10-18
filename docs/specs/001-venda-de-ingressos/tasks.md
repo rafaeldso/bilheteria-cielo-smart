@@ -44,9 +44,9 @@
 - [x] **T09** [P] Tema com a paleta A (cores dos `tokens/*.tokens.json`, extensões `success`/`warning`), tipografia e formas;
   `DsTopAppBar`, `DsButton` (filled/tonal/outlined, largura total, desabilitado), `DsIconButton`, `DsFilterChip` (borda `outline`) ·
   **Pronto quando:** cores iguais aos tokens (teste de igualdade), detekt e compose-rules verdes
-- [ ] **T10** [P] `DsListItem`, `DsSummaryCard`, `DsStatusBadge` (sucesso/erro/neutro/alerta), `DsKeyValueList` ·
+- [x] **T10** [P] `DsListItem`, `DsSummaryCard`, `DsStatusBadge` (sucesso/erro/neutro/alerta), `DsKeyValueList` ·
   **Pronto quando:** previews por variante; semântica (`mergeDescendants`, heading) conforme a UI Spec
-- [ ] **T11** [P] `DsLoadingSkeleton`, `DsEmptyState`, `DsErrorState`, `DsProgressIndicator`, `DsQuantityStepper` ·
+- [x] **T11** [P] `DsLoadingSkeleton`, `DsEmptyState`, `DsErrorState`, `DsProgressIndicator`, `DsQuantityStepper` ·
   **Pronto quando:** API igual à ficha da UI Spec §5; reduzir animações respeitado; previews
 
 ## Fase 2 — Data (lote C, paralelo; depois T15 sequencial)
