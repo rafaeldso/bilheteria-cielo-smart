@@ -18,6 +18,7 @@
     <!-- SCR-03 Comprovante (ui-spec 4.4) -->
     <string name="ticketing_receipt_title">Comprovante</string>
     <string name="ticketing_receipt_back">Voltar ao histórico</string>
+    <string name="ticketing_receipt_back_to_events">Voltar para eventos</string>
 
     <string name="ticketing_receipt_approved_title">Pagamento aprovado</string>
     <string name="ticketing_receipt_approved_body">Entregue os ingressos ao comprador.</string>

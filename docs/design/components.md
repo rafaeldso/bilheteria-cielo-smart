@@ -21,7 +21,8 @@ após aprovação.
 | `DsKeyValueList` | designsystem | `ListItem` | `.kv` | — | par chave/valor lido junto | Planejado |
 | `DsLoadingSkeleton` | designsystem | — | `.sk`, `.sk-row` | lista, card | anuncia "Carregando…"; respeita reduzir animações | Planejado |
 | `DsEmptyState` | designsystem | — | `.state-msg` | com/sem ação | título como heading | Planejado |
-| `DsErrorState` | designsystem | — | `.state-msg` + `.glyph.err` | com ação de tentar de novo | anunciado como alerta; foco na ação | Planejado |
+| `DsErrorState` | designsystem | — | `.state-msg` + `.glyph.err` | com ação de tentar de novo; ícone do botão configurável (`retryIcon`) | anunciado como alerta; foco na ação | Planejado |
+| `DsStatusMessage` | designsystem | — | `.state-msg` | título + texto sem ação | região viva educada; título como heading | Planejado (spec 001) |
 | `DsQuantityStepper` | designsystem | `IconButton` ×2 + `Text` | `.stepper` | — | grupo rotulado; valor como região viva; botão no limite desabilitado | Planejado (spec 001) |
 | `DsProgressIndicator` | designsystem | `LinearProgressIndicator` | `.progress` | indeterminado | `progressbar` com rótulo; estático com reduzir animações | Planejado (spec 001) |
 | `DsSnackbar` | designsystem | `Snackbar` | `.snackbar` | com/sem ação | live region educada | Planejado |

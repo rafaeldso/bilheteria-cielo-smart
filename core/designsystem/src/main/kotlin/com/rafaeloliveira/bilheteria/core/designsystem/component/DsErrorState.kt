@@ -45,6 +45,8 @@ import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
  * @param onRetryClick called when the retry button is clicked.
  * @param modifier applied to the root.
  * @param icon 32dp decorative glyph; defaults to a generic error mark.
+ * @param retryIcon decorative glyph of the button; defaults to a refresh mark, so pass another one (e.g. an arrow back)
+ * when the action navigates instead of repeating something.
  * @param supportingContent optional content between the body and the button (e.g. the quantity and total of the
  * purchase that failed); it is not part of the alert; null renders none.
  */
@@ -56,6 +58,7 @@ fun DsErrorState(
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector = DsIcons.Error,
+    retryIcon: ImageVector = DsIcons.Refresh,
     supportingContent: (@Composable () -> Unit)? = null,
 ) {
     val retryFocus = remember { FocusRequester() }
@@ -76,7 +79,7 @@ fun DsErrorState(
                 text = retryLabel,
                 onClick = onRetryClick,
                 modifier = Modifier.focusRequester(retryFocus),
-                leadingIcon = DsIcons.Refresh,
+                leadingIcon = retryIcon,
             )
         },
     )

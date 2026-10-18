@@ -65,7 +65,9 @@ import java.time.ZoneId
  * @param origin sale shows "Nova venda" and announces the result; history shows the back arrow ([onNavigateUp]) and
  * stays silent, because the operator opened the receipt on purpose.
  * @param zoneId zone used to show the instants.
- * @param onNavigateUp the back arrow of the history origin (navigation, not a [ReceiptUiEvent]).
+ * @param onNavigateUp the back arrow (navigation, not a [ReceiptUiEvent]): always from the history, and from a sale
+ * only in [ReceiptUiState.Error], where there is no result and no "Nova venda" and the operator would otherwise be
+ * stuck (ui-spec SCR-03 4.2).
  */
 @Composable
 internal fun ReceiptScreen(
@@ -79,7 +81,7 @@ internal fun ReceiptScreen(
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
-        topBar = { ReceiptTopBar(origin = origin, onNavigateUp = onNavigateUp) },
+        topBar = { ReceiptTopBar(origin = origin, uiState = uiState, onNavigateUp = onNavigateUp) },
     ) { innerPadding ->
         Box(
             modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()),
@@ -95,15 +97,21 @@ internal fun ReceiptScreen(
 @Composable
 private fun ReceiptTopBar(
     origin: ReceiptOrigin,
+    uiState: ReceiptUiState,
     onNavigateUp: () -> Unit,
 ) {
+    val backLabel =
+        when (origin) {
+            ReceiptOrigin.History -> R.string.ticketing_receipt_back
+            ReceiptOrigin.Sale -> R.string.ticketing_receipt_back_to_events
+        }
     DsTopAppBar(
         title = stringResource(R.string.ticketing_receipt_title),
         navigationIcon = {
-            if (origin == ReceiptOrigin.History) {
+            if (showsNavigateUp(origin, uiState)) {
                 DsIconButton(
                     icon = DsIcons.ArrowBack,
-                    contentDescription = stringResource(R.string.ticketing_receipt_back),
+                    contentDescription = stringResource(backLabel),
                     onClick = onNavigateUp,
                 )
             }

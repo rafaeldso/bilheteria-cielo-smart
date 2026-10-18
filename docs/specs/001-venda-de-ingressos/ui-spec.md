@@ -4,7 +4,7 @@
 |---|---|
 | **Spec** | [spec.md](spec.md) (versão: 1.2.0) |
 | **Status** | Aprovada |
-| **Versão** | 0.4.2 |
+| **Versão** | 0.4.3 |
 | **Fidelidade** | Prancha hi-fi + protótipo (G) |
 | **Prancha** | [design/mockups.html](design/mockups.html) · revisão local: http://127.0.0.1:8766/specs/001-venda-de-ingressos/design/mockups.html (`python3 -m http.server 8766` em `docs/`) |
 | **Design system** | [DESIGN.md](../../design/DESIGN.md) v0.2.0 (direção A "Ciano Smart") · [components.md](../../design/components.md) |
@@ -101,7 +101,8 @@ flowchart LR
 | `ticketing_events_empty_body` | Eventos com data futura e ingressos disponíveis aparecem aqui. | Vazio | |
 | `ticketing_events_error_title` | Não foi possível carregar os eventos | Erro | |
 | `ticketing_events_error_body` | Os dados dos eventos não puderam ser lidos. Tente de novo. | Erro | |
-| `ticketing_common_retry` | Tentar de novo | Botão (todas as telas) | |
+| `ticketing_common_retry` | Tentar de novo | Botão em `Error` da SCR-01 e da SCR-04 | `strings_common.xml`; SCR-02 e SCR-03 têm texto próprio (abaixo) |
+| `ticketing_events_item_supporting_format` | %1$s · %2$s | Item | dia e hora · local |
 
 #### 4.5 Interações
 | Gesto | Elemento | `UiEvent` | Resultado | Feedback |
@@ -178,6 +179,8 @@ A resposta ilegível não é `Error`: vai para `Recovering` (BR-25).
 | `ticketing_purchase_title` | Compra | Top app bar | |
 | `ticketing_purchase_back` | Voltar para eventos | `contentDescription` da seta | |
 | `ticketing_purchase_unit_price` | %1$s por ingresso · %2$s | Cabeçalho | preço e disponíveis |
+| `ticketing_purchase_unit_price_only` | %1$s por ingresso | Cabeçalho em `AwaitingPayment` e `Error` | o snapshot da compra não guarda o estoque; mostrar um número velho durante o pagamento seria errado (0.4.3) |
+| `ticketing_purchase_event_when` / `_event_a11y` / `_total_spoken` | sáb., 15 nov · 20:00 · local / nome, data por extenso, local, preço / Total 100 reais, 2 ingressos de 50 reais | Cabeçalho e total (TalkBack) | texto falado sem "·" nem abreviações (0.4.3) |
 | `ticketing_purchase_quantity` | Quantidade | Rótulo de seção | |
 | `ticketing_purchase_quantity_group` | Quantidade de ingressos | Stepper (a11y, grupo) | |
 | `ticketing_purchase_decrease` / `_increase` | Diminuir quantidade / Aumentar quantidade | Stepper (a11y) | |
@@ -235,7 +238,7 @@ Nenhum. O app não recebe nem exibe dados do cartão nesta tela.
 #### 4.1 Estrutura
 ```
 ┌──────────────────────────────┐
-│ Comprovante                  │  DsTopAppBar ("voltar" só vindo do histórico)
+│ Comprovante                  │  DsTopAppBar ("voltar" vindo do histórico ou em Error)
 ├──────────────────────────────┤
 │ (✓ Aprovada)                 │  DsStatusBadge
 │ R$ 100,00                    │  AmountText (destaque)
@@ -259,6 +262,8 @@ Nenhum. O app não recebe nem exibe dados do cartão nesta tela.
 
 A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histórico" ou "Nova venda".
 
+**`Error` vindo da venda (0.4.3):** não há resultado nem "Nova venda"; a top app bar mostra a seta "Voltar para eventos" (`ticketing_receipt_back_to_events`), que leva à SCR-01. Sem ela o operador só sairia pelo voltar do sistema, e a compra `Failed` mantém o `Error` indefinidamente.
+
 #### 4.3 Componentes
 | Nº | Componente | Variante | Tokens relevantes | Observações |
 |---|---|---|---|---|
@@ -271,12 +276,13 @@ A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histór
 |---|---|---|---|
 | `ticketing_receipt_title` | Comprovante | Top app bar | |
 | `ticketing_receipt_back` | Voltar ao histórico | `contentDescription` | só vindo do histórico |
+| `ticketing_receipt_back_to_events` | Voltar para eventos | `contentDescription` | só em `Error` vindo da venda (0.4.3) |
 | `ticketing_receipt_approved_title` / `_body` | Pagamento aprovado / Entregue os ingressos ao comprador. | `Approved` | |
 | `ticketing_receipt_declined_title` / `_body` | Pagamento negado / A Cielo não autorizou o pagamento. Se o comprador quiser, refaça a venda com outra forma de pagamento. | `Declined` | |
 | `ticketing_receipt_cancelled_title` / `_body` | Pagamento cancelado / O pagamento foi cancelado no terminal. | `Cancelled` | |
 | `ticketing_status_approved` / `_declined` / `_cancelled` | Aprovada / Negada / Cancelada | Badge e campo Status | compartilhado com SCR-04 |
 | `ticketing_receipt_field_*` | Nº da compra · Evento · Data do evento · Local · Quantidade · Valor unitário · Total · Data/hora da compra · Status · Bandeira · Código de autorização · NSU | Lista | uma chave por campo |
-| `ticketing_receipt_datetime_format` | 17/10/2026 às 14:32 | Data/hora da compra | data **absoluta** (`dd/MM/aaaa às HH:mm`): o comprovante pode ser reaberto dias depois |
+| `ticketing_receipt_datetime_format` | 17/10/2026 às 14:32 | Data/hora da compra e Data do evento | data **absoluta** (`dd/MM/aaaa às HH:mm`): o comprovante pode ser reaberto dias depois; a Data do evento usa o mesmo formato (0.4.3), lida por extenso ("17 de outubro às 14:32") |
 | `ticketing_receipt_new_sale` | Nova venda | Botão | |
 | `ticketing_receipt_loading` | Carregando o comprovante | `Loading` (a11y) | |
 | `ticketing_receipt_error_title` / `_body` | Não foi possível abrir o comprovante / Os dados desta compra não puderam ser lidos. | `Error` | BR-28 |
@@ -287,12 +293,13 @@ A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histór
 |---|---|---|---|---|
 | Toque | "Nova venda" | `OnNewSale` | Volta a SCR-01 (disponíveis atualizados) | — |
 | Toque | "Tentar novamente" | `OnRetry` | Repete a leitura (BR-28) | Vai para `Loading` |
+| Toque | Seta "Voltar para eventos" (`Error` vindo da venda) | — (navegação na `Route`) | Volta a SCR-01 | — |
 
 #### 4.6 Acessibilidade
 - **Ordem de leitura:** título → badge → total → título e texto do resultado → lista → botão.
 - **Rótulos falados:** total por extenso ("100 reais"); cada linha da lista lida como par ("Nº da compra, 7F3K-9Q2L").
 - **Headings:** título da tela; título do resultado.
-- **Live regions / foco:** ao abrir pelo fim da venda, o bloco de resultado é anunciado: `Approved` como status (educado); `Declined` e `Cancelled` como alerta (assertivo), por exigirem atenção do operador.
+- **Live regions / foco:** ao abrir pelo fim da venda (e só nele; vindo do histórico o bloco é silencioso), o bloco de resultado é anunciado: `Approved` como status (educado); `Declined` e `Cancelled` como alerta (assertivo), por exigirem atenção do operador.
 - **Fonte 200%:** a lista empilha chave sobre valor quando não cabe; a tela rola.
 - **Contraste:** `onSuccessContainer`/`successContainer` 13,0:1 claro · 7,1:1 escuro; `onErrorContainer`/`errorContainer` 13,3:1 · 7,2:1; neutro `onSurfaceVariant`/`surfaceContainerHighest` 7,2:1 · 7,2:1; lista `onSurface`/`surfaceContainerLow` 15,5:1 · 13,3:1.
 
@@ -335,7 +342,7 @@ A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histór
 |---|---|---|---|
 | `ticketing_history_title` | Histórico de compras | Top app bar | |
 | `ticketing_history_back` | Voltar para eventos | `contentDescription` da seta | |
-| `ticketing_history_datetime_format` | hoje às 14:32 · ontem às 18:10 · 15/10 às 09:00 | Data no item | relativa (DESIGN.md §9) |
+| `ticketing_history_datetime_today` / `_yesterday` / `_other` | hoje às %s · ontem às %s · %1$s às %2$s (15/10 às 09:00) | Data no item | relativa (DESIGN.md §9); substitui a chave única `ticketing_history_datetime_format` (0.4.3) |
 | `ticketing_history_count` | %d compra / %d compras | Rótulo de seção | `plurals` |
 | `ticketing_history_item_a11y` | %1$s, %2$s, %3$s, %4$s, %5$s | Item (TalkBack) | evento, data/hora, ingressos, total, status |
 | `ticketing_history_loading` | Carregando histórico | Skeleton (a11y) | |
@@ -377,6 +384,18 @@ Nenhum.
 - **Acessibilidade:** `progressbar` com rótulo do que se espera ("Aguardando o pagamento").
 - **API proposta:** `@Composable fun DsProgressIndicator(contentDescription: String, modifier: Modifier = Modifier)`
 - **Classe no kit:** `.progress`
+
+### DsStatusMessage (registrado em 0.4.3; já implementado na T10/T21)
+- **Problema:** `AwaitingPayment` e `Recovering` mostram uma mensagem de andamento sem ação; `DsEmptyState`/`DsErrorState` não servem (um é vazio, o outro é erro com botão).
+- **Anatomia:** glifo redondo de 72dp em `surfaceContainerHigh`, título (heading) e texto centralizados, sem botão; conteúdo de apoio opcional abaixo; o `DsProgressIndicator` vem logo abaixo enquanto a espera dura.
+- **Variantes e estados:** único; sem estado desabilitado.
+- **Comportamento:** região viva educada: anuncia ao entrar e quando o texto muda.
+- **Acessibilidade:** `status` educado; título como heading. Limitação conhecida: o corpo é `String`, sem texto falado separado (o valor sai como "R$ 100,00").
+- **API:** `@Composable fun DsStatusMessage(icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, supportingContent: (@Composable () -> Unit)? = null)`
+- **Classe no kit:** reutiliza `.state-msg`.
+
+### DsErrorState: ícone do botão (0.4.3)
+- `retryIcon: ImageVector = DsIcons.Refresh`: quando a ação navega em vez de repetir ("Voltar para eventos" no `Unavailable`), usa `ArrowBack`.
 
 ### Ajustes de kit (sem componente novo)
 - `DsButton` desabilitado (`.btn:disabled`) e largura total (`.btn.block`): estado já previsto no catálogo, faltava no kit.
@@ -429,3 +448,4 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | 0.4.1 | 2026-10-18 | Rafael Oliveira (com Claude Code) | `DsQuantityStepper`: API ganha `decrementDescription`/`incrementDescription` para rotular os botões −/+ no TalkBack (achado na T11) |
 | 0.4.2 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Spec 1.2.0: SCR-02 ganha `Loading`, `Unavailable` (BR-27), variante de `Error` da consulta que falhou (BR-26) e `Completed` como sinal de navegação com `popUpTo`; SCR-03 ganha `Loading` e `Error` (BR-28). Prancha não atualizada: os estados novos reutilizam `DsErrorState`/`DsLoadingSkeleton` |
 | 0.4.2 | 2026-10-18 | Rafael Oliveira | Aprovada (estados `Loading`/`Unavailable`/`Error` da SCR-02 e `Loading`/`Error` da SCR-03; prancha não alterada) |
+| 0.4.3 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da revisão do lote E (decisões aprovadas pelo humano; redação a confirmar no PR): seta "Voltar para eventos" no `Error` do comprovante vindo da venda; `DsErrorState.retryIcon` (seta no `Unavailable`); `DsStatusMessage` registrado (§5); chaves reais da §4.4 (`strings_common.xml`, histórico, cabeçalho da compra); cabeçalho do snapshot sem "disponíveis"; Data do evento absoluta no comprovante; dia da semana por extenso no TalkBack; ícones substitutos por falta em `DsIcons` (`Block`, `History`, `Sync`); live region do comprovante só vindo da venda; texto do `Error` segue a UI Spec ("Tentar de novo" nas SCR-01/04, "Tentar novamente" na SCR-03; o `spec.md` descreve a ação, o texto exato é desta UI Spec) |

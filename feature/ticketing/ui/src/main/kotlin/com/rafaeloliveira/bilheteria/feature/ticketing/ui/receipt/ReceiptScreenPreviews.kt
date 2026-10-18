@@ -132,6 +132,19 @@ private fun ReceiptScreenErrorPreview() {
     ReceiptPreview(uiState = ReceiptUiState.Error, origin = ReceiptOrigin.History)
 }
 
+@Preview(name = "Light", showBackground = true, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
+@Preview(
+    name = "Dark",
+    uiMode = UI_MODE_NIGHT_YES,
+    showBackground = true,
+    widthDp = PREVIEW_WIDTH_DP,
+    heightDp = PREVIEW_HEIGHT_DP,
+)
+@Composable
+private fun ReceiptScreenErrorFromSalePreview() {
+    ReceiptPreview(uiState = ReceiptUiState.Error, origin = ReceiptOrigin.Sale)
+}
+
 @Preview(
     name = "Font 2x",
     fontScale = PREVIEW_FONT_SCALE,

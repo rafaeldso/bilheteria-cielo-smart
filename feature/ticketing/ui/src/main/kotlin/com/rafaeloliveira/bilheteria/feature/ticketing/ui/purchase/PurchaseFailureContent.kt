@@ -88,6 +88,7 @@ internal fun UnavailableContent(
         onRetryClick = onBackToEvents,
         modifier = modifier,
         icon = DsIcons.EventBusy,
+        retryIcon = DsIcons.ArrowBack,
     )
 }
 

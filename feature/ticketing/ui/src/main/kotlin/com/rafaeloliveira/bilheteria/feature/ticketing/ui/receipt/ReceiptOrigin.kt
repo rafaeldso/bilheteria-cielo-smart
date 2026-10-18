@@ -27,3 +27,12 @@ internal enum class ReceiptOrigin {
     /** Opened from the purchase history: shows the back arrow, no "Nova venda". */
     History,
 }
+
+/**
+ * The back arrow of the receipt (ui-spec SCR-03 4.1, 4.2): always from the history; from a sale only when the receipt
+ * cannot be shown ([ReceiptUiState.Error]), because there is no "Nova venda" then and the operator needs a way out.
+ */
+internal fun showsNavigateUp(
+    origin: ReceiptOrigin,
+    uiState: ReceiptUiState,
+): Boolean = origin == ReceiptOrigin.History || uiState == ReceiptUiState.Error
