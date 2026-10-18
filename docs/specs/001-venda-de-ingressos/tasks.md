@@ -93,6 +93,7 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
   ajustar e registrar no README · AC-07, AC-09, AC-10, AC-13, AC-15 · **Pronto quando:** Journeys verdes e achados documentados
 
 ## Fase 6 — Fechamento
+- [x] **T29** Aprovação tardia (BR-29, AC-28): `PurchaseRepository.findById` (domain, `DefaultPurchaseRepository`, DAO e fake) e ramo no `HandlePaymentOutcomeUseCase` que aprova a compra `Failed`/`NotFound` com `reference` e valor iguais, sem tocar a compra aberta nem o gateway · **Pronto quando:** testes JVM do AC-28 (aprova; mantém compra aberta; valor diferente descartado; falha por outro motivo descartada; `reference` desconhecido descartado) e `verify.sh standard` verdes
 - [ ] **T26** `review-changes` (architecture, security, test, compose-ui) e correção dos bloqueantes
 - [ ] **T27** `consistency-check` + `scripts/harness/check-traceability.sh docs/specs/001-venda-de-ingressos`
 - [ ] **T28** `scripts/harness/verify.sh full` verde; spec → Implementada; changelog; seção da integração Cielo no README
@@ -127,6 +128,7 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 | AC-25 | T17 | `AC-25 - dado falha na consulta a Cielo quando tentar de novo entao repete a consulta sem abrir pagamento` |
 | AC-26 | T17, T21 | `AC-26 - dado catalogo ilegivel e sem compra aberta quando abrir a compra entao exibe indisponivel` |
 | AC-27 | T18, T22 | `AC-27 - dado registro ilegivel quando tentar de novo entao volta a carregar e repete a leitura` |
+| AC-28 | T29 | `AC-28 - dado compra falhou nao encontrada quando chega aprovado com mesmo reference e valor entao registra aprovada` |
 
 ## Ordem de execução e paralelismo
 | Etapa | Tarefas | Quem | Paralelo |
@@ -137,6 +139,6 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 | 4 | Lote C (T12–T14) → T15 | 3 workers → sessão principal | Sim / não |
 | 5 | Lote D (T16–T19) | 4 workers | Sim |
 | 6 | Lote E (T20–T23) → T24 | 4 workers → sessão principal | Sim / não |
-| 7 | T25 → T26 → T27 → T28 | Sessão principal + revisores | Revisores em paralelo |
+| 7 | T25 → T29 → T26 → T27 → T28 | Sessão principal + revisores | Revisores em paralelo |
 
 Os lotes A e B não dependem um do outro; rodam em sequência só pelo limite de 4 workers simultâneos.

@@ -4,11 +4,11 @@
 > fim de cada fase e antes de `/clear`. A lista de tarefas continua no [tasks.md](tasks.md).
 > Nunca registre segredos, PAN ou PII aqui.
 
-**Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.2.0 (Aprovada) · **UI Spec:** v0.4.2 (Aprovada) · **Branch:** `main` (commits locais do lote C em diante, sem push)
+**Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.3.0 (Aprovada) · **UI Spec:** v0.4.2 (Aprovada) · **Branch:** `main` (commits locais do lote C em diante, sem push)
 
 ## Estado atual
 - **Última etapa concluída:** lote E (T20–T23) e T24 (navegação) commitados localmente; lote E revisado em 2 rodadas (compose-ui, architecture, ui-design) sem bloqueante
-- **Próxima etapa:** fechar a T25 com as decisões do humano (aprovação tardia, `BROWSABLE`, AC-25) e o que falta no dispositivo (TalkBack, modo escuro, AVD API 30+, terminal real); depois T26 (`review-changes`).
+- **Próxima etapa:** fechar a T25 com o que falta no dispositivo (TalkBack, modo escuro, AVD API 30+, terminal real, J8); depois T26 (`review-changes`). Extras desta sessão: splash nativa (`core-splashscreen` 1.2.0, aprovada) e ícone do app.
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
 - **Último sensor:** `verify.sh standard` → verde (exit 0) e `assertModuleGraph` verde em 2026-10-18 (T24)
@@ -48,7 +48,7 @@
 - [ ] Sugestões da revisão final (aprovada): trocar o `check()` de `toFailedState` por ramo defensivo (`Error(RecoveryFailed)`) para não derrubar o app; ignorar no `settle` um `Finished` de id diferente da última tentativa (motivo de falha obsoleto, sem risco de dinheiro); teste `Finished(Failed)` + catálogo `Unknown` → `Loading`; contador de tentativas no `LookupFailingGateway`; renomear o teste "prevalece a compra" sem prefixo AC-26.
 - [ ] Sensores propostos (harness-improve): Konsist `*UiState` com `@Immutable`; declarações do `ui` `internal`; regra contra `launch{collect}` em `init`; teste de propriedade `Error` × `retry()`; imports não usados em teste; nome de teste da rastreabilidade existir.
 - [x] T24: `popUpTo<PurchaseRoute>{inclusive}` no `Completed`; origem do comprovante derivada da pilha (entrada anterior = histórico); use cases já são `@Inject`, o grafo Hilt do app compila.
-- [ ] **Decisões do humano (T25, 2026-10-18):** (1) **aprovação tardia**: depois de "Pagamento anterior não encontrado" (`Failed`/`NotFound`) o terminal ainda pode concluir o pagamento antigo; o emulador devolveu `PAID` com o `reference` da compra já `Failed` e o app ignorou (dinheiro cobrado, venda `Failed`; a spec não cobre; recomendação: nova BR para reabrir/aprovar a compra `Failed/NotFound` quando chegar callback ou consulta `PAID` com o mesmo `reference` e valor); (2) app fechado com a venda **já aprovada** abre na SCR-01, não no comprovante (reproduzido; recomendação: manter, o comprovante está no histórico); (3) `BROWSABLE`: o callback chega sem ele (Cielo → `startActivity`); link/QR de navegador não testado, risco aceito do plano §7 segue valendo; (4) compra aberta ilegível ao abrir o app não mostra erro na SCR-01 (desvio do AC-25 literal, nunca há cobrança; recomendação: ajustar o texto do AC-25).
+- [x] **Decisões do humano (T25, 2026-10-18), recomendações aprovadas:** (1) aprovação tardia → BR-29/AC-28, spec 1.3.0, T29 implementada e conferida no AVD (compra `Failed/NotFound` + pagamento concluído depois → `Approved`, log `late_approval`, tela vai ao comprovante); sem aviso ao operador (Q14 aberta); (2) reabrir após venda concluída abre a lista (fora do escopo da spec); (3) callback segue sem `BROWSABLE` (plano §4 e §7 atualizados); (4) AC-25 ajustado (o erro aparece na tela da compra).
 - [x] T25 (achados da revisão da T24): processo morto sem estado salvo com a venda aprovada abre na SCR-01 (decisão 2 acima); `OpenPurchaseRedirect` confirmado (compra `Pending` + reabrir → SCR-02 `Recovering` → `Error` "não encontrado" com nova tentativa, com e sem estado salvo); origem do comprovante preservada na rotação; escala de animação 0 navega normalmente. **Não verificado:** flash da SCR-01 antes do redirect (4 quadros sem ver a SCR-01, inconclusivo), fundo escuro sem piscar (o AVD não entrou em modo noturno por shell), duração das transições × 300 ms.
 - [ ] T25: TalkBack/`android layout` não expõem `heading`, live region nem papel (o CLI só mostra texto, `content-desc` e interações): `heading` do resultado do comprovante, foco inicial da SCR-02, papel de botão do "Pagar" e live region sem reanúncio após rotação precisam de TalkBack manual. Verificado: rótulo falado "Pagar 80 reais no terminal", alvos de toque ≥ 48dp (132 px a 420 dpi), "Voltar ao histórico" e demais `content-desc`.
 - [x] T25: **D1** (corrigido) em fonte 200% a SCR-01 truncava o nome ("Orquestr a Jove…"), contra a UI Spec §SCR-01; `DsListItem` agora empilha o trailing abaixo do texto com fonte ≥ 1,5× (conferido no AVD). O local ainda corta na 2ª linha, como a UI Spec permite.
@@ -70,6 +70,7 @@
 ## Log de sessões
 | Data | Ferramenta / agente | Resumo |
 |---|---|---|
+| 2026-10-18 | Claude Code (sessão principal) | Decisões da T25 aprovadas: spec 1.3.0 (BR-29/AC-28), T29 (aprovação tardia), splash nativa e ícone de ingresso |
 | 2026-10-18 | Claude Code (sessão principal, `verify-on-device`) | T25 parcial: J1–J7 no AVD Android 10 com `lio-emulator`, fatos do README do data, D1 (fonte 200% da SCR-01) corrigido, `journeys/` criado; decisões do humano acima |
 | 2026-10-18 | Claude Code + 5× `android-implementer` + revisores (compose-ui, arch, ui-design) | Lote E (T20 ∥ T21 ∥ T22 ∥ T23) + 2 rodadas de revisão; standard verde |
 | 2026-10-17 | Claude Code + `general-purpose` (sonnet) | Spike Cielo → research.md |

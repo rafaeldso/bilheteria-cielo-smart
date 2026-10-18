@@ -4,7 +4,7 @@
 |---|---|
 | **ID** | 001 |
 | **Status** | Aprovada |
-| **Versão** | 1.2.0 |
+| **Versão** | 1.3.0 |
 | **Módulo** | `feature/ticketing` (provisório; o `plan.md` confirma a divisão de módulos) |
 | **Autor** | Rafael Oliveira (com Claude Code) |
 | **Links** | [case_android.md](../../../case_android.md) · [research.md](research.md) · Design ([ui-spec.md](ui-spec.md) v0.4.2 aprovada · [prancha](design/mockups.html)) |
@@ -72,6 +72,7 @@ Persona: **operador da bilheteria** usando o terminal Cielo Smart (Q1).
 - Estorno/cancelamento pós-venda (`lio://payment-reversal`) (Q2).
 - Impressão de comprovante na impressora do terminal (`lio://print`): não pedido no case.
 - Login, cadastro do comprador, escolha do meio de pagamento no app (Q7), multi-EC.
+- Reabrir o app depois de uma venda já concluída leva à lista de eventos, não ao comprovante: o comprovante da última venda fica no histórico (decisão da T25, 2026-10-18).
 
 ## 4. Regras de Negócio (EARS)
 | ID | Regra | História | Prioridade |
@@ -104,6 +105,7 @@ Persona: **operador da bilheteria** usando o terminal Cielo Smart (Q1).
 | BR-26 | SE a consulta da BR-15 não puder ser concluída (falha ao ler ou gravar a compra, ou falha ao consultar a Cielo), ENTÃO o sistema deve exibir erro com a opção de tentar novamente, e a nova tentativa deve repetir a consulta, sem abrir nova cobrança. | US-06, US-07 | Deve ter |
 | BR-27 | SE o evento da compra não puder ser carregado (catálogo ilegível, evento inexistente ou sem ingressos) e não houver compra em andamento, ENTÃO o sistema deve informar que o evento está indisponível e oferecer a volta para a lista de eventos. | US-02, US-07 | Deve ter |
 | BR-28 | SE o comprovante não puder ser carregado (falha de leitura, compra inexistente ou sem resultado de venda), ENTÃO o sistema deve exibir erro com a opção de tentar novamente. | US-05, US-07 | Deve ter |
+| BR-29 | QUANDO a Cielo retornar pagamento autorizado cujo `reference` seja o de uma compra registrada como **Falhou** por "pagamento não encontrado" (BR-15) e cujo valor pago seja igual ao total dessa compra, ENTÃO o sistema deve registrar essa compra como **Aprovada**, com os dados da transação, sem alterar a compra em andamento, se houver outra. Pagamento autorizado com valor diferente, ou para compra que falhou por outro motivo, continua descartado. | US-06, US-07 | Deve ter |
 
 ## 5. Critérios de Aceite (Gherkin)
 Valores ilustrativos (preço, nomes) são dados de teste, não regra.
@@ -318,10 +320,12 @@ Então o filtro está em "Todos" e dezembro não aparece mais como opção
 ### AC-25 — Consulta que falha não libera cobrança (BR-26)
 ```gherkin
 Dado uma compra "em andamento" sem resultado ao reabrir o app
-Quando a consulta à Cielo ou a leitura da compra falhar
+Quando a tela da compra é exibida e a consulta à Cielo ou a leitura da compra falhar
 Então é exibido erro com "Tentar novamente"
 E tentar novamente repete a consulta sem abrir novo pagamento
 ```
+> Nota (2026-10-18, T25): o erro aparece na tela da compra, para onde o app leva o operador ao reabrir com compra em
+> andamento; a lista de eventos não mostra esse erro. Em nenhum caso há nova cobrança.
 
 ### AC-26 — Evento indisponível na compra (BR-27)
 ```gherkin
@@ -340,6 +344,17 @@ Quando o comprovante é aberto
 Então é exibido erro com "Tentar novamente"
 E tentar novamente repete a leitura
 ```
+
+### AC-28 — Pagamento aprovado depois de "não encontrado" (BR-29)
+```gherkin
+Dado uma compra registrada como Falhou por "pagamento anterior não encontrado"
+Quando a Cielo retorna pagamento autorizado com o reference e o valor dessa compra
+Então a compra passa a Aprovada, com os dados da transação
+E aparece no histórico e conta na disponibilidade do evento (BR-17)
+E uma compra em andamento, se houver, não é alterada
+```
+> Nota (2026-10-18, T25): o emulador mostrou o caso: o app foi reaberto com o terminal ainda aberto, a consulta não achou o
+> pedido (Falhou) e o terminal concluiu o pagamento depois. O app não avisa o operador (ver Q14).
 
 ## 6. Estados de UI e Eventos
 **Tela de eventos** (`EventListUiState`):
@@ -440,6 +455,7 @@ E tentar novamente repete a leitura
 | Q11 | Decrementar disponibilidade após aprovação? | **Sim**: catálogo − aprovadas, por aparelho (limitação vai para os trade-offs do README) | Respondida |
 | Q12 | Credenciais Cielo | Fictícias no emulador; se recusadas, cadastro no Portal Cielo | Respondida |
 | Q13 | Como achar eventos de um mês sem rolar a lista toda? | Filtro por mês (chips) + lista agrupada com cabeçalho por mês (A+B). O catálogo JSON passa a cobrir 3–4 meses | Respondida |
+| Q14 | O operador deve ser avisado quando uma compra Falhou for aprovada depois (BR-29)? | Por ora **não**: a venda aparece no histórico como Aprovada. O risco é cobrar de novo o comprador se o operador já tentou pagar outra vez; avaliar aviso e estorno em spec futura | Aberta |
 
 ## 11. Definition of Ready
 - [x] Problema, objetivo e métricas definidos
@@ -460,3 +476,4 @@ E tentar novamente repete a leitura
 | 1.1.0 | 2026-10-17 | Rafael Oliveira | Aprovada com P1 e P3 da UI Spec: BR-25 (resposta ilegível consulta a Cielo antes de nova cobrança; AC-14 reescrito); BR-15 define o destino quando o pagamento não é encontrado (AC-15) |
 | 1.2.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Estados presos achados na revisão do lote D: BR-26/AC-25 (consulta que falha → erro com retry da consulta), BR-27/AC-26 (`PurchaseUiState.Unavailable`), BR-28/AC-27 (`ReceiptUiState.Error`). Decisão humana na revisão |
 | 1.2.0 | 2026-10-18 | Rafael Oliveira | Aprovada (BR-26..28, AC-25..27) |
+| 1.3.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da T25 no emulador, recomendações aprovadas pelo humano: BR-29/AC-28 (pagamento aprovado depois de "não encontrado" vira Aprovada); AC-25 ajustado (o erro aparece na tela da compra); fora do escopo: reabrir o app após venda concluída; Q14 aberta |

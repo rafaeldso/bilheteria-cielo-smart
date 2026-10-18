@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| **Spec** | [spec.md](spec.md) (versão 1.2.0) · [ui-spec.md](ui-spec.md) (0.4.2) · [research.md](research.md) |
+| **Spec** | [spec.md](spec.md) (versão 1.3.0) · [ui-spec.md](ui-spec.md) (0.4.2) · [research.md](research.md) |
 | **Status** | Aprovado (2026-10-17) · ADR: [0010](../../adr/0010-integracao-cielo-smart-por-deep-link.md) |
 | **Tamanho** | G |
 
@@ -184,6 +184,9 @@ interface PurchaseRepository {
     suspend fun createPending(purchase: Purchase): DataResult<Unit>    // falha se já houver aberta (BR-10)
     suspend fun update(purchase: Purchase): DataResult<Unit>
     suspend fun findOpen(): DataResult<Purchase?>
+
+    /** A purchase by id (= `reference`), open or not; used by the late approval (BR-29). */
+    suspend fun findById(id: String): DataResult<Purchase?>
 }
 interface PaymentGateway {
     suspend fun requestPayment(purchase: Purchase): DataResult<Unit>   // Failure(TicketingError.TerminalAppUnavailable)
@@ -219,7 +222,7 @@ class ObservePurchaseHistoryUseCase   // BR-18, BR-20, BR-21
   sku=eventId, unitOfMeasure="unidade", unitPrice=centavos}]`, `value`=total em centavos como string; sem `paymentCode`, Q7) →
   Base64 → `lio://payment?request=…&urlCallback=order://response`. `Intent(ACTION_VIEW)` com `FLAG_ACTIVITY_NEW_TASK`;
   `resolveActivity == null` ou `ActivityNotFoundException` → `TerminalAppUnavailable` (AC-12).
-- **Cielo, entrada** (`CieloCallbackActivity`, exported, intent-filter `VIEW`/`DEFAULT` (sem `BROWSABLE`: link de navegador/QR não aciona o callback; confirmar na T25), scheme `order`, host `response`,
+- **Cielo, entrada** (`CieloCallbackActivity`, exported, intent-filter `VIEW`/`DEFAULT` (sem `BROWSABLE`: link de navegador/QR não aciona o callback; T25: o callback chega sem ele, disparado pelo app da Cielo; link de navegador não testado, decisão humana de 2026-10-18: manter sem), scheme `order`, host `response`,
   `launchMode="singleInstance"` e `taskAffinity=""` (mobsfscan/StrandHogg 2.0), sem UI): lê `response` → Base64 → `CieloResponseParser` → `HandlePaymentOutcomeUseCase` → traz a
   `MainActivity` de volta → `finish()`. Parser tolerante (`ignoreUnknownKeys`), lê **só** `id`, `reference`, `status`, `payments[].amount`,
   `payments[].{authCode, cieloCode, brand, paymentFields.statusCode}`, e `code` no erro. Classificação pelo JSON, não pelo `responsecode`.
@@ -329,8 +332,9 @@ andamento; falha, registro inexistente ou `Failed` vão para `ReceiptUiState.Err
 | Retorno `{code:3}` | `PaymentOutcome.Declined` | `ReceiptUiState.Declined` | Nova venda |
 | Retorno `{code:2}`, `{code:4}`, código desconhecido | `PaymentOutcome.Failed(Generic/Authentication)` | `Error(Generic/Authentication)` | Tentar pagar de novo |
 | Base64/JSON ilegível, campos obrigatórios ausentes | `PaymentOutcome.Unreadable` | `Recovering` → consulta (BR-25) | — |
-| Aprovado com `reference` ou `payments[].amount` diferentes da compra aberta | descartado + log de segurança | Sem mudança (continua aguardando/recuperando) | — |
+| Aprovado com `reference` ou `payments[].amount` diferentes da compra aberta (e sem a exceção da linha seguinte) | descartado + log de segurança | Sem mudança (continua aguardando/recuperando) | — |
 | Callback sem compra aberta | descartado + log | — | — |
+| Aprovado com `reference` de compra `Failed`/`NotFound` e `payments[].amount` igual ao total (BR-29, AC-28) | `Approved` na compra antiga (só `repository.update`; a compra aberta e a sessão do gateway não mudam); log `late_approval` | Venda no histórico; sem aviso (Q14) | — |
 | Consulta sem o `reference` em 4 páginas | `PaymentOutcome` → `Failed(NotFound)` | `Error(RecoveryNotFound)` | Tentar pagar de novo |
 | Falha ao ler a compra aberta, ou `recoverPending()` com `Failure` | `StorageFailure` / falha do gateway | `Error(RecoveryFailed)` (BR-26) | Consultar de novo (repete leitura e consulta; nunca paga) |
 | Catálogo ilegível, evento inexistente ou esgotado, sem compra aberta | `CatalogUnavailable` / ausência | `PurchaseUiState.Unavailable` (BR-27) | Voltar para eventos |
@@ -373,6 +377,7 @@ token por MDM/configuração gerenciada da Cielo Store.
 | Ameaça | Cenário | Mitigação | Prova |
 |---|---|---|---|
 | Spoofing | App malicioso no aparelho envia `order://response` com "aprovado" falso | Só aplica resultado se houver compra aberta **e** `reference` e `payments[].amount` baterem com ela; caso contrário descarta e loga | Testes do `HandlePaymentOutcomeUseCase` (respostas forjadas) |
+| Spoofing (BR-29) | App malicioso envia `order://response` aprovado com o `reference` de uma compra `Failed`/`NotFound` | Só vira `Approved` se o `reference` (UUID v4 que só existe no banco local e no `lio://payment` enviado), o status `Failed`/`NotFound` e o valor igual ao total baterem; compra `Failed` por outro motivo continua descartada | Testes do `HandlePaymentOutcomeUseCase` (AC-28 e respostas forjadas) |
 | Spoofing (**risco aceito**, 2026-10-18) | App malicioso envia `order://response` com **erro** (`{code:1..4}`), que pela API da Cielo não traz `reference`, durante um pagamento em andamento: a compra é encerrada como Cancelada/Negada/Falhou enquanto a Cielo ainda pode cobrar | Nenhuma no código. Exige app malicioso instalado no terminal (aparelho gerenciado, loja restrita). A consulta pela listagem não distingue "em andamento" de "cancelado", então não mitiga. Alternativa avaliada e não adotada: aceitar aprovação tardia por `reference` + valor em compra já encerrada | Decisão humana no `review-changes` do lote C; reavaliar se a verificação no emulador (T25) mostrar outro cenário |
 | Tampering | Resposta adulterada/corrompida | Parser estrito nos campos usados; ilegível → `Recovering` + consulta (BR-25), nunca `Approved` | AC-14, testes do parser |
 | Repudiation | Operador contesta uma venda | Compra registrada com `reference`, horário e dados da transação; histórico | AC-18 |
@@ -411,7 +416,7 @@ Nome de todo teste cita o `AC-xx` (S-09). Cobertura pelos limites do testing.md 
 |---|---|---|---|
 | ~~Emulador recusar credenciais fictícias~~ | — | — | **Resolvido na T01:** aceitas (research §13) |
 | ~~Pacote do emulador diferente~~ | — | — | **Resolvido na T01:** `br.com.cielosmart.orderservice`, na allowlist |
-| Ordenação e base de página do `lio://orders` | Baixa | Médio | **T01:** sem tela, ordem crescente → varrer as últimas páginas; base da página conferida na T25 |
+| Ordenação e base de página do `lio://orders` | Baixa | Médio | **T01:** sem tela, ordem crescente → varrer as últimas páginas; **T25:** base da página confirmada (`page 0` → `currentPage 1`); ordenação indeterminada no emulador (lista fixa): validar em terminal real |
 | "Negada" não demonstrável no emulador | Certa (T01: "Erro" = código 2) | Baixo | Regra coberta por teste unitário; limitação no README |
 | ~~Unidade de `unitPrice`~~ | — | — | **Resolvido na T01:** centavos |
 | `ReceiptUiState.Loading` / `PurchaseUiState.Loading` fora da spec | — | Baixo | Aceitos como detalhe técnico (2026-10-17, 2026-10-18) |

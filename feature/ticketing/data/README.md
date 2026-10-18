@@ -30,7 +30,7 @@ fictícias do build. O emulador **não** reproduz um terminal real: o que depend
 | 2 | Unidade de `unitPrice` | Centavos: `unitPrice`, `amount` e `price` = `8000` para R$ 80,00, igual ao valor exibido pelo emulador. |
 | 3 | Listagem de `orders` | A requisição com `page: 0` volta com `currentPage: 1` (o `FIRST_CIELO_PAGE = 1` do parser está certo). A lista do emulador é fixa (um pedido de exemplo `ORDER #1` e só a primeira venda aprovada; cancelados e erros não entram), então a **ordenação não pôde ser determinada**: validar em terminal real antes de confiar em `pageSize = 5` para recuperar vendas antigas. |
 | 4 | Percent-encoding do Base64 | O emulador aceita a URI com o `=` de padding literal e responde Base64 sem encoding. As amostras não tinham `+` nem `/`, então esses dois caracteres continuam sem prova. |
-| 5 | Callback sem `BROWSABLE` | O callback `order://response` chega (disparado pelo app da Cielo). Link/QR vindo de um navegador **não foi testado** (sem navegador no AVD); a decisão sobre `BROWSABLE` e o risco aceito do plano §7 continuam com o humano. |
+| 5 | Callback sem `BROWSABLE` | O callback `order://response` chega (disparado pelo app da Cielo). Link/QR vindo de um navegador **não foi testado** (sem navegador no AVD); decisão do humano (2026-10-18): manter o callback sem `BROWSABLE`, com o risco aceito do plano §7. |
 | 6 | `<queries>` só com pacotes | O app da Cielo é resolvido e aberto, **mas no Android 10 não existe filtro de visibilidade de pacotes**: o teste só vale a partir do Android 11 (precisa de AVD API 30+ ou terminal real). |
 | 7 | Foreground service e tema do callback | Android 10 não tem `POST_NOTIFICATIONS`; a notificação usa o canal `payment_in_progress` (importância baixa, visibilidade secreta). Android 13+ e o piscar do tema translúcido não foram verificados. |
 | 8 | Credenciais fictícias (Q12) | Aceitas para pagamento e listagem (`clientID` fictício). |
@@ -41,8 +41,9 @@ persistido).
 
 **Pedido abandonado no emulador:** se o app morre com o terminal aberto, o emulador mantém aquele pedido e devolve o
 `reference` **antigo** no próximo pagamento. O app o ignora (a compra atual fica `Pending` até a reabertura recuperar pela
-BR-15), mas o pedido antigo pode ficar `PAID` na Cielo com a compra local já em `Failed`/`NotFound`. Hoje não há regra de
-spec para essa aprovação tardia (ver `progress.md`).
+BR-15), mas o pedido antigo pode ficar `PAID` na Cielo com a compra local já em `Failed`/`NotFound`. Essa aprovação tardia é
+tratada pela BR-29 (spec 1.3.0): o `HandlePaymentOutcomeUseCase` aprova a compra `Failed`/`NotFound` quando chega `PAID` com o
+mesmo `reference` e valor, sem tocar a compra aberta.
 
 ## Como testar
 ```bash
