@@ -22,6 +22,8 @@ após aprovação.
 | `DsLoadingSkeleton` | designsystem | — | `.sk`, `.sk-row` | lista, card | anuncia "Carregando…"; respeita reduzir animações | Planejado |
 | `DsEmptyState` | designsystem | — | `.state-msg` | com/sem ação | título como heading | Planejado |
 | `DsErrorState` | designsystem | — | `.state-msg` + `.glyph.err` | com ação de tentar de novo | anunciado como alerta; foco na ação | Planejado |
+| `DsQuantityStepper` | designsystem | `IconButton` ×2 + `Text` | `.stepper` | — | grupo rotulado; valor como região viva; botão no limite desabilitado | Planejado (spec 001) |
+| `DsProgressIndicator` | designsystem | `LinearProgressIndicator` | `.progress` | indeterminado | `progressbar` com rótulo; estático com reduzir animações | Planejado (spec 001) |
 | `DsSnackbar` | designsystem | `Snackbar` | `.snackbar` | com/sem ação | live region educada | Planejado |
 | `DsTextField` | designsystem | `OutlinedTextField` | — (adicionar ao kit quando a 1ª spec precisar) | texto, numérico, sensível | erro anunciado; rótulo sempre visível | Planejado |
 | `AmountText` | ui | `Text` | `.num` + tipo | tamanhos da escala | leitura "189 reais e 90 centavos" | Planejado |

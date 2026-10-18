@@ -77,6 +77,20 @@ scan_case 1 feature/a/data/src/main/kotlin/P.kt "val pan = \"$pan_ok\"" 'PAN em 
 scan_case 1 feature/a/data/src/main/kotlin/C.kt 'val cpf = "123.456.789-09"' 'CPF em produção'
 scan_case 0 feature/a/data/src/main/kotlin/N.kt 'val timeout = 30000L' 'número comum'
 
+# --- check-traceability.sh (S-09) --------------------------------------------
+# Spec "Aprovada" (em implementação) só avisa; "Implementada" falha (steering loop 2026-10-17).
+trace_case() { # <expected> <status> <description>
+  local dir="build/harness/selftest-s09"
+  rm -rf "$dir"; mkdir -p "$dir"
+  printf '| **Status** | %s |\n| **Módulo** | `feature/naoexiste` |\n\n### AC-999 — exemplo\n' "$2" > "$dir/spec.md"
+  scripts/harness/check-traceability.sh "$dir" >/dev/null 2>&1
+  expect "$1" "$?" "S-09: $3"
+  rm -rf "$dir"
+}
+trace_case 0 "Aprovada" "spec aprovada sem teste só avisa"
+trace_case 1 "Implementada" "spec implementada sem teste falha"
+trace_case 0 "Rascunho" "spec em rascunho é ignorada"
+
 # --- Workflows agênticos (ADR-0004) ------------------------------------------
 fm() { # <file> <field>: prints a frontmatter field value
   awk -v k="$2" 'NR==1&&$0=="---"{f=1;next} f&&$0=="---"{exit} f&&index($0,k":")==1{sub(k":[ ]*","");print;exit}' "$1"

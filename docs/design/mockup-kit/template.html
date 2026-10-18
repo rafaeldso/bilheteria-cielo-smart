@@ -50,15 +50,15 @@
 /* ===== Tokens do app (docs/design/tokens) — escopo do celular, não da página ===== */
 .app {
   --fs: 1; /* escala de fonte do sistema (1 = 100%, 2 = 200%) */
-  --md-primary: #006A6A; --md-on-primary: #FFFFFF; --md-primary-container: #9CF1F0; --md-on-primary-container: #002020;
-  --md-secondary: #4A6363; --md-on-secondary: #FFFFFF; --md-secondary-container: #CCE8E7; --md-on-secondary-container: #051F1F;
-  --md-tertiary: #4B607C; --md-on-tertiary: #FFFFFF; --md-tertiary-container: #D3E4FF; --md-on-tertiary-container: #041C35;
+  --md-primary: #00658F; --md-on-primary: #FFFFFF; --md-primary-container: #C7E7FF; --md-on-primary-container: #001E2E;
+  --md-secondary: #3B5F84; --md-on-secondary: #FFFFFF; --md-secondary-container: #D2E4FF; --md-on-secondary-container: #001D36;
+  --md-tertiary: #615A7C; --md-on-tertiary: #FFFFFF; --md-tertiary-container: #E7DEFF; --md-on-tertiary-container: #1D1736;
   --md-error: #BA1A1A; --md-on-error: #FFFFFF; --md-error-container: #FFDAD6; --md-on-error-container: #410002;
-  --md-surface: #F4FBFA; --md-on-surface: #161D1D; --md-surface-variant: #DAE5E4; --md-on-surface-variant: #3F4948;
-  --md-surface-container-lowest: #FFFFFF; --md-surface-container-low: #EFF5F4; --md-surface-container: #E9EFEE;
-  --md-surface-container-high: #E3E9E9; --md-surface-container-highest: #DDE4E3;
-  --md-outline: #6F7979; --md-outline-variant: #BEC9C8; --md-scrim: #000000;
-  --md-inverse-surface: #2B3231; --md-inverse-on-surface: #ECF2F1; --md-inverse-primary: #80D5D4;
+  --md-surface: #F6FAFE; --md-on-surface: #171C20; --md-surface-variant: #DDE3EA; --md-on-surface-variant: #41484D;
+  --md-surface-container-lowest: #FFFFFF; --md-surface-container-low: #F0F4F8; --md-surface-container: #EAEEF2;
+  --md-surface-container-high: #E4E9ED; --md-surface-container-highest: #DFE3E7;
+  --md-outline: #71787E; --md-outline-variant: #C1C7CE; --md-scrim: #000000;
+  --md-inverse-surface: #2C3135; --md-inverse-on-surface: #EDF1F5; --md-inverse-primary: #85CFFF;
   --md-success: #2E6B30; --md-on-success: #FFFFFF; --md-success-container: #B1F1A9; --md-on-success-container: #002204;
   --md-warning: #7A5900; --md-on-warning: #FFFFFF; --md-warning-container: #FFDEA3; --md-on-warning-container: #261900;
   --md-space-xs: 4px; --md-space-sm: 8px; --md-space-md: 12px; --md-space-lg: 16px; --md-space-xl: 24px; --md-space-xxl: 32px;
@@ -66,18 +66,41 @@
   --md-shape-extra-large: 28px; --md-shape-full: 9999px;
 }
 .app[data-scheme="dark"] {
-  --md-primary: #80D5D4; --md-on-primary: #003737; --md-primary-container: #004F4F; --md-on-primary-container: #9CF1F0;
-  --md-secondary: #B0CCCB; --md-on-secondary: #1B3534; --md-secondary-container: #324B4B; --md-on-secondary-container: #CCE8E7;
-  --md-tertiary: #B3C8E8; --md-on-tertiary: #1C314B; --md-tertiary-container: #334863; --md-on-tertiary-container: #D3E4FF;
+  --md-primary: #85CFFF; --md-on-primary: #00344C; --md-primary-container: #004C6C; --md-on-primary-container: #C7E7FF;
+  --md-secondary: #A2C9F7; --md-on-secondary: #003258; --md-secondary-container: #224A70; --md-on-secondary-container: #D2E4FF;
+  --md-tertiary: #CBC1E9; --md-on-tertiary: #332C4C; --md-tertiary-container: #4A4263; --md-on-tertiary-container: #E7DEFF;
   --md-error: #FFB4AB; --md-on-error: #690005; --md-error-container: #93000A; --md-on-error-container: #FFDAD6;
-  --md-surface: #0E1514; --md-on-surface: #DDE4E3; --md-surface-variant: #3F4948; --md-on-surface-variant: #BEC9C8;
-  --md-surface-container-lowest: #090F0F; --md-surface-container-low: #161D1D; --md-surface-container: #1A2121;
-  --md-surface-container-high: #252B2B; --md-surface-container-highest: #2F3636;
-  --md-outline: #889392; --md-outline-variant: #3F4948; --md-scrim: #000000;
-  --md-inverse-surface: #DDE4E3; --md-inverse-on-surface: #2B3231; --md-inverse-primary: #006A6A;
+  --md-surface: #0F1418; --md-on-surface: #DFE3E7; --md-surface-variant: #41484D; --md-on-surface-variant: #C1C7CE;
+  --md-surface-container-lowest: #0A0F12; --md-surface-container-low: #171C20; --md-surface-container: #1B2024;
+  --md-surface-container-high: #262B2F; --md-surface-container-highest: #31363A;
+  --md-outline: #8B9198; --md-outline-variant: #41484D; --md-scrim: #000000;
+  --md-inverse-surface: #DFE3E7; --md-inverse-on-surface: #2C3135; --md-inverse-primary: #00658F;
   --md-success: #96D78F; --md-on-success: #00390A; --md-success-container: #13521B; --md-on-success-container: #B1F1A9;
   --md-warning: #F5BF48; --md-on-warning: #402D00; --md-warning-container: #5C4300; --md-on-warning-container: #FFDEA3;
 }
+
+/* ===== Componentes e utilitários adicionados pela spec 001 (aprovados em 2026-10-17) =====
+   DsQuantityStepper (.stepper), DsProgressIndicator (.progress), DsButton desabilitado/largura total,
+   DsStatusBadge neutro, displaySmall, cabeçalho de seção fixo, dica e cabeçalho de item. */
+.btn:disabled { background: color-mix(in srgb, var(--md-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-on-surface) 38%, transparent); cursor: default; }
+.btn.block { width: 100%; justify-content: center; }
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px 16px 8px;
+  padding: 8px; border-radius: var(--md-shape-full); background: var(--md-surface-container-high); }
+.stepper .icon-btn { width: 48px; height: 48px; border-radius: var(--md-shape-full);
+  background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.stepper .icon-btn:disabled { background: transparent; color: color-mix(in srgb, var(--md-on-surface) 38%, transparent); cursor: default; }
+.stepper .qty { font: 400 calc(28px * var(--fs))/calc(36px * var(--fs)) var(--font-brand); min-width: 3ch; text-align: center; }
+.progress { height: 4px; margin: 4px 16px; border-radius: 2px; overflow: hidden; background: var(--md-secondary-container); position: relative; }
+.progress::after { content: ""; position: absolute; inset: 0 60% 0 0; background: var(--md-primary); border-radius: 2px;
+  animation: ds-progress 1.4s infinite ease-in-out; }
+@keyframes ds-progress { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { .progress::after { animation: none; inset: 0; opacity: .5; } }
+.status.neutral { background: var(--md-surface-container-highest); color: var(--md-on-surface-variant); }
+.event-meta { padding: 4px 16px 12px; display: grid; gap: 2px; }
+.hint { padding: 0 16px 4px; }
+.t-display-small { font: 400 calc(36px * var(--fs))/calc(44px * var(--fs)) var(--font-brand); }
+.month-header { position: sticky; top: 0; z-index: 1; background: var(--md-surface); }
 
 /* ===== Página ===== */
 html { background: var(--bg); }
@@ -168,7 +191,7 @@ body.hide-notes .notes, body.hide-notes .ann::after { display: none; }
   background: transparent; color: var(--md-on-surface-variant); cursor: pointer; }
 .chips { display: flex; gap: 8px; padding: 4px 16px 8px; overflow-x: auto; scrollbar-width: none; }
 .chip { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 16px;
-  border-radius: var(--md-shape-small); border: 1px solid var(--md-outline-variant); background: transparent;
+  border-radius: var(--md-shape-small); border: 1px solid var(--md-outline); background: transparent;
   color: var(--md-on-surface-variant); cursor: pointer; position: relative; }
 .chip::before { content: ""; position: absolute; inset: -8px 0; } /* área de toque 48dp */
 .chip[aria-pressed="true"] { background: var(--md-secondary-container); color: var(--md-on-secondary-container); border-color: transparent; padding-left: 8px; }

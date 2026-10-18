@@ -7,20 +7,26 @@
 
 | Campo | Valor |
 |---|---|
-| **Status** | Rascunho: direção visual a aprovar (tokens são placeholder) |
-| **Versão** | 0.1.0 |
+| **Status** | Aprovado: direção visual A "Ciano Smart" (2026-10-17) |
+| **Versão** | 0.2.0 |
 | **Base** | Material Design 3 + tokens DTCG 2025.10 |
 
 ## 1. Overview
-- **Produto:** app Android para lojistas acompanharem e operarem vendas com cartão e Pix.
+- **Produto:** Bilheteria, app Android de venda de ingressos de eventos locais operado no terminal Cielo Smart.
 - **Contexto de uso:** balcão, rua, luz forte, uma mão, interrupções frequentes; aparelhos comuns e
   terminais de pagamento Android com tela pequena.
 - **Personalidade:** confiável, direto, calmo. Números primeiro; nada decorativo compete com o valor.
-- **Identidade de marca:** `[PRECISA ESCLARECIMENTO: há manual de marca oficial (logo, cor primária, fonte)? Se sim, ele substitui as cores e fontes placeholder.]`
+- **Identidade de marca:** sem manual oficial (app genérico do case). Paleta **semelhante, não igual**, à dos apps
+  Cielo Smart/LIO: ciano vivo como primária e azul-marinho como secundária. Proibido usar logo, nome, ícones ou
+  telas da Cielo. Direções comparadas em [directions/](directions/) (A escolhida; B e C ficam como registro).
 
 ## 2. Colors
 Só papéis semânticos do Material 3 (`primary`, `surface`, `onSurface`, `error`…) mais as extensões
 `success` e `warning`. Valores em `tokens/color.light.tokens.json` e `tokens/color.dark.tokens.json`.
+
+**Semente:** ciano `#00A3E0` → `primary` `#00658F` (claro) / `#85CFFF` (escuro); secundária azul-marinho
+`#3B5F84` / `#A2C9F7`. Papéis derivados manualmente da semente (aproximados; contraste AA verificado por script,
+pior par 6,15:1). Se o Material Theme Builder for usado depois, regerar os papéis a partir da mesma semente.
 
 | Papel | Uso |
 |---|---|
@@ -94,3 +100,9 @@ componente novo é proposto na UI Spec (seção 5) e só existe depois de aprova
 | Skeleton com a geometria do conteúdo | Spinner centralizado para listas |
 | Tokens e `Ds*` | `Color(0xFF…)`, `dp`/`sp` mágicos, componente ad hoc |
 | Dados fictícios em mockups e previews | Dados reais de lojista, portador ou cartão |
+
+## Changelog
+| Versão | Data | Mudança |
+|---|---|---|
+| 0.1.0 | 2026-10-16 | Rascunho com tokens placeholder |
+| 0.2.0 | 2026-10-17 | Direção visual A "Ciano Smart" aprovada; tokens de cor regerados; produto e identidade definidos |

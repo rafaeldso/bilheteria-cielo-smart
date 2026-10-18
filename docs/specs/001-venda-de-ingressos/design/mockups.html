@@ -1,0 +1,829 @@
+<title>Venda de ingressos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--
+  Copyright 2026 Rafael Oliveira
+  Licensed under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+
+  MOCKUP KIT — template de prancha de revisão de design (ver docs/design/README.md).
+  Como usar (skill sdd-design):
+    1. Copie para docs/specs/NNN-nome/design/mockups.html.
+    2. Edite SÓ o bloco "DADOS DA FEATURE" no <script>: META, SCREENS (funções estado → HTML),
+       BOARDS (uma prancha por estado da spec, com notas) e PROTOTYPE (máquina de estados).
+    3. Use apenas variáveis --md-* (tokens de docs/design/tokens) e as classes de componentes
+       abaixo (cada uma mapeia um componente de docs/design/components.md).
+  Variáveis --md-* espelham docs/design/tokens/*.tokens.json. Mudou token? Atualize aqui também.
+  Dados SEMPRE fictícios: nada de PAN, CPF, nome ou valor real.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Roboto+Flex:opsz,wght@8..144,400..600&family=Roboto:wght@400;500&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,400,0..1,0&display=swap">
+<style>
+/* Layout: mesa de revisão — cabeçalho com metadados e controles, pranchas (um celular por estado)
+   com anotações em "redline", aba de protótipo clicável e aba de fluxo. */
+:root {
+  /* Cromo da prancha (segue o tema de quem visualiza) */
+  --bg: #e9edec;
+  --panel: #f7f9f8;
+  --ink: #1b2120;
+  --muted: #56615f;
+  --line: #ccd5d3;
+  --redline: #c2185b;
+  --redline-ink: #ffffff;
+  --focus: #006a6a;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-id: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* App (Android): famílias dos tokens font.family.* */
+  --font-brand: "Roboto Flex", Roboto, system-ui, sans-serif;
+  --font-plain: Roboto, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111615; --panel: #1a201f; --ink: #e3e9e8; --muted: #9ba6a4; --line: #2f3836;
+    --redline: #ff7aa8; --redline-ink: #2a0012; --focus: #80d5d4; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111615; --panel: #1a201f; --ink: #e3e9e8; --muted: #9ba6a4; --line: #2f3836;
+  --redline: #ff7aa8; --redline-ink: #2a0012; --focus: #80d5d4; color-scheme: dark;
+}
+
+/* ===== Tokens do app (docs/design/tokens) — escopo do celular, não da página ===== */
+.app {
+  --fs: 1; /* escala de fonte do sistema (1 = 100%, 2 = 200%) */
+  --md-primary: #00658F; --md-on-primary: #FFFFFF; --md-primary-container: #C7E7FF; --md-on-primary-container: #001E2E;
+  --md-secondary: #3B5F84; --md-on-secondary: #FFFFFF; --md-secondary-container: #D2E4FF; --md-on-secondary-container: #001D36;
+  --md-tertiary: #615A7C; --md-on-tertiary: #FFFFFF; --md-tertiary-container: #E7DEFF; --md-on-tertiary-container: #1D1736;
+  --md-error: #BA1A1A; --md-on-error: #FFFFFF; --md-error-container: #FFDAD6; --md-on-error-container: #410002;
+  --md-surface: #F6FAFE; --md-on-surface: #171C20; --md-surface-variant: #DDE3EA; --md-on-surface-variant: #41484D;
+  --md-surface-container-lowest: #FFFFFF; --md-surface-container-low: #F0F4F8; --md-surface-container: #EAEEF2;
+  --md-surface-container-high: #E4E9ED; --md-surface-container-highest: #DFE3E7;
+  --md-outline: #71787E; --md-outline-variant: #C1C7CE; --md-scrim: #000000;
+  --md-inverse-surface: #2C3135; --md-inverse-on-surface: #EDF1F5; --md-inverse-primary: #85CFFF;
+  --md-success: #2E6B30; --md-on-success: #FFFFFF; --md-success-container: #B1F1A9; --md-on-success-container: #002204;
+  --md-warning: #7A5900; --md-on-warning: #FFFFFF; --md-warning-container: #FFDEA3; --md-on-warning-container: #261900;
+  --md-space-xs: 4px; --md-space-sm: 8px; --md-space-md: 12px; --md-space-lg: 16px; --md-space-xl: 24px; --md-space-xxl: 32px;
+  --md-shape-extra-small: 4px; --md-shape-small: 8px; --md-shape-medium: 12px; --md-shape-large: 16px;
+  --md-shape-extra-large: 28px; --md-shape-full: 9999px;
+}
+.app[data-scheme="dark"] {
+  --md-primary: #85CFFF; --md-on-primary: #00344C; --md-primary-container: #004C6C; --md-on-primary-container: #C7E7FF;
+  --md-secondary: #A2C9F7; --md-on-secondary: #003258; --md-secondary-container: #224A70; --md-on-secondary-container: #D2E4FF;
+  --md-tertiary: #CBC1E9; --md-on-tertiary: #332C4C; --md-tertiary-container: #4A4263; --md-on-tertiary-container: #E7DEFF;
+  --md-error: #FFB4AB; --md-on-error: #690005; --md-error-container: #93000A; --md-on-error-container: #FFDAD6;
+  --md-surface: #0F1418; --md-on-surface: #DFE3E7; --md-surface-variant: #41484D; --md-on-surface-variant: #C1C7CE;
+  --md-surface-container-lowest: #0A0F12; --md-surface-container-low: #171C20; --md-surface-container: #1B2024;
+  --md-surface-container-high: #262B2F; --md-surface-container-highest: #31363A;
+  --md-outline: #8B9198; --md-outline-variant: #41484D; --md-scrim: #000000;
+  --md-inverse-surface: #DFE3E7; --md-inverse-on-surface: #2C3135; --md-inverse-primary: #00658F;
+  --md-success: #96D78F; --md-on-success: #00390A; --md-success-container: #13521B; --md-on-success-container: #B1F1A9;
+  --md-warning: #F5BF48; --md-on-warning: #402D00; --md-warning-container: #5C4300; --md-on-warning-container: #FFDEA3;
+}
+
+/* ===== Componentes e utilitários adicionados pela spec 001 (aprovados em 2026-10-17) =====
+   DsQuantityStepper (.stepper), DsProgressIndicator (.progress), DsButton desabilitado/largura total,
+   DsStatusBadge neutro, displaySmall, cabeçalho de seção fixo, dica e cabeçalho de item. */
+.btn:disabled { background: color-mix(in srgb, var(--md-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-on-surface) 38%, transparent); cursor: default; }
+.btn.block { width: 100%; justify-content: center; }
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px 16px 8px;
+  padding: 8px; border-radius: var(--md-shape-full); background: var(--md-surface-container-high); }
+.stepper .icon-btn { width: 48px; height: 48px; border-radius: var(--md-shape-full);
+  background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.stepper .icon-btn:disabled { background: transparent; color: color-mix(in srgb, var(--md-on-surface) 38%, transparent); cursor: default; }
+.stepper .qty { font: 400 calc(28px * var(--fs))/calc(36px * var(--fs)) var(--font-brand); min-width: 3ch; text-align: center; }
+.progress { height: 4px; margin: 4px 16px; border-radius: 2px; overflow: hidden; background: var(--md-secondary-container); position: relative; }
+.progress::after { content: ""; position: absolute; inset: 0 60% 0 0; background: var(--md-primary); border-radius: 2px;
+  animation: ds-progress 1.4s infinite ease-in-out; }
+@keyframes ds-progress { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { .progress::after { animation: none; inset: 0; opacity: .5; } }
+.status.neutral { background: var(--md-surface-container-highest); color: var(--md-on-surface-variant); }
+.event-meta { padding: 4px 16px 12px; display: grid; gap: 2px; }
+.hint { padding: 0 16px 4px; }
+.t-display-small { font: 400 calc(36px * var(--fs))/calc(44px * var(--fs)) var(--font-brand); }
+.month-header { position: sticky; top: 0; z-index: 1; background: var(--md-surface); }
+
+/* ===== Página ===== */
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-ui); }
+.wrap {
+  max-width: 1240px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+  display: grid; gap: 28px;
+}
+.id { font-family: var(--font-id); font-size: 12.5px; letter-spacing: .02em; }
+header.meta { display: grid; gap: 14px; }
+.eyebrow { font: 500 12px/1 var(--font-id); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+h1 { margin: 0; font: 600 clamp(24px, 3.4vw, 34px)/1.15 var(--font-ui); text-wrap: balance; letter-spacing: -.01em; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 13.5px; }
+.facts b { color: var(--ink); font-weight: 500; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--line); font: 500 12px/1.4 var(--font-id); color: var(--ink); background: var(--panel); }
+.pill.review::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--redline); }
+.lede { max-width: 68ch; margin: 0; color: var(--muted); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.tabs, .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 8px; background: var(--bg); }
+.tabs button, .seg button {
+  font: 500 13.5px/1 var(--font-ui); color: var(--muted); background: transparent; border: 0;
+  padding: 8px 12px; border-radius: 6px; cursor: pointer; min-height: 34px;
+}
+.tabs button[aria-selected="true"], .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.ctl { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.spacer { flex: 1; }
+button:focus-visible, select:focus-visible, .app [tabindex]:focus-visible, .app button:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px;
+}
+
+/* Pranchas */
+.screen-group { display: grid; gap: 14px; }
+.screen-group > h2 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+  font: 600 19px/1.3 var(--font-ui); padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.screen-group > h2 .id { color: var(--muted); font-weight: 400; }
+.boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 32px 28px; }
+.board { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.board-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.board-head strong { font: 600 15px/1.3 var(--font-ui); }
+.refs { display: flex; flex-wrap: wrap; gap: 4px; }
+.ref { font: 500 11.5px/1 var(--font-id); padding: 4px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 13.5px; }
+.notes li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; }
+.notes li > span:last-child { min-width: 0; }
+.notes .n, .ann::after {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--redline); color: var(--redline-ink); font: 600 11px/1 var(--font-id);
+}
+.notes code { font-family: var(--font-id); font-size: 12px; }
+body.hide-notes .notes, body.hide-notes .ann::after { display: none; }
+
+/* Celular */
+.device { width: min(360px, 100%); justify-self: center; border-radius: 34px; padding: 8px;
+  background: #1d2221; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 12px 28px -14px rgba(0,0,0,.45); }
+.app { position: relative; height: 720px; border-radius: 27px; overflow: hidden; display: flex; flex-direction: column;
+  background: var(--md-surface); color: var(--md-on-surface); font-family: var(--font-plain); }
+.statusbar { flex: none; height: 28px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; font: 500 13px/1 var(--font-plain); color: var(--md-on-surface); }
+.statusbar .ms { font-size: 15px; }
+.gesture { flex: none; height: 22px; display: grid; place-items: center; }
+.gesture::before { content: ""; width: 108px; height: 4px; border-radius: 2px; background: var(--md-on-surface); opacity: .55; }
+.body { flex: 1; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+
+/* Tipografia M3 (escala com --fs) */
+.t-headline-small { font: 400 calc(24px * var(--fs))/calc(32px * var(--fs)) var(--font-brand); }
+.t-title-large { font: 400 calc(22px * var(--fs))/calc(28px * var(--fs)) var(--font-brand); }
+.t-title-medium { font: 500 calc(16px * var(--fs))/calc(24px * var(--fs)) var(--font-plain); letter-spacing: .15px; }
+.t-body-large { font: 400 calc(16px * var(--fs))/calc(24px * var(--fs)) var(--font-plain); letter-spacing: .5px; }
+.t-body-medium { font: 400 calc(14px * var(--fs))/calc(20px * var(--fs)) var(--font-plain); letter-spacing: .25px; }
+.t-label-large { font: 500 calc(14px * var(--fs))/calc(20px * var(--fs)) var(--font-plain); letter-spacing: .1px; }
+.t-label-medium { font: 500 calc(12px * var(--fs))/calc(16px * var(--fs)) var(--font-plain); letter-spacing: .5px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--md-on-surface-variant); }
+
+/* Componentes (ver docs/design/components.md) */
+.ms { font-family: "Material Symbols Outlined"; font-weight: 400; font-style: normal; font-size: 24px; line-height: 1;
+  display: inline-block; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; user-select: none; }
+.topbar { display: flex; align-items: center; gap: 4px; min-height: 64px; padding: 0 4px 0 16px; }
+.topbar.has-nav { padding-left: 4px; }
+.topbar h3 { margin: 0; flex: 1; min-width: 0; }
+.icon-btn { width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: transparent; color: var(--md-on-surface-variant); cursor: pointer; }
+.chips { display: flex; gap: 8px; padding: 4px 16px 8px; overflow-x: auto; scrollbar-width: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 16px;
+  border-radius: var(--md-shape-small); border: 1px solid var(--md-outline); background: transparent;
+  color: var(--md-on-surface-variant); cursor: pointer; position: relative; }
+.chip::before { content: ""; position: absolute; inset: -8px 0; } /* área de toque 48dp */
+.chip[aria-pressed="true"] { background: var(--md-secondary-container); color: var(--md-on-secondary-container); border-color: transparent; padding-left: 8px; }
+.chip .ms { font-size: 18px; }
+.summary { margin: 4px 16px 12px; padding: 16px; border-radius: var(--md-shape-large);
+  background: var(--md-primary-container); color: var(--md-on-primary-container); display: grid; gap: 4px; }
+.summary .big { font: 400 calc(32px * var(--fs))/calc(40px * var(--fs)) var(--font-brand); letter-spacing: -.25px; }
+.section-label { padding: 12px 16px 4px; }
+.list { list-style: none; margin: 0; padding: 0; }
+.item { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px; align-items: center; min-height: 72px;
+  padding: 8px 24px 8px 16px; cursor: pointer; }
+.item + .item { border-top: 1px solid var(--md-outline-variant); }
+.item:hover { background: color-mix(in srgb, var(--md-on-surface) 8%, transparent); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.avatar .ms { font-size: 20px; }
+.item .lines { min-width: 0; display: grid; }
+.item .end { display: grid; justify-items: end; gap: 4px; }
+.status { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--md-shape-small); }
+.status .ms { font-size: 14px; }
+.status.ok { background: var(--md-success-container); color: var(--md-on-success-container); }
+.status.warn { background: var(--md-warning-container); color: var(--md-on-warning-container); }
+.status.bad { background: var(--md-error-container); color: var(--md-on-error-container); }
+.btn { min-height: 40px; padding: 0 24px; border-radius: var(--md-shape-full); border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; position: relative; }
+.btn::before { content: ""; position: absolute; inset: -4px 0; } /* área de toque 48dp */
+.btn.filled { background: var(--md-primary); color: var(--md-on-primary); }
+.btn.tonal { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.btn.outlined { background: transparent; color: var(--md-primary); border: 1px solid var(--md-outline); }
+.btn .ms { font-size: 18px; }
+.state-msg { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 64px 32px 24px; }
+.state-msg .glyph { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--md-surface-container-high); color: var(--md-on-surface-variant); }
+.state-msg .glyph.err { background: var(--md-error-container); color: var(--md-on-error-container); }
+.state-msg .glyph .ms { font-size: 32px; }
+.state-msg p { margin: 0; max-width: 30ch; }
+.sk { border-radius: var(--md-shape-small); background: var(--md-surface-container-highest); }
+.sk-row { display: grid; grid-template-columns: 40px 1fr 64px; gap: 16px; align-items: center; padding: 16px; }
+.sk-row .c { width: 40px; height: 40px; border-radius: 50%; }
+@media (prefers-reduced-motion: no-preference) {
+  .sk { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .45; } }
+}
+.detail-hero { padding: 8px 16px 20px; display: grid; gap: 4px; }
+.kv { margin: 0 16px; border-radius: var(--md-shape-medium); background: var(--md-surface-container-low); }
+.kv div { display: flex; justify-content: space-between; gap: 16px; padding: 14px 16px; }
+.kv div + div { border-top: 1px solid var(--md-outline-variant); }
+.kv dt, .kv dd { margin: 0; }
+.kv dd { text-align: right; }
+.actions { display: grid; gap: 12px; padding: 24px 16px; }
+.snackbar { position: absolute; left: 12px; right: 12px; bottom: 34px; padding: 14px 16px; border-radius: var(--md-shape-extra-small);
+  background: var(--md-inverse-surface); color: var(--md-inverse-on-surface); display: flex; gap: 8px; align-items: center; }
+
+/* Anotações sobre o celular (redline) */
+.ann { position: relative; }
+.ann::after { content: attr(data-n); position: absolute; top: 6px; right: 6px; z-index: 2;
+  box-shadow: 0 0 0 2px var(--md-surface); }
+
+/* Protótipo */
+.proto { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 32px; align-items: start; }
+.proto aside { display: grid; gap: 16px; align-content: start; max-width: 60ch; }
+.proto select { font: 400 14px/1.2 var(--font-ui); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); min-height: 38px; }
+.log { margin: 0; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel);
+  font: 400 12.5px/1.6 var(--font-id); color: var(--muted); max-height: 220px; overflow: auto; }
+@media (max-width: 760px) { .proto { grid-template-columns: 1fr; } }
+
+/* Fluxo e decisão */
+.panel { padding: 18px 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); display: grid; gap: 10px; }
+.panel h2 { margin: 0; font: 600 17px/1.3 var(--font-ui); }
+.panel p, .panel ol { margin: 0; max-width: 72ch; }
+.panel ol { padding-left: 20px; display: grid; gap: 6px; }
+.diagram { overflow-x: auto; }
+pre.mermaid { margin: 0; background: transparent; color: var(--ink); font: 400 13px/1.5 var(--font-id); }
+</style>
+
+<div class="wrap">
+  <header class="meta">
+    <div class="eyebrow" id="meta-eyebrow"></div>
+    <h1 id="meta-title"></h1>
+    <div class="facts" id="meta-facts"></div>
+    <p class="lede" id="meta-lede"></p>
+  </header>
+
+  <div class="toolbar" role="group" aria-label="Controles da prancha">
+    <div class="tabs" role="tablist" aria-label="Visualização">
+      <button role="tab" id="tab-boards" aria-selected="true" aria-controls="view-boards">Pranchas</button>
+      <button role="tab" id="tab-prototype" aria-selected="false" aria-controls="view-prototype">Protótipo</button>
+      <button role="tab" id="tab-flow" aria-selected="false" aria-controls="view-flow">Fluxo e decisão</button>
+    </div>
+    <span class="spacer"></span>
+    <span class="ctl">Tema do app
+      <span class="seg" id="seg-scheme">
+        <button data-v="light" aria-pressed="true">Claro</button>
+        <button data-v="dark" aria-pressed="false">Escuro</button>
+      </span>
+    </span>
+    <span class="ctl">Fonte
+      <span class="seg" id="seg-fs">
+        <button data-v="1" aria-pressed="true">100%</button>
+        <button data-v="2" aria-pressed="false">200%</button>
+      </span>
+    </span>
+    <span class="ctl">Anotações
+      <span class="seg" id="seg-notes">
+        <button data-v="on" aria-pressed="true">Ver</button>
+        <button data-v="off" aria-pressed="false">Ocultar</button>
+      </span>
+    </span>
+  </div>
+
+  <main>
+    <section id="view-boards" role="tabpanel" aria-labelledby="tab-boards" style="display:grid;gap:40px"></section>
+
+    <section id="view-prototype" role="tabpanel" aria-labelledby="tab-prototype" hidden>
+      <div class="proto">
+        <div class="device"><div class="app" id="proto-app"></div></div>
+        <aside>
+          <div class="panel">
+            <h2>Como testar</h2>
+            <p id="proto-help"></p>
+            <label class="ctl" for="proto-scenario">Cenário da API
+              <select id="proto-scenario"></select>
+            </label>
+            <div><button class="pill" id="proto-restart" type="button">Reiniciar fluxo</button></div>
+          </div>
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px">Eventos emitidos (UiEvent)</div>
+            <pre class="log" id="proto-log" aria-live="polite"></pre>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="view-flow" role="tabpanel" aria-labelledby="tab-flow" hidden>
+      <div style="display:grid;gap:20px">
+        <div class="panel">
+          <h2>Fluxo de navegação</h2>
+          <div class="diagram"><pre class="mermaid" id="flow-diagram"></pre></div>
+        </div>
+        <div class="panel">
+          <h2>Como decidir</h2>
+          <ol id="decision-steps"></ol>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ======================= DADOS DA FEATURE (edite só este bloco) ======================= */
+
+const META = {
+  eyebrow: "Spec 001 v1.1.0 · UI Spec v0.4.0 · dados fictícios",
+  title: "Venda de ingressos",
+  facts: [["UI Spec", "v0.4.0"], ["Spec", "001 v1.1.0"], ["Telas", "SCR-01 a SCR-04"], ["Status", "Em revisão"]],
+  lede: "Operador da bilheteria vende ingressos no terminal Cielo Smart: escolhe o evento e a quantidade, paga no terminal " +
+        "e vê o comprovante; o histórico reabre comprovantes. Cada prancha é um estado da seção 6 da spec. " +
+        "Os números vermelhos ligam a tela às notas de componente, token e acessibilidade.",
+};
+
+// Dados fictícios (eventos, locais, códigos e referências inventados; nenhum número de cartão).
+const EVENTS = [
+  { id: "e1", month: "2026-11", name: "Noite de Jazz no Parque", date: "sáb., 15 nov · 20:00", dateSpoken: "sábado, 15 de novembro, às 20 horas",
+    venue: "Concha Acústica Municipal", price: 5000, total: 50 },
+  { id: "e2", month: "2026-11", name: "Stand-up: Rindo à Toa", date: "sex., 21 nov · 21:30", dateSpoken: "sexta, 21 de novembro, às 21 e 30",
+    venue: "Teatro do Centro", price: 6000, total: 120 },
+  { id: "e3", month: "2026-11", name: "Orquestra Jovem: Clássicos do Cinema", date: "dom., 30 nov · 17:00", dateSpoken: "domingo, 30 de novembro, às 17 horas",
+    venue: "Auditório da Cidade", price: 3500, total: 3 },
+  { id: "e4", month: "2026-12", name: "Coral de Fim de Ano na Praça", date: "sáb., 12 dez · 19:00", dateSpoken: "sábado, 12 de dezembro, às 19 horas",
+    venue: "Praça Central", price: 2000, total: 200 },
+  { id: "e5", month: "2026-12", name: "Festival Indie Verão", date: "sáb., 19 dez · 18:00", dateSpoken: "sábado, 19 de dezembro, às 18 horas",
+    venue: "Arena Central", price: 8000, total: 300 },
+  { id: "e6", month: "2027-01", name: "Circo Lona Azul", date: "dom., 10 jan · 16:00", dateSpoken: "domingo, 10 de janeiro, às 16 horas",
+    venue: "Parque de Exposições", price: 4000, total: 150 },
+  { id: "e7", month: "2027-01", name: "Peça: A Casa das Sete Portas", date: "dom., 24 jan · 20:00", dateSpoken: "domingo, 24 de janeiro, às 20 horas",
+    venue: "Teatro do Centro", price: 5500, total: 80 },
+];
+// Rótulo curto do chip (ano só fora do ano corrente) e cabeçalho por extenso.
+const MONTHS = { "2026-11": ["Nov", "novembro de 2026"], "2026-12": ["Dez", "dezembro de 2026"], "2027-01": ["Jan 2027", "janeiro de 2027"] };
+const HISTORY = [
+  { id: "p3", ref: "7F3K-9Q2L", eventId: "e1", qty: 2, when: "17/10/2026 às 14:32", whenShort: "hoje às 14:32", status: "Approved", brand: "Visa", auth: "A1B2C3", nsu: "000123456" },
+  { id: "p2", ref: "2M8D-4XR1", eventId: "e2", qty: 1, when: "17/10/2026 às 13:05", whenShort: "hoje às 13:05", status: "Cancelled" },
+  { id: "p1", ref: "9C1T-6HV7", eventId: "e3", qty: 1, when: "17/10/2026 às 11:48", whenShort: "hoje às 11:48", status: "Declined" },
+];
+const MAX_PER_PURCHASE = 10; // BR-07
+const STATUS = {
+  Approved: { label: "Aprovada", icon: "check_circle", tone: "ok" },
+  Declined: { label: "Negada", icon: "block", tone: "bad" },
+  Cancelled: { label: "Cancelada", icon: "cancel", tone: "neutral" },
+};
+const ERRORS = {
+  NoCieloApp: { icon: "app_blocking", title: "Pagamento Cielo indisponível neste aparelho",
+    body: "Instale ou atualize o app de pagamento da Cielo e tente de novo. Nenhum valor foi cobrado." },
+  Generic: { icon: "error", title: "Não foi possível concluir o pagamento",
+    body: "A Cielo informou um erro e a venda não foi registrada. Você pode tentar de novo." },
+  Authentication: { icon: "lock", title: "A Cielo não reconheceu este app",
+    body: "Erro de autenticação. Avise o responsável pelo terminal: tentar de novo só resolve depois que a configuração for corrigida." },
+  // BR-15: consulta sem resultado após Recovering (inclui resposta ilegível, BR-25).
+  RecoveryNotFound: { icon: "search_off", title: "Pagamento anterior não encontrado",
+    body: "A Cielo não tem registro do pagamento interrompido. Você pode tentar de novo." },
+};
+
+const money = (c) => "R$ " + (c / 100).toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const spoken = (c) => { const r = Math.floor(c / 100), ct = c % 100; return `${r} reais${ct ? ` e ${ct} centavos` : ""}`; };
+const ev = (id) => EVENTS.find((e) => e.id === id);
+const sold = (id) => HISTORY.filter((p) => p.eventId === id && p.status === "Approved").reduce((n, p) => n + p.qty, 0);
+const available = (e) => e.total - sold(e.id); // BR-17: catálogo − aprovadas
+const maxQty = (e) => Math.min(MAX_PER_PURCHASE, available(e)); // BR-07
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+const statusBadge = (st, { cls = "", attrs = "" } = {}) => `<span class="status ${STATUS[st].tone} t-label-medium ${cls}" ${attrs}><span class="ms" aria-hidden="true">${STATUS[st].icon}</span>${STATUS[st].label}</span>`;
+
+const statusBar = () => `<div class="statusbar" aria-hidden="true"><span class="num">14:40</span>
+  <span><span class="ms">signal_cellular_4_bar</span> <span class="ms">wifi</span> <span class="ms">battery_5_bar</span></span></div>`;
+const topBar = (title, back) => back
+  ? `<div class="topbar has-nav"><button class="icon-btn" data-ev="NavigateUp" aria-label="${back}"><span class="ms">arrow_back</span></button>
+      <h3 class="t-title-large" role="heading" aria-level="1">${title}</h3></div>`
+  : `<div class="topbar"><h3 class="t-title-large" role="heading" aria-level="1">${title}</h3></div>`;
+const skeleton = (label) => `<div aria-busy="true" aria-label="${label}" class="ann" data-n="1">
+  ${Array.from({ length: 4 }, () => `<div class="sk-row"><div class="sk c"></div><div style="display:grid;gap:6px"><div class="sk" style="height:14px;width:75%"></div><div class="sk" style="height:12px;width:50%"></div></div><div class="sk" style="height:14px"></div></div>`).join("")}</div>`;
+const stateMsg = ({ icon, title, body, err, action, n = 1, role = "" }) => `<div class="state-msg ann" data-n="${n}" ${role}>
+  <div class="glyph${err ? " err" : ""}"><span class="ms" aria-hidden="true">${icon}</span></div>
+  <h4 class="t-title-medium" style="margin:0">${title}</h4>
+  <p class="t-body-medium muted">${body}</p>${action || ""}</div>`;
+const eventMeta = (e, n) => `<div class="event-meta ${n ? "ann" : ""}" ${n ? `data-n="${n}"` : ""}>
+  <span class="t-title-medium">${e.name}</span>
+  <span class="t-body-medium muted">${e.date} · ${e.venue}</span>
+  <span class="t-body-medium muted num">${money(e.price)} por ingresso · ${plural(available(e), "disponível", "disponíveis")}</span></div>`;
+
+/* Telas: funções puras estado → HTML (equivalente ao Screen(uiState) do Compose). */
+const SCREENS = {
+  // SCR-01 Eventos à venda. state = { kind: "Loading" | "Content" | "Empty" | "Error", month: "" | "AAAA-MM" }
+  "SCR-01": (s) => {
+    const top = `<div class="topbar"><h3 class="t-title-large" role="heading" aria-level="1">Eventos à venda</h3>
+      <button class="icon-btn${s.kind === "Content" ? " ann" : ""}" ${s.kind === "Content" ? 'data-n="3"' : ""} data-ev="OnOpenHistory" aria-label="Histórico de compras"><span class="ms">receipt_long</span></button></div>`;
+    if (s.kind === "Loading") return top + skeleton("Carregando eventos");
+    if (s.kind === "Error") return top + stateMsg({ icon: "event_busy", err: true, role: 'role="alert"',
+      title: "Não foi possível carregar os eventos", body: "Os dados dos eventos não puderam ser lidos. Tente de novo.",
+      action: `<button class="btn filled t-label-large ann" data-n="2" data-ev="OnRetry"><span class="ms" aria-hidden="true">refresh</span>Tentar de novo</button>` });
+    if (s.kind === "Empty") return top + stateMsg({ icon: "event", title: "Nenhum evento à venda",
+      body: "Eventos com data futura e ingressos disponíveis aparecem aqui." });
+    const list = EVENTS.filter((e) => available(e) > 0);
+    const months = Object.keys(MONTHS).filter((m) => list.some((e) => e.month === m)); // BR-23
+    const sel = months.includes(s.month) ? s.month : ""; // BR-24: mês esgotado volta para "Todos"
+    const full = !sel; // anotações da prancha "Todos"
+    const chips = `<div class="chips ann" data-n="${full ? 4 : 1}" role="group" aria-label="Filtrar eventos por mês">
+      ${[["", "Todos"], ...months.map((m) => [m, MONTHS[m][0]])].map(([k, l]) => `<button class="chip t-label-large" aria-pressed="${k === sel}"
+        data-ev="OnMonthSelected:${k}" ${k ? `aria-label="${MONTHS[k][1]}"` : ""}>${k === sel ? '<span class="ms" aria-hidden="true">check</span>' : ""}${l}</button>`).join("")}</div>`;
+    let first = true, firstHeader = true;
+    const groups = months.filter((m) => !sel || m === sel).map((m) => {
+      const head = `<h4 class="section-label month-header t-label-medium muted${full && firstHeader ? " ann" : ""}" ${full && firstHeader ? 'data-n="5"' : ""} role="heading" aria-level="2" style="margin:0">${MONTHS[m][1]}</h4>`;
+      firstHeader = false;
+      return head + `<ul class="list">${list.filter((e) => e.month === m).map((e) => { const mark = full && first; first = false;
+        return `<li class="item${mark ? " ann" : ""}" ${mark ? 'data-n="1"' : ""} tabindex="0" role="button" data-ev="OnEventSelected:${e.id}"
+          aria-label="${e.name}, ${e.dateSpoken}, ${e.venue}, ${spoken(e.price)} por ingresso, ${plural(available(e), "ingresso disponível", "ingressos disponíveis")}">
+        <span class="avatar" aria-hidden="true"><span class="ms">confirmation_number</span></span>
+        <span class="lines" aria-hidden="true"><span class="t-body-large">${e.name}</span>
+          <span class="t-body-medium muted">${e.date} · ${e.venue}</span></span>
+        <span class="end" aria-hidden="true"><span class="t-label-large num">${money(e.price)}</span>
+          <span class="t-label-medium muted num${mark ? " ann" : ""}" ${mark ? 'data-n="2"' : ""}>${plural(available(e), "disponível", "disponíveis")}</span></span>
+      </li>`; }).join("")}</ul>`;
+    }).join("");
+    return top + chips + groups;
+  },
+
+  // SCR-02 Compra. state = { kind: "Editing" | "AwaitingPayment" | "Recovering" | "Error", eventId, qty, error }
+  "SCR-02": (s) => {
+    const e = ev(s.eventId);
+    const total = e.price * s.qty;
+    if (s.kind === "Recovering") return topBar("Compra") + stateMsg({ icon: "sync", role: 'role="status"',
+      title: "Confirmando o pagamento com a Cielo",
+      body: "Não recebemos uma confirmação clara deste pagamento. Antes de permitir uma nova cobrança, estamos consultando se ele já foi feito." }) +
+      `<div class="progress ann" data-n="2" role="progressbar" aria-label="Consultando a Cielo"></div>`;
+    if (s.kind === "AwaitingPayment") return topBar("Compra") + eventMeta(e) + stateMsg({ icon: "point_of_sale", role: 'role="status"',
+      title: "Conclua o pagamento no terminal",
+      body: `${money(total)} · ${plural(s.qty, "ingresso", "ingressos")}. Não feche o app até o resultado aparecer.` }) +
+      `<div class="progress" role="progressbar" aria-label="Aguardando o pagamento"></div>
+      <div class="actions"><button class="btn filled block t-label-large ann" data-n="2" data-ev="OnPay" disabled><span class="ms" aria-hidden="true">hourglass_top</span>Aguardando pagamento…</button></div>`;
+    if (s.kind === "Error") {
+      const er = ERRORS[s.error];
+      return topBar("Compra", "Voltar para eventos") + eventMeta(e) + stateMsg({ icon: er.icon, err: true, role: 'role="alert"',
+        title: er.title, body: `${er.body}<br><span class="num">${plural(s.qty, "ingresso", "ingressos")} · ${money(total)}</span>`,
+        action: `<button class="btn filled t-label-large ann" data-n="2" data-ev="OnRetry"><span class="ms" aria-hidden="true">refresh</span>Tentar pagar ${money(total)} de novo</button>` });
+    }
+    const max = maxQty(e);
+    const hint = s.qty >= max ? (max < MAX_PER_PURCHASE
+      ? `Só ${available(e) === 1 ? "resta 1 ingresso" : `restam ${available(e)} ingressos`} para este evento`
+      : `Máximo de ${MAX_PER_PURCHASE} ingressos por compra`) : "";
+    return topBar("Compra", "Voltar para eventos") + eventMeta(e, 1) + `
+      <div class="section-label t-label-medium muted">Quantidade</div>
+      <div class="stepper ann" data-n="2" role="group" aria-label="Quantidade de ingressos">
+        <button class="icon-btn" data-ev="OnDecrement" aria-label="Diminuir quantidade" ${s.qty <= 1 ? "disabled" : ""}><span class="ms">remove</span></button>
+        <span class="qty num" aria-live="polite" aria-label="${plural(s.qty, "ingresso", "ingressos")}">${s.qty}</span>
+        <button class="icon-btn" data-ev="OnIncrement" aria-label="Aumentar quantidade" ${s.qty >= max ? "disabled" : ""}><span class="ms">add</span></button>
+      </div>
+      ${hint ? `<p class="hint t-body-medium muted" aria-live="polite">${hint}</p>` : ""}
+      <div class="summary ann" data-n="3" role="group" aria-label="Total ${spoken(total)}, ${plural(s.qty, "ingresso", "ingressos")} de ${spoken(e.price)}">
+        <span class="t-label-large">Total</span><span class="big num">${money(total)}</span>
+        <span class="t-body-medium num">${plural(s.qty, "ingresso", "ingressos")} × ${money(e.price)}</span></div>
+      <div class="actions"><button class="btn filled block t-label-large ann" data-n="4" data-ev="OnPay"><span class="ms" aria-hidden="true">point_of_sale</span>Pagar ${money(total)} no terminal</button></div>`;
+  },
+
+  // SCR-03 Comprovante. state = { kind: "Approved" | "Declined" | "Cancelled", purchaseId, from: "sale" | "history" }
+  "SCR-03": (s) => {
+    const p = HISTORY.find((x) => x.id === s.purchaseId);
+    const e = ev(p.eventId);
+    const total = e.price * p.qty;
+    const head = { Approved: ["Pagamento aprovado", "Entregue os ingressos ao comprador."],
+      Declined: ["Pagamento negado", "A Cielo não autorizou o pagamento. Se o comprador quiser, refaça a venda com outra forma de pagamento."],
+      Cancelled: ["Pagamento cancelado", "O pagamento foi cancelado no terminal."] }[s.kind];
+    const rows = [["Nº da compra", p.ref], ["Evento", e.name], ["Data do evento", e.date], ["Local", e.venue],
+      ["Quantidade", plural(p.qty, "ingresso", "ingressos")], ["Valor unitário", money(e.price)], ["Total", money(total)],
+      ["Data/hora da compra", p.when], ["Status", STATUS[s.kind].label]];
+    if (s.kind === "Approved") rows.push(["Bandeira", p.brand], ["Código de autorização", p.auth], ["NSU", p.nsu]);
+    return topBar("Comprovante", s.from === "history" ? "Voltar ao histórico" : null) + `
+      <div class="detail-hero ann" data-n="1" role="${s.kind === "Approved" ? "status" : "alert"}">
+        ${statusBadge(s.kind, { attrs: 'style="justify-self:start"' })}
+        <span class="t-display-small num" aria-label="${spoken(total)}">${money(total)}</span>
+        <span class="t-title-medium">${head[0]}</span>
+        <span class="t-body-medium muted">${head[1]}</span></div>
+      <dl class="kv t-body-medium ann" data-n="2">${rows.map(([k, v]) => `<div><dt class="muted">${k}</dt><dd class="num">${v}</dd></div>`).join("")}</dl>
+      ${s.from === "sale" ? `<div class="actions"><button class="btn filled block t-label-large ann" data-n="3" data-ev="OnNewSale"><span class="ms" aria-hidden="true">add_shopping_cart</span>Nova venda</button></div>` : ""}`;
+  },
+
+  // SCR-04 Histórico. state = { kind: "Loading" | "Content" | "Empty" | "Error" }
+  "SCR-04": (s) => {
+    const top = topBar("Histórico de compras", "Voltar para eventos");
+    if (s.kind === "Loading") return top + skeleton("Carregando histórico");
+    if (s.kind === "Error") return top + stateMsg({ icon: "history", err: true, role: 'role="alert"',
+      title: "Não foi possível carregar o histórico", body: "As compras registradas não puderam ser lidas. Tente de novo.",
+      action: `<button class="btn filled t-label-large ann" data-n="2" data-ev="OnRetry"><span class="ms" aria-hidden="true">refresh</span>Tentar de novo</button>` });
+    if (s.kind === "Empty") return top + stateMsg({ icon: "receipt_long", title: "Nenhuma compra registrada",
+      body: "Vendas aprovadas, negadas ou canceladas aparecem aqui." });
+    return top + `<div class="section-label t-label-medium muted">${plural(HISTORY.length, "compra", "compras")}</div>
+      <ul class="list">${HISTORY.map((p, i) => { const e = ev(p.eventId); const total = e.price * p.qty;
+        return `<li class="item${i === 0 ? " ann" : ""}" ${i === 0 ? 'data-n="1"' : ""} tabindex="0" role="button" data-ev="OnPurchaseSelected:${p.id}"
+          aria-label="${e.name}, ${p.whenShort}, ${plural(p.qty, "ingresso", "ingressos")}, ${spoken(total)}, ${STATUS[p.status].label}">
+        <span class="avatar" aria-hidden="true"><span class="ms">${STATUS[p.status].icon}</span></span>
+        <span class="lines" aria-hidden="true"><span class="t-body-large">${e.name}</span>
+          <span class="t-body-medium muted num">${p.whenShort} · ${plural(p.qty, "ingresso", "ingressos")}</span></span>
+        <span class="end" aria-hidden="true"><span class="t-label-large num">${money(total)}</span>
+          ${statusBadge(p.status, i === 0 ? { cls: "ann", attrs: 'data-n="2"' } : {})}</span></li>`; }).join("")}</ul>`;
+  },
+};
+
+/* Pranchas: uma por estado da spec (seção 6). refs = IDs rastreáveis; notes = redlines numerados. */
+const BOARDS = [
+  { screen: "SCR-01", name: "Eventos à venda", boards: [
+    { state: { kind: "Content", month: "" }, label: "Content", refs: ["US-01", "US-09", "BR-01", "BR-02", "BR-17", "BR-22", "BR-23", "AC-01", "AC-17", "AC-22", "AC-23"], notes: [
+      "<b>Evento</b>: <code>DsListItem</code> de 2 linhas, clicável inteiro (<code>mergeDescendants</code>); emite <code>OnEventSelected</code>. TalkBack lê nome, data por extenso, local, preço e disponíveis numa frase só.",
+      "<b>Disponíveis</b> = catálogo − compras aprovadas (BR-17). Evento esgotado ou com data passada não aparece (BR-02). Dígitos tabulares.",
+      "<b>Histórico</b>: <code>DsIconButton</code> na top app bar, rótulo “Histórico de compras”; emite <code>OnOpenHistory</code>.",
+      "<b>Filtro de mês</b>: <code>DsFilterChip</code>, seleção única, rolagem horizontal; “Todos” é o padrão e só aparecem meses com evento disponível (BR-23). Ano no rótulo só fora do ano corrente (“Jan 2027”); TalkBack lê o mês por extenso. Emite <code>OnMonthSelected</code>.",
+      "<b>Cabeçalho de mês</b> fixo ao rolar (sticky header do <code>LazyColumn</code>, sem componente novo), marcado como heading: o operador sempre sabe em que mês está (BR-22).",
+    ] },
+    { state: { kind: "Content", month: "2026-12" }, label: "Content · mês filtrado", refs: ["US-09", "BR-23", "BR-24", "AC-23", "AC-24"], notes: [
+      "<b>Dezembro selecionado</b>: só os eventos do mês, com o chip marcado (ícone de check + estado “selecionado” anunciado). Se o mês esgotar, o filtro volta para “Todos” (BR-24).",
+    ] },
+    { state: { kind: "Loading" }, label: "Loading", refs: ["AC-01"], notes: [
+      "<b>Skeleton</b> (<code>DsLoadingSkeleton</code>, lista) com a geometria da lista. Anuncia “Carregando eventos”; respeita reduzir animações.",
+    ] },
+    { state: { kind: "Empty" }, label: "Empty", refs: ["BR-03", "AC-02"], notes: [
+      "<b>Vazio</b>: <code>DsEmptyState</code> sem ação: a lista vem de um catálogo local, não há o que atualizar. O texto explica o que faria um evento aparecer.",
+    ] },
+    { state: { kind: "Error" }, label: "Error", refs: ["BR-04", "US-07", "AC-03"], notes: [
+      "<b>Erro de leitura</b>: <code>DsErrorState</code>, anunciado como alerta, sem termo técnico.",
+      "<b>Tentar de novo</b> recebe o foco ao entrar no estado; emite <code>OnRetry</code>.",
+    ] },
+  ] },
+  { screen: "SCR-02", name: "Compra", boards: [
+    { state: { kind: "Editing", eventId: "e1", qty: 2 }, label: "Editing", refs: ["US-02", "BR-05", "BR-06", "AC-04", "AC-05"], notes: [
+      "<b>Evento</b> em destaque com preço unitário e disponíveis, para o operador conferir antes de cobrar.",
+      "<b>Quantidade</b>: <code>DsQuantityStepper</code> (proposto, UI Spec §5). Botões de 48dp; o número é região viva (“2 ingressos”).",
+      "<b>Total</b>: <code>DsSummaryCard</code> em <code>primaryContainer</code>; é a informação dominante. Lido como “Total 100 reais, 2 ingressos de 50 reais”.",
+      "<b>Pagar</b>: única ação primária, na metade inferior, com o valor na frase (prevenção de erro). Emite <code>OnPay</code>.",
+    ] },
+    { state: { kind: "Editing", eventId: "e3", qty: 3 }, label: "Editing · limite", refs: ["BR-07", "AC-06"], notes: [
+      "<b>Limite</b>: no máximo 10 por compra e nunca acima do disponível. Aqui restam 3: “+” desabilitado e dica anunciada. Com quantidade 1, “−” fica desabilitado.",
+    ] },
+    { state: { kind: "AwaitingPayment", eventId: "e1", qty: 2 }, label: "AwaitingPayment", refs: ["BR-08", "BR-09", "BR-10", "US-06", "AC-07", "AC-08"], notes: [
+      "<b>Aguardando o terminal</b>: o app da Cielo fica por cima; ao voltar, o operador vê o que está pendente. Status anunciado. <code>DsProgressIndicator</code> (proposto) indeterminado.",
+      "<b>Anti-duplicidade</b>: “Pagar” desabilitado enquanto há compra em andamento (BR-10). Sem seta de voltar e com o voltar do sistema ignorado, para não abandonar um pagamento aberto.",
+    ] },
+    { state: { kind: "Recovering", eventId: "e1", qty: 2 }, label: "Recovering", refs: ["BR-15", "BR-25", "US-06", "AC-14", "AC-15"], notes: [
+      "<b>Confirmação</b>: usado quando o app reabre com compra sem resultado (BR-15) e quando a resposta da Cielo é ilegível (BR-25). Texto único para os dois casos: explica por que a tela espera, consultar antes de cobrar de novo.",
+      "<b>Progresso</b> indeterminado; nenhuma ação disponível até a resposta.",
+    ] },
+    { state: { kind: "Error", eventId: "e1", qty: 2, error: "NoCieloApp" }, label: "Error · app ausente", refs: ["BR-14", "AC-12"], notes: [
+      "<b>App Cielo ausente</b>: detectado antes de abrir o pagamento; a frase afirma que nada foi cobrado. Anunciado como alerta.",
+      "<b>Tentar de novo</b> emite <code>OnRetry</code> e recebe o foco.",
+    ] },
+    { state: { kind: "Error", eventId: "e1", qty: 2, error: "Generic" }, label: "Error · código 2", refs: ["BR-14", "US-07", "AC-13"], notes: [
+      "<b>Erro genérico (código 2)</b>: status interno “Falhou”, não é venda; não aparece no histórico. Mensagem sem código técnico.",
+      "<b>Tentar de novo</b> abre um novo pagamento com nova referência.",
+    ] },
+    { state: { kind: "Error", eventId: "e1", qty: 2, error: "Authentication" }, label: "Error · código 4", refs: ["BR-14", "AC-13"], notes: [
+      "<b>Autenticação (código 4)</b>: problema de configuração do app, não do cartão; por isso o texto não pede outro cartão (spec Q8).",
+      "<b>Tentar de novo</b> continua disponível (BR-14), com a ressalva no texto.",
+    ] },
+    { state: { kind: "Error", eventId: "e1", qty: 2, error: "RecoveryNotFound" }, label: "Error · não encontrado", refs: ["BR-15", "AC-15"], notes: [
+      "<b>Pagamento anterior não encontrado</b> (BR-15): depois de <code>Recovering</code> sem resultado, volta à compra com o mesmo evento e quantidade e explica o que houve; a tentativa fica “Falhou”. O texto não afirma que nada foi cobrado (a consulta da Cielo é paginada).",
+      "<b>Tentar de novo</b> com o valor na frase; emite <code>OnRetry</code>.",
+    ] },
+  ] },
+  { screen: "SCR-03", name: "Comprovante", boards: [
+    { state: { kind: "Approved", purchaseId: "p3", from: "sale" }, label: "Approved", refs: ["US-05", "BR-11", "BR-16", "AC-09", "AC-16"], notes: [
+      "<b>Resultado</b>: <code>DsStatusBadge</code> (sucesso) + total em destaque + frase do que fazer. Região anunciada ao abrir.",
+      "<b>Comprovante</b>: <code>DsKeyValueList</code> com todos os campos da BR-16. Só bandeira, sem número do cartão: não há dado PCI na tela, então <code>FLAG_SECURE</code> não é necessário.",
+      "<b>Nova venda</b>: ação primária; emite <code>OnNewSale</code>. Sem “voltar” vindo da venda, para não reabrir uma compra concluída.",
+    ] },
+    { state: { kind: "Declined", purchaseId: "p1", from: "sale" }, label: "Declined", refs: ["BR-13", "BR-16", "AC-11", "AC-16"], notes: [
+      "<b>Negada</b> (código 3): badge de erro com ícone e texto; orienta oferecer outra forma de pagamento.",
+      "<b>Campos</b>: os mesmos, sem bandeira, autorização e NSU (AC-16).",
+      "<b>Nova venda</b> emite <code>OnNewSale</code>.",
+    ] },
+    { state: { kind: "Cancelled", purchaseId: "p2", from: "sale" }, label: "Cancelled", refs: ["BR-12", "BR-16", "AC-10", "AC-16"], notes: [
+      "<b>Cancelada</b> (código 1): badge neutro (<code>DsStatusBadge</code> neutro, já previsto no catálogo; classe nova no kit), porque não é erro.",
+      "<b>Campos</b>: os mesmos, sem bandeira, autorização e NSU.",
+      "<b>Nova venda</b> emite <code>OnNewSale</code>.",
+    ] },
+    { state: { kind: "Approved", purchaseId: "p3", from: "history" }, label: "Approved · pelo histórico", refs: ["US-08", "BR-19", "AC-19"], notes: [
+      "<b>Aberto pelo histórico</b>: mesmo comprovante com “voltar ao histórico” na top app bar.",
+      "<b>Campos</b>: idênticos ao comprovante do fim da venda.",
+    ] },
+  ] },
+  { screen: "SCR-04", name: "Histórico de compras", boards: [
+    { state: { kind: "Content" }, label: "Content", refs: ["US-08", "BR-18", "AC-18"], notes: [
+      "<b>Compra</b>: <code>DsListItem</code> da mais recente para a mais antiga; emite <code>OnPurchaseSelected</code>. Tentativas “Falhou” e “Em andamento” não aparecem (BR-18).",
+      "<b>Status</b> com cor, ícone e texto (nunca só cor).",
+    ] },
+    { state: { kind: "Loading" }, label: "Loading", refs: ["AC-18"], notes: [
+      "<b>Skeleton</b> de lista; anuncia “Carregando histórico”.",
+    ] },
+    { state: { kind: "Empty" }, label: "Empty", refs: ["BR-20", "AC-20"], notes: [
+      "<b>Vazio</b>: <code>DsEmptyState</code> explicando quais compras aparecem aqui.",
+    ] },
+    { state: { kind: "Error" }, label: "Error", refs: ["BR-21", "AC-21"], notes: [
+      "<b>Erro de leitura</b>: <code>DsErrorState</code> anunciado como alerta.",
+      "<b>Tentar de novo</b> recebe o foco; emite <code>OnRetry</code>.",
+    ] },
+  ] },
+];
+
+/* Protótipo: máquina de estados (equivalente ao ViewModel.onEvent). O resultado do pagamento
+   (OnPaymentResult) é simulado pelo cenário escolhido, como se viesse do app da Cielo. */
+const PROTOTYPE = {
+  help: "Escolha o cenário do pagamento e venda um ingresso: toque no evento, ajuste a quantidade e pague. " +
+        "O resultado chega como se viesse do terminal. Toque em “Pagar” várias vezes: só um pagamento é aberto. " +
+        "Filtre por mês nos chips; o filtro se mantém ao voltar para a lista. Use o ícone de recibo para ver o histórico.",
+  scenarios: [
+    ["approved", "Pagamento aprovado"], ["cancelled", "Cancelado no terminal (código 1)"], ["declined", "Negado (código 3)"],
+    ["generic", "Erro genérico (código 2)"], ["auth", "Erro de autenticação (código 4)"], ["noapp", "App Cielo ausente"],
+    ["unreadable", "Resposta ilegível (consulta e acha aprovado)"], ["recovery", "App fechado durante o pagamento"],
+    ["recovery-notfound", "App fechado e pagamento não encontrado"],
+    ["empty", "Catálogo sem eventos"], ["failure", "Falha ao ler o catálogo"],
+    ["history-empty", "Histórico vazio"], ["history-failure", "Falha ao ler o histórico"],
+  ],
+  initial: () => ({ screen: "SCR-01", state: { kind: "Loading" } }),
+  load(sc) { listMonth = ""; return { empty: { kind: "Empty" }, failure: { kind: "Error" } }[sc] || { kind: "Content", month: "" }; },
+  onEvent(cur, evName, arg, ctx) {
+    const st = cur.state;
+    switch (evName) {
+      case "OnMonthSelected": listMonth = arg || ""; return { ...cur, state: { ...st, month: listMonth } };
+      case "OnEventSelected": return { screen: "SCR-02", state: { kind: "Editing", eventId: arg, qty: 1 } };
+      case "OnIncrement": return { ...cur, state: { ...st, qty: Math.min(st.qty + 1, maxQty(ev(st.eventId))) } };
+      case "OnDecrement": return { ...cur, state: { ...st, qty: Math.max(st.qty - 1, 1) } };
+      case "OnPay":
+        if (st.kind !== "Editing") return cur; // BR-10: ignorado com compra em andamento
+        if (scenario === "noapp") return { ...cur, state: { ...st, kind: "Error", error: "NoCieloApp" } };
+        return awaitPayment(st, scenario);
+      case "OnRetry":
+        if (cur.screen === "SCR-01") { ctx.reload("approved"); return { screen: "SCR-01", state: { kind: "Loading" } }; }
+        if (cur.screen === "SCR-04") return openHistory("ok");
+        if (scenario === "noapp") return { ...cur, state: { ...st, kind: "Error", error: "NoCieloApp" } };
+        return awaitPayment(st, ["recovery", "recovery-notfound", "unreadable"].includes(scenario) ? "approved" : scenario); // nova referência
+      case "OnOpenHistory":
+        return openHistory(scenario === "history-empty" ? "empty" : scenario === "history-failure" ? "error" : "ok");
+      case "OnPurchaseSelected": {
+        const p = HISTORY.find((x) => x.id === arg);
+        return { screen: "SCR-03", state: { kind: p.status, purchaseId: p.id, from: "history" } };
+      }
+      case "OnNewSale": return { screen: "SCR-01", state: { kind: "Content", month: listMonth } };
+      case "NavigateUp": // navegação do sistema (Route), não é UiEvent
+        if (cur.screen === "SCR-03") return { screen: "SCR-04", state: { kind: "Content" } };
+        return { screen: "SCR-01", state: { kind: "Content", month: listMonth } };
+      default: return cur;
+    }
+  },
+};
+
+// Simulação do retorno da Cielo (OnPaymentResult) e das leituras assíncronas do protótipo.
+let protoToken = 0;
+let listMonth = ""; // filtro de mês da SCR-01, preservado ao voltar para a lista
+const later = (ms, fn) => { const t = ++protoToken; setTimeout(() => { if (t === protoToken) { fn(); drawProto(); } }, ms); };
+const newRef = () => Array.from({ length: 8 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)])
+  .join("").replace(/(.{4})/, "$1-");
+function awaitPayment(st, outcome) {
+  const waiting = { screen: "SCR-02", state: { ...st, kind: "AwaitingPayment", error: undefined } };
+  const settle = (result) => {
+    log(`OnPaymentResult(${result})`);
+    if (["Approved", "Declined", "Cancelled"].includes(result)) {
+      const p = { id: "n" + Date.now(), ref: newRef(), eventId: st.eventId, qty: st.qty, when: "17/10/2026 às 14:40", whenShort: "hoje às 14:40", status: result,
+        brand: "Mastercard", auth: "Z9Y8X7", nsu: "000654321" };
+      HISTORY.unshift(p);
+      nav = { screen: "SCR-03", state: { kind: result, purchaseId: p.id, from: "sale" } };
+    } else {
+      nav = { screen: "SCR-02", state: { ...st, kind: "Error", error: result } };
+    }
+  };
+  const map = { approved: "Approved", cancelled: "Cancelled", declined: "Declined", generic: "Generic",
+    auth: "Authentication" };
+  if (outcome === "recovery" || outcome === "recovery-notfound" || outcome === "unreadable") {
+    later(1500, () => {
+      log(outcome === "unreadable" ? "OnPaymentResult(resposta ilegível) → consulta à Cielo" : "(app reaberto com compra em andamento)");
+      nav = { screen: "SCR-02", state: { ...st, kind: "Recovering" } };
+      later(1600, () => settle(outcome === "recovery-notfound" ? "RecoveryNotFound" : "Approved"));
+    });
+  } else {
+    later(1600, () => settle(map[outcome] || "Approved"));
+  }
+  return waiting;
+}
+function openHistory(result) {
+  later(900, () => { nav = { screen: "SCR-04", state: { kind: { ok: "Content", empty: "Empty", error: "Error" }[result] } }; });
+  return { screen: "SCR-04", state: { kind: "Loading" } };
+}
+
+const FLOW = `flowchart LR
+  A([Abrir o app]) --> S1[SCR-01 Eventos à venda]
+  S1 -->|OnMonthSelected| S1
+  S1 -->|OnEventSelected| S2[SCR-02 Compra]
+  S2 -->|OnPay| C([App Cielo no terminal])
+  C -->|OnPaymentResult: aprovada, negada, cancelada| S3[SCR-03 Comprovante]
+  C -->|OnPaymentResult: erro| S2
+  S2 -->|OnRetry| C
+  S3 -->|OnNewSale| S1
+  S1 -->|OnOpenHistory| S4[SCR-04 Histórico]
+  S4 -->|OnPurchaseSelected| S3
+  A -.->|compra em andamento sem resultado| R[SCR-02 Recovering]
+  R -.->|resultado encontrado| S3
+  C -.->|resposta ilegível| R
+  R -.->|não encontrado: Falhou| S2E[SCR-02 Error: não encontrado]`;
+
+const DECISION = [
+  "Revise cada prancha nos dois temas e com fonte 200%.",
+  "Percorra o protótipo nos cenários de pagamento (aprovado, cancelado, negado, erros, app fechado).",
+  "Responda com <b>aprovado</b> ou com ajustes citando tela e estado (ex.: “SCR-02 Editing: trocar o texto do botão”).",
+  "Confira a SCR-01 com o filtro de mês e os estados Recovering e Error · não encontrado.",
+];
+/* ======================= FIM DOS DADOS DA FEATURE ======================= */
+
+/* Motor da prancha: não precisa editar abaixo. */
+const $ = (sel, el = document) => el.querySelector(sel);
+const prefs = { scheme: "light", fs: "1" };
+try {
+  const dark = document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  prefs.scheme = dark ? "dark" : "light";
+} catch (e) { /* mantém claro */ }
+
+function applyAppPrefs(el) { el.dataset.scheme = prefs.scheme; el.style.setProperty("--fs", prefs.fs); }
+function frame(inner) { return statusBar() + `<div class="body">${inner}</div><div class="gesture" aria-hidden="true"></div>`; }
+
+function renderMeta() {
+  $("#meta-eyebrow").textContent = META.eyebrow;
+  $("#meta-title").textContent = META.title;
+  $("#meta-facts").innerHTML = META.facts.map(([k, v]) => k === "Status"
+    ? `<span class="pill review">${v}</span>` : `<span>${k} <b class="id">${v}</b></span>`).join("");
+  $("#meta-lede").textContent = META.lede;
+  $("#flow-diagram").textContent = FLOW;
+  $("#decision-steps").innerHTML = DECISION.map((d) => `<li>${d}</li>`).join("");
+}
+
+function renderBoards() {
+  $("#view-boards").innerHTML = BOARDS.map((g) => `<section class="screen-group">
+    <h2><span class="id">${g.screen}</span>${g.name}</h2>
+    <div class="boards">${g.boards.map((b) => `<article class="board">
+      <div class="board-head"><strong>${b.label}</strong><span class="refs">${b.refs.map((r) => `<span class="ref">${r}</span>`).join("")}</span></div>
+      <div class="device"><div class="app" inert>${frame(SCREENS[g.screen](b.state))}</div></div>
+      <ol class="notes">${b.notes.map((n, i) => `<li><span class="n">${i + 1}</span><span>${n}</span></li>`).join("")}</ol>
+    </article>`).join("")}</div></section>`).join("");
+  document.querySelectorAll("#view-boards .app").forEach(applyAppPrefs);
+}
+
+let nav, scenario = "content", timer;
+const log = (t) => { const el = $("#proto-log"); el.textContent = (t + "\n" + el.textContent).slice(0, 2000); };
+const ctx = { reload(next) { clearTimeout(timer); const sc = next || scenario;
+  timer = setTimeout(() => { nav = { screen: "SCR-01", state: PROTOTYPE.load(sc) }; drawProto(); }, 1100); } };
+
+function drawProto() {
+  const app = $("#proto-app");
+  app.innerHTML = frame(SCREENS[nav.screen](nav.state));
+  applyAppPrefs(app);
+}
+function startProto() {
+  clearTimeout(timer); $("#proto-log").textContent = "";
+  nav = PROTOTYPE.initial(); drawProto(); log(`${nav.screen} · ${nav.state.kind}`); ctx.reload();
+}
+$("#proto-app").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-ev]"); if (!t) return;
+  const [ev, arg] = t.dataset.ev.split(":");
+  log(arg ? `${ev}(${arg})` : ev);
+  nav = PROTOTYPE.onEvent(nav, ev, arg, ctx); drawProto();
+});
+$("#proto-app").addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches("[role=button][data-ev]")) { e.preventDefault(); e.target.click(); }
+});
+
+function setup() {
+  $("#proto-help").textContent = PROTOTYPE.help;
+  $("#proto-scenario").innerHTML = PROTOTYPE.scenarios.map(([k, l]) => `<option value="${k}">${l}</option>`).join("");
+  $("#proto-scenario").addEventListener("change", (e) => { scenario = e.target.value; startProto(); });
+  $("#proto-restart").addEventListener("click", startProto);
+
+  const seg = (id, fn) => $(id).addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    $(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); fn(b.dataset.v);
+  });
+  const syncSeg = (id, v) => $(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.v === v)));
+  syncSeg("#seg-scheme", prefs.scheme);
+  seg("#seg-scheme", (v) => { prefs.scheme = v; document.querySelectorAll(".app").forEach(applyAppPrefs); });
+  seg("#seg-fs", (v) => { prefs.fs = v; document.querySelectorAll(".app").forEach(applyAppPrefs); });
+  seg("#seg-notes", (v) => document.body.classList.toggle("hide-notes", v === "off"));
+
+  const tabs = [["boards", "#tab-boards"], ["prototype", "#tab-prototype"], ["flow", "#tab-flow"]];
+  const show = (name) => tabs.forEach(([n, id]) => {
+    $(id).setAttribute("aria-selected", String(n === name)); $("#view-" + n).hidden = n !== name;
+  });
+  tabs.forEach(([n, id]) => $(id).addEventListener("click", () => { show(n); try { history.replaceState(null, "", "#" + n); } catch (e) {} }));
+  const h = (location.hash || "").slice(1);
+  if (tabs.some(([n]) => n === h)) show(h);
+}
+
+renderMeta(); renderBoards(); setup(); startProto();
+</script>

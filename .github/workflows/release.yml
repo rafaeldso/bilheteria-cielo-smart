@@ -30,7 +30,7 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
         with:
-          cache-read-only: true
+          cache-disabled: true # zizmor cache-poisoning: o APK publicado não usa cache
       - name: Build APK de debug
         run: ./gradlew :app:assembleDebug --console=plain
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

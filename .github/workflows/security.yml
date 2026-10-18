@@ -32,7 +32,7 @@ jobs:
       - name: Gitleaks
         run: |
           curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
-          ./gitleaks git --redact --exit-code 1 .
+          ./gitleaks git --redact -v --exit-code 1 .
 
   # S-15 — CVEs nas versões RESOLVIDAS (gradle.lockfile, via dependency locking).
   # Exceções com prazo: osv-scanner.toml ([[IgnoredVulns]] com ignoreUntil e reason),

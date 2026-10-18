@@ -1,5 +1,5 @@
 {
-  "$description": "Papeis de cor semanticos do Material 3, tema claro. PLACEHOLDER: papeis no formato do Material Theme Builder (seed aproximado #00696B); regerar no Theme Builder quando a direcao visual for aprovada. Unidade px = dp/sp no Android. Ver docs/design/README.md.",
+  "$description": "Papeis de cor do Material 3, tema claro. Direcao visual A 'Ciano Smart' aprovada em 2026-10-17: semente ciano #00A3E0 (primaria) + azul-marinho (secundaria). Papeis derivados manualmente da semente (aproximados, contraste AA verificado); success/warning/error mantidos. Ver docs/design/DESIGN.md.",
   "color": {
     "$type": "color",
     "primary": {
@@ -7,10 +7,10 @@
         "colorSpace": "srgb",
         "components": [
           0.0,
-          0.4157,
-          0.4157
+          0.3961,
+          0.5608
         ],
-        "hex": "#006a6a"
+        "hex": "#00658f"
       }
     },
     "onPrimary": {
@@ -28,11 +28,11 @@
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.6118,
-          0.9451,
-          0.9412
+          0.7804,
+          0.9059,
+          1.0
         ],
-        "hex": "#9cf1f0"
+        "hex": "#c7e7ff"
       }
     },
     "onPrimaryContainer": {
@@ -40,21 +40,21 @@
         "colorSpace": "srgb",
         "components": [
           0.0,
-          0.1255,
-          0.1255
+          0.1176,
+          0.1804
         ],
-        "hex": "#002020"
+        "hex": "#001e2e"
       }
     },
     "secondary": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.2902,
-          0.3882,
-          0.3882
+          0.2314,
+          0.3725,
+          0.5176
         ],
-        "hex": "#4a6363"
+        "hex": "#3b5f84"
       }
     },
     "onSecondary": {
@@ -72,33 +72,33 @@
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.8,
-          0.9098,
-          0.9059
+          0.8235,
+          0.8941,
+          1.0
         ],
-        "hex": "#cce8e7"
+        "hex": "#d2e4ff"
       }
     },
     "onSecondaryContainer": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.0196,
-          0.1216,
-          0.1216
+          0.0,
+          0.1137,
+          0.2118
         ],
-        "hex": "#051f1f"
+        "hex": "#001d36"
       }
     },
     "tertiary": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.2941,
-          0.3765,
+          0.3804,
+          0.3529,
           0.4863
         ],
-        "hex": "#4b607c"
+        "hex": "#615a7c"
       }
     },
     "onTertiary": {
@@ -116,22 +116,22 @@
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.8275,
-          0.8941,
+          0.9059,
+          0.8706,
           1.0
         ],
-        "hex": "#d3e4ff"
+        "hex": "#e7deff"
       }
     },
     "onTertiaryContainer": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.0157,
-          0.1098,
-          0.2078
+          0.1137,
+          0.0902,
+          0.2118
         ],
-        "hex": "#041c35"
+        "hex": "#1d1736"
       }
     },
     "error": {
@@ -182,44 +182,44 @@
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.9569,
-          0.9843,
-          0.9804
+          0.9647,
+          0.9804,
+          0.9961
         ],
-        "hex": "#f4fbfa"
+        "hex": "#f6fafe"
       }
     },
     "onSurface": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.0863,
-          0.1137,
-          0.1137
+          0.0902,
+          0.1098,
+          0.1255
         ],
-        "hex": "#161d1d"
+        "hex": "#171c20"
       }
     },
     "surfaceVariant": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.8549,
-          0.898,
-          0.8941
+          0.8667,
+          0.8902,
+          0.9176
         ],
-        "hex": "#dae5e4"
+        "hex": "#dde3ea"
       }
     },
     "onSurfaceVariant": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.2471,
-          0.2863,
-          0.2824
+          0.2549,
+          0.2824,
+          0.302
         ],
-        "hex": "#3f4948"
+        "hex": "#41484d"
       }
     },
     "surfaceContainerLowest": {
@@ -237,66 +237,66 @@
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.9373,
-          0.9608,
-          0.9569
+          0.9412,
+          0.9569,
+          0.9725
         ],
-        "hex": "#eff5f4"
+        "hex": "#f0f4f8"
       }
     },
     "surfaceContainer": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.9137,
-          0.9373,
-          0.9333
+          0.9176,
+          0.9333,
+          0.949
         ],
-        "hex": "#e9efee"
+        "hex": "#eaeef2"
       }
     },
     "surfaceContainerHigh": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.8902,
+          0.8941,
           0.9137,
-          0.9137
+          0.9294
         ],
-        "hex": "#e3e9e9"
+        "hex": "#e4e9ed"
       }
     },
     "surfaceContainerHighest": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.8667,
-          0.8941,
-          0.8902
+          0.8745,
+          0.8902,
+          0.9059
         ],
-        "hex": "#dde4e3"
+        "hex": "#dfe3e7"
       }
     },
     "outline": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.4353,
-          0.4745,
-          0.4745
+          0.4431,
+          0.4706,
+          0.4941
         ],
-        "hex": "#6f7979"
+        "hex": "#71787e"
       }
     },
     "outlineVariant": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.7451,
-          0.7882,
-          0.7843
+          0.7569,
+          0.7804,
+          0.8078
         ],
-        "hex": "#bec9c8"
+        "hex": "#c1c7ce"
       }
     },
     "scrim": {
@@ -314,33 +314,33 @@
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.1686,
-          0.1961,
-          0.1922
+          0.1725,
+          0.1922,
+          0.2078
         ],
-        "hex": "#2b3231"
+        "hex": "#2c3135"
       }
     },
     "inverseOnSurface": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.9255,
-          0.949,
-          0.9451
+          0.9294,
+          0.9451,
+          0.9608
         ],
-        "hex": "#ecf2f1"
+        "hex": "#edf1f5"
       }
     },
     "inversePrimary": {
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.502,
-          0.8353,
-          0.8314
+          0.5216,
+          0.8118,
+          1.0
         ],
-        "hex": "#80d5d4"
+        "hex": "#85cfff"
       }
     },
     "success": {

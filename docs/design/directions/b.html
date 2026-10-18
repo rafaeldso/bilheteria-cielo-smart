@@ -1,0 +1,566 @@
+<title>Direção B · Marinho sóbrio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--
+  Copyright 2026 Rafael Oliveira
+  Licensed under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+
+  MOCKUP KIT — template de prancha de revisão de design (ver docs/design/README.md).
+  Como usar (skill sdd-design):
+    1. Copie para docs/specs/NNN-nome/design/mockups.html.
+    2. Edite SÓ o bloco "DADOS DA FEATURE" no <script>: META, SCREENS (funções estado → HTML),
+       BOARDS (uma prancha por estado da spec, com notas) e PROTOTYPE (máquina de estados).
+    3. Use apenas variáveis --md-* (tokens de docs/design/tokens) e as classes de componentes
+       abaixo (cada uma mapeia um componente de docs/design/components.md).
+  Variáveis --md-* espelham docs/design/tokens/*.tokens.json. Mudou token? Atualize aqui também.
+  Dados SEMPRE fictícios: nada de PAN, CPF, nome ou valor real.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Roboto+Flex:opsz,wght@8..144,400..600&family=Roboto:wght@400;500&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,400,0..1,0&display=swap">
+<style>
+/* Layout: mesa de revisão — cabeçalho com metadados e controles, pranchas (um celular por estado)
+   com anotações em "redline", aba de protótipo clicável e aba de fluxo. */
+:root {
+  /* Cromo da prancha (segue o tema de quem visualiza) */
+  --bg: #e9edec;
+  --panel: #f7f9f8;
+  --ink: #1b2120;
+  --muted: #56615f;
+  --line: #ccd5d3;
+  --redline: #c2185b;
+  --redline-ink: #ffffff;
+  --focus: #006a6a;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-id: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* App (Android): famílias dos tokens font.family.* */
+  --font-brand: Inter, system-ui, sans-serif;
+  --font-plain: Inter, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111615; --panel: #1a201f; --ink: #e3e9e8; --muted: #9ba6a4; --line: #2f3836;
+    --redline: #ff7aa8; --redline-ink: #2a0012; --focus: #80d5d4; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111615; --panel: #1a201f; --ink: #e3e9e8; --muted: #9ba6a4; --line: #2f3836;
+  --redline: #ff7aa8; --redline-ink: #2a0012; --focus: #80d5d4; color-scheme: dark;
+}
+
+/* ===== Tokens do app (docs/design/tokens) — escopo do celular, não da página ===== */
+.app {
+  --fs: 1; /* escala de fonte do sistema (1 = 100%, 2 = 200%) */
+  --md-primary: #285DA8; --md-on-primary: #FFFFFF; --md-primary-container: #D7E2FF; --md-on-primary-container: #001A40;
+  --md-secondary: #00658F; --md-on-secondary: #FFFFFF; --md-secondary-container: #C7E7FF; --md-on-secondary-container: #001E2E;
+  --md-tertiary: #705574; --md-on-tertiary: #FFFFFF; --md-tertiary-container: #FAD8FD; --md-on-tertiary-container: #28132E;
+  --md-error: #BA1A1A; --md-on-error: #FFFFFF; --md-error-container: #FFDAD6; --md-on-error-container: #410002;
+  --md-surface: #F9F9FF; --md-on-surface: #191C20; --md-surface-variant: #E0E2EC; --md-on-surface-variant: #44474E;
+  --md-surface-container-lowest: #FFFFFF; --md-surface-container-low: #F3F3FA; --md-surface-container: #EDEDF4;
+  --md-surface-container-high: #E7E8EE; --md-surface-container-highest: #E2E2E9;
+  --md-outline: #74777F; --md-outline-variant: #C4C6D0; --md-scrim: #000000;
+  --md-inverse-surface: #2E3036; --md-inverse-on-surface: #F0F0F7; --md-inverse-primary: #ACC7FF;
+  --md-success: #2E6B30; --md-on-success: #FFFFFF; --md-success-container: #B1F1A9; --md-on-success-container: #002204;
+  --md-warning: #7A5900; --md-on-warning: #FFFFFF; --md-warning-container: #FFDEA3; --md-on-warning-container: #261900;
+  --md-space-xs: 4px; --md-space-sm: 8px; --md-space-md: 12px; --md-space-lg: 16px; --md-space-xl: 24px; --md-space-xxl: 32px;
+  --md-shape-extra-small: 4px; --md-shape-small: 6px; --md-shape-medium: 8px; --md-shape-large: 12px;
+  --md-shape-extra-large: 20px; --md-shape-full: 9999px;
+}
+.app[data-scheme="dark"] {
+  --md-primary: #ACC7FF; --md-on-primary: #002F67; --md-primary-container: #0A4590; --md-on-primary-container: #D7E2FF;
+  --md-secondary: #85CFFF; --md-on-secondary: #00344C; --md-secondary-container: #004C6C; --md-on-secondary-container: #C7E7FF;
+  --md-tertiary: #DDBCE0; --md-on-tertiary: #3F2844; --md-tertiary-container: #573E5C; --md-on-tertiary-container: #FAD8FD;
+  --md-error: #FFB4AB; --md-on-error: #690005; --md-error-container: #93000A; --md-on-error-container: #FFDAD6;
+  --md-surface: #111318; --md-on-surface: #E2E2E9; --md-surface-variant: #44474E; --md-on-surface-variant: #C4C6D0;
+  --md-surface-container-lowest: #0C0E13; --md-surface-container-low: #191C20; --md-surface-container: #1D2024;
+  --md-surface-container-high: #282A2F; --md-surface-container-highest: #33353A;
+  --md-outline: #8E9099; --md-outline-variant: #44474E; --md-scrim: #000000;
+  --md-inverse-surface: #E2E2E9; --md-inverse-on-surface: #2E3036; --md-inverse-primary: #285DA8;
+  --md-success: #96D78F; --md-on-success: #00390A; --md-success-container: #13521B; --md-on-success-container: #B1F1A9;
+  --md-warning: #F5BF48; --md-on-warning: #402D00; --md-warning-container: #5C4300; --md-on-warning-container: #FFDEA3;
+}
+
+/* ===== Página ===== */
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-ui); }
+.wrap {
+  max-width: 1240px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+  display: grid; gap: 28px;
+}
+.id { font-family: var(--font-id); font-size: 12.5px; letter-spacing: .02em; }
+header.meta { display: grid; gap: 14px; }
+.eyebrow { font: 500 12px/1 var(--font-id); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+h1 { margin: 0; font: 600 clamp(24px, 3.4vw, 34px)/1.15 var(--font-ui); text-wrap: balance; letter-spacing: -.01em; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 13.5px; }
+.facts b { color: var(--ink); font-weight: 500; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--line); font: 500 12px/1.4 var(--font-id); color: var(--ink); background: var(--panel); }
+.pill.review::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--redline); }
+.lede { max-width: 68ch; margin: 0; color: var(--muted); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.tabs, .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 8px; background: var(--bg); }
+.tabs button, .seg button {
+  font: 500 13.5px/1 var(--font-ui); color: var(--muted); background: transparent; border: 0;
+  padding: 8px 12px; border-radius: 6px; cursor: pointer; min-height: 34px;
+}
+.tabs button[aria-selected="true"], .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.ctl { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.spacer { flex: 1; }
+button:focus-visible, select:focus-visible, .app [tabindex]:focus-visible, .app button:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px;
+}
+
+/* Pranchas */
+.screen-group { display: grid; gap: 14px; }
+.screen-group > h2 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+  font: 600 19px/1.3 var(--font-ui); padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.screen-group > h2 .id { color: var(--muted); font-weight: 400; }
+.boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 32px 28px; }
+.board { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.board-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.board-head strong { font: 600 15px/1.3 var(--font-ui); }
+.refs { display: flex; flex-wrap: wrap; gap: 4px; }
+.ref { font: 500 11.5px/1 var(--font-id); padding: 4px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 13.5px; }
+.notes li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; }
+.notes li > span:last-child { min-width: 0; }
+.notes .n, .ann::after {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--redline); color: var(--redline-ink); font: 600 11px/1 var(--font-id);
+}
+.notes code { font-family: var(--font-id); font-size: 12px; }
+body.hide-notes .notes, body.hide-notes .ann::after { display: none; }
+
+/* Celular */
+.device { width: min(360px, 100%); justify-self: center; border-radius: 34px; padding: 8px;
+  background: #1d2221; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 12px 28px -14px rgba(0,0,0,.45); }
+.app { position: relative; height: 720px; border-radius: 27px; overflow: hidden; display: flex; flex-direction: column;
+  background: var(--md-surface); color: var(--md-on-surface); font-family: var(--font-plain); }
+.statusbar { flex: none; height: 28px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; font: 500 13px/1 var(--font-plain); color: var(--md-on-surface); }
+.statusbar .ms { font-size: 15px; }
+.gesture { flex: none; height: 22px; display: grid; place-items: center; }
+.gesture::before { content: ""; width: 108px; height: 4px; border-radius: 2px; background: var(--md-on-surface); opacity: .55; }
+.body { flex: 1; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+
+/* Tipografia M3 (escala com --fs) */
+.t-headline-small { font: 400 calc(24px * var(--fs))/calc(32px * var(--fs)) var(--font-brand); }
+.t-title-large { font: 400 calc(22px * var(--fs))/calc(28px * var(--fs)) var(--font-brand); }
+.t-title-medium { font: 500 calc(16px * var(--fs))/calc(24px * var(--fs)) var(--font-plain); letter-spacing: .15px; }
+.t-body-large { font: 400 calc(16px * var(--fs))/calc(24px * var(--fs)) var(--font-plain); letter-spacing: .5px; }
+.t-body-medium { font: 400 calc(14px * var(--fs))/calc(20px * var(--fs)) var(--font-plain); letter-spacing: .25px; }
+.t-label-large { font: 500 calc(14px * var(--fs))/calc(20px * var(--fs)) var(--font-plain); letter-spacing: .1px; }
+.t-label-medium { font: 500 calc(12px * var(--fs))/calc(16px * var(--fs)) var(--font-plain); letter-spacing: .5px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--md-on-surface-variant); }
+
+/* Componentes (ver docs/design/components.md) */
+.ms { font-family: "Material Symbols Outlined"; font-weight: 400; font-style: normal; font-size: 24px; line-height: 1;
+  display: inline-block; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; user-select: none; }
+.topbar { display: flex; align-items: center; gap: 4px; min-height: 64px; padding: 0 4px 0 16px; }
+.topbar.has-nav { padding-left: 4px; }
+.topbar h3 { margin: 0; flex: 1; min-width: 0; }
+.icon-btn { width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: transparent; color: var(--md-on-surface-variant); cursor: pointer; }
+.chips { display: flex; gap: 8px; padding: 4px 16px 8px; overflow-x: auto; scrollbar-width: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 16px;
+  border-radius: var(--md-shape-small); border: 1px solid var(--md-outline-variant); background: transparent;
+  color: var(--md-on-surface-variant); cursor: pointer; position: relative; }
+.chip::before { content: ""; position: absolute; inset: -8px 0; } /* área de toque 48dp */
+.chip[aria-pressed="true"] { background: var(--md-secondary-container); color: var(--md-on-secondary-container); border-color: transparent; padding-left: 8px; }
+.chip .ms { font-size: 18px; }
+.summary { margin: 4px 16px 12px; padding: 16px; border-radius: var(--md-shape-large);
+  background: var(--md-primary-container); color: var(--md-on-primary-container); display: grid; gap: 4px; }
+.summary .big { font: 400 calc(32px * var(--fs))/calc(40px * var(--fs)) var(--font-brand); letter-spacing: -.25px; }
+.section-label { padding: 12px 16px 4px; }
+.list { list-style: none; margin: 0; padding: 0; }
+.item { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px; align-items: center; min-height: 72px;
+  padding: 8px 24px 8px 16px; cursor: pointer; }
+.item + .item { border-top: 1px solid var(--md-outline-variant); }
+.item:hover { background: color-mix(in srgb, var(--md-on-surface) 8%, transparent); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.avatar .ms { font-size: 20px; }
+.item .lines { min-width: 0; display: grid; }
+.item .end { display: grid; justify-items: end; gap: 4px; }
+.status { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--md-shape-small); }
+.status .ms { font-size: 14px; }
+.status.ok { background: var(--md-success-container); color: var(--md-on-success-container); }
+.status.warn { background: var(--md-warning-container); color: var(--md-on-warning-container); }
+.status.bad { background: var(--md-error-container); color: var(--md-on-error-container); }
+.btn { min-height: 40px; padding: 0 24px; border-radius: var(--md-shape-full); border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; position: relative; }
+.btn::before { content: ""; position: absolute; inset: -4px 0; } /* área de toque 48dp */
+.btn.filled { background: var(--md-primary); color: var(--md-on-primary); }
+.btn.tonal { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.btn.outlined { background: transparent; color: var(--md-primary); border: 1px solid var(--md-outline); }
+.btn .ms { font-size: 18px; }
+.state-msg { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 64px 32px 24px; }
+.state-msg .glyph { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--md-surface-container-high); color: var(--md-on-surface-variant); }
+.state-msg .glyph.err { background: var(--md-error-container); color: var(--md-on-error-container); }
+.state-msg .glyph .ms { font-size: 32px; }
+.state-msg p { margin: 0; max-width: 30ch; }
+.sk { border-radius: var(--md-shape-small); background: var(--md-surface-container-highest); }
+.sk-row { display: grid; grid-template-columns: 40px 1fr 64px; gap: 16px; align-items: center; padding: 16px; }
+.sk-row .c { width: 40px; height: 40px; border-radius: 50%; }
+@media (prefers-reduced-motion: no-preference) {
+  .sk { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .45; } }
+}
+.detail-hero { padding: 8px 16px 20px; display: grid; gap: 4px; }
+.kv { margin: 0 16px; border-radius: var(--md-shape-medium); background: var(--md-surface-container-low); }
+.kv div { display: flex; justify-content: space-between; gap: 16px; padding: 14px 16px; }
+.kv div + div { border-top: 1px solid var(--md-outline-variant); }
+.kv dt, .kv dd { margin: 0; }
+.kv dd { text-align: right; }
+.actions { display: grid; gap: 12px; padding: 24px 16px; }
+.snackbar { position: absolute; left: 12px; right: 12px; bottom: 34px; padding: 14px 16px; border-radius: var(--md-shape-extra-small);
+  background: var(--md-inverse-surface); color: var(--md-inverse-on-surface); display: flex; gap: 8px; align-items: center; }
+
+/* Anotações sobre o celular (redline) */
+.ann { position: relative; }
+.ann::after { content: attr(data-n); position: absolute; top: 6px; right: 6px; z-index: 2;
+  box-shadow: 0 0 0 2px var(--md-surface); }
+
+/* Protótipo */
+.proto { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 32px; align-items: start; }
+.proto aside { display: grid; gap: 16px; align-content: start; max-width: 60ch; }
+.proto select { font: 400 14px/1.2 var(--font-ui); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); min-height: 38px; }
+.log { margin: 0; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel);
+  font: 400 12.5px/1.6 var(--font-id); color: var(--muted); max-height: 220px; overflow: auto; }
+@media (max-width: 760px) { .proto { grid-template-columns: 1fr; } }
+
+/* Fluxo e decisão */
+.panel { padding: 18px 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); display: grid; gap: 10px; }
+.panel h2 { margin: 0; font: 600 17px/1.3 var(--font-ui); }
+.panel p, .panel ol { margin: 0; max-width: 72ch; }
+.panel ol { padding-left: 20px; display: grid; gap: 6px; }
+.diagram { overflow-x: auto; }
+pre.mermaid { margin: 0; background: transparent; color: var(--ink); font: 400 13px/1.5 var(--font-id); }
+</style>
+
+<div class="wrap">
+  <header class="meta">
+    <div class="eyebrow" id="meta-eyebrow"></div>
+    <h1 id="meta-title"></h1>
+    <div class="facts" id="meta-facts"></div>
+    <p class="lede" id="meta-lede"></p>
+  </header>
+
+  <div class="toolbar" role="group" aria-label="Controles da prancha">
+    <div class="tabs" role="tablist" aria-label="Visualização">
+      <button role="tab" id="tab-boards" aria-selected="true" aria-controls="view-boards">Pranchas</button>
+      <button role="tab" id="tab-prototype" aria-selected="false" aria-controls="view-prototype">Protótipo</button>
+      <button role="tab" id="tab-flow" aria-selected="false" aria-controls="view-flow">Fluxo e decisão</button>
+    </div>
+    <span class="spacer"></span>
+    <span class="ctl">Tema do app
+      <span class="seg" id="seg-scheme">
+        <button data-v="light" aria-pressed="true">Claro</button>
+        <button data-v="dark" aria-pressed="false">Escuro</button>
+      </span>
+    </span>
+    <span class="ctl">Fonte
+      <span class="seg" id="seg-fs">
+        <button data-v="1" aria-pressed="true">100%</button>
+        <button data-v="2" aria-pressed="false">200%</button>
+      </span>
+    </span>
+    <span class="ctl">Anotações
+      <span class="seg" id="seg-notes">
+        <button data-v="on" aria-pressed="true">Ver</button>
+        <button data-v="off" aria-pressed="false">Ocultar</button>
+      </span>
+    </span>
+  </div>
+
+  <main>
+    <section id="view-boards" role="tabpanel" aria-labelledby="tab-boards" style="display:grid;gap:40px"></section>
+
+    <section id="view-prototype" role="tabpanel" aria-labelledby="tab-prototype" hidden>
+      <div class="proto">
+        <div class="device"><div class="app" id="proto-app"></div></div>
+        <aside>
+          <div class="panel">
+            <h2>Como testar</h2>
+            <p id="proto-help"></p>
+            <label class="ctl" for="proto-scenario">Cenário da API
+              <select id="proto-scenario"></select>
+            </label>
+            <div><button class="pill" id="proto-restart" type="button">Reiniciar fluxo</button></div>
+          </div>
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px">Eventos emitidos (UiEvent)</div>
+            <pre class="log" id="proto-log" aria-live="polite"></pre>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="view-flow" role="tabpanel" aria-labelledby="tab-flow" hidden>
+      <div style="display:grid;gap:20px">
+        <div class="panel">
+          <h2>Fluxo de navegação</h2>
+          <div class="diagram"><pre class="mermaid" id="flow-diagram"></pre></div>
+        </div>
+        <div class="panel">
+          <h2>Como decidir</h2>
+          <ol id="decision-steps"></ol>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ======================= DADOS DA FEATURE (edite só este bloco) ======================= */
+const META = {
+  eyebrow: "Direção visual B · Marinho sóbrio · Bilheteria · dados fictícios",
+  title: "Vendas do dia",
+  facts: [["UI Spec", "v0.1.0"], ["Spec", "000-exemplo"], ["Telas", "SCR-01, SCR-02"], ["Status", "Exemplo"]],
+  lede: "Semente azul-marinho (#0B3D91) como primária e ciano como secundária (destaques e seleção). Mais institucional e com contraste alto sob luz forte. Tipografia Inter. Cantos mais retos.",
+};
+
+// Dados fictícios (nunca dados reais; cartão sempre só "final NNNN")
+const SALES = [
+  { id: "v1", type: "credit", label: "Crédito à vista", last4: "4821", time: "14:32", amount: "R$ 189,90", spoken: "189 reais e 90 centavos", status: "ok" },
+  { id: "v2", type: "pix", label: "Pix", last4: null, time: "14:05", amount: "R$ 42,00", spoken: "42 reais", status: "ok" },
+  { id: "v3", type: "debit", label: "Débito", last4: "0937", time: "13:48", amount: "R$ 76,50", spoken: "76 reais e 50 centavos", status: "warn" },
+  { id: "v4", type: "credit", label: "Crédito 3x", last4: "5512", time: "12:10", amount: "R$ 1.250,00", spoken: "1250 reais", status: "ok" },
+  { id: "v5", type: "debit", label: "Débito", last4: "2290", time: "11:37", amount: "R$ 18,00", spoken: "18 reais", status: "bad" },
+  { id: "v6", type: "credit", label: "Crédito à vista", last4: "7764", time: "10:02", amount: "R$ 63,40", spoken: "63 reais e 40 centavos", status: "ok" },
+];
+const TYPE_ICON = { credit: "credit_card", debit: "payments", pix: "qr_code_2" };
+const STATUS = { ok: ["Aprovada", "check_circle"], warn: ["Pendente", "schedule"], bad: ["Cancelada", "cancel"] };
+const FILTERS = [["all", "Todas"], ["credit", "Crédito"], ["debit", "Débito"], ["pix", "Pix"]];
+
+/* Telas: funções puras estado → HTML (equivalente ao Screen(uiState) do Compose). */
+const statusBar = () => `<div class="statusbar" aria-hidden="true"><span class="num">14:40</span>
+  <span><span class="ms">signal_cellular_4_bar</span> <span class="ms">wifi</span> <span class="ms">battery_5_bar</span></span></div>`;
+
+const SCREENS = {
+  // SCR-01 Vendas do dia. state = { kind: "Loading" | "Content" | "Empty" | "Error", filter }
+  "SCR-01": (s) => {
+    const top = `<div class="topbar"><h3 class="t-title-large" role="heading" aria-level="1">Vendas do dia</h3>
+      <button class="icon-btn" data-ev="RefreshClicked" aria-label="Atualizar vendas"><span class="ms">refresh</span></button></div>`;
+    if (s.kind === "Loading") {
+      return top + `<div aria-busy="true" aria-label="Carregando vendas" class="ann" data-n="1">
+        <div class="sk" style="height:96px;margin:4px 16px 12px;border-radius:16px"></div>
+        ${Array.from({ length: 5 }, () => `<div class="sk-row"><div class="sk c"></div><div style="display:grid;gap:6px"><div class="sk" style="height:14px;width:70%"></div><div class="sk" style="height:12px;width:45%"></div></div><div class="sk" style="height:14px"></div></div>`).join("")}
+      </div>`;
+    }
+    if (s.kind === "Error") {
+      return top + `<div class="state-msg ann" data-n="1" role="alert">
+        <div class="glyph err"><span class="ms" aria-hidden="true">cloud_off</span></div>
+        <h4 class="t-title-medium" style="margin:0">Não foi possível carregar suas vendas</h4>
+        <p class="t-body-medium muted">Verifique a conexão da maquininha com a internet e tente de novo.</p>
+        <button class="btn filled t-label-large ann" data-n="2" data-ev="RetryClicked"><span class="ms" aria-hidden="true">refresh</span>Tentar de novo</button>
+      </div>`;
+    }
+    if (s.kind === "Empty") {
+      return top + `<div class="state-msg ann" data-n="1">
+        <div class="glyph"><span class="ms" aria-hidden="true">receipt_long</span></div>
+        <h4 class="t-title-medium" style="margin:0">Nenhuma venda hoje</h4>
+        <p class="t-body-medium muted">As vendas aprovadas na maquininha aparecem aqui assim que forem concluídas.</p>
+        <button class="btn tonal t-label-large" data-ev="RefreshClicked">Atualizar</button>
+      </div>`;
+    }
+    const f = s.filter || "all";
+    const rows = SALES.filter((v) => f === "all" || v.type === f);
+    return top + `
+      <div class="summary ann" data-n="1" role="group" aria-label="Total vendido hoje, 1621 reais e 80 centavos, 6 vendas, 1 cancelada fora do total">
+        <span class="t-label-large">Total vendido hoje</span>
+        <span class="big num">R$ 1.621,80</span>
+        <span class="t-body-medium">6 vendas · 1 cancelada fora do total · atualizado às 14:40</span>
+      </div>
+      <div class="chips ann" data-n="2" role="group" aria-label="Filtrar por forma de pagamento">
+        ${FILTERS.map(([k, l]) => `<button class="chip t-label-large" aria-pressed="${k === f}" data-ev="FilterSelected:${k}">${k === f ? '<span class="ms" aria-hidden="true">check</span>' : ""}${l}</button>`).join("")}
+      </div>
+      <div class="section-label t-label-medium muted">${rows.length} ${rows.length === 1 ? "venda" : "vendas"}</div>
+      <ul class="list">
+        ${rows.map((v, i) => `<li class="item${i === 0 ? " ann" : ""}" ${i === 0 ? 'data-n="3"' : ""} tabindex="0" role="button" data-ev="SaleClicked:${v.id}"
+            aria-label="${v.label}${v.last4 ? ", cartão final " + v.last4 : ""}, ${v.spoken}, ${STATUS[v.status][0]}, às ${v.time}">
+          <span class="avatar" aria-hidden="true"><span class="ms">${TYPE_ICON[v.type]}</span></span>
+          <span class="lines" aria-hidden="true"><span class="t-body-large">${v.label}</span>
+            <span class="t-body-medium muted num">${v.last4 ? "final " + v.last4 + " · " : ""}${v.time}</span></span>
+          <span class="end" aria-hidden="true"><span class="t-label-large num">${v.amount}</span>
+            <span class="status ${v.status} t-label-medium${i === 2 ? " ann" : ""}" ${i === 2 ? 'data-n="4"' : ""}><span class="ms">${STATUS[v.status][1]}</span>${STATUS[v.status][0]}</span></span>
+        </li>`).join("")}
+      </ul>`;
+  },
+  // SCR-02 Detalhe da venda. state = { kind: "Content", saleId, snackbar }
+  "SCR-02": (s) => {
+    const v = SALES.find((x) => x.id === s.saleId) || SALES[0];
+    return `<div class="topbar has-nav"><button class="icon-btn" data-ev="BackClicked" aria-label="Voltar"><span class="ms">arrow_back</span></button>
+        <h3 class="t-title-large" role="heading" aria-level="1">Detalhe da venda</h3></div>
+      <div class="detail-hero ann" data-n="1">
+        <span class="status ${v.status} t-label-medium" style="justify-self:start"><span class="ms" aria-hidden="true">${STATUS[v.status][1]}</span>${STATUS[v.status][0]}</span>
+        <span class="t-headline-small num" aria-label="${v.spoken}" style="font-size:calc(36px * var(--fs));line-height:calc(44px * var(--fs))">${v.amount}</span>
+        <span class="t-body-medium muted">${v.label} · hoje às ${v.time}</span>
+      </div>
+      <dl class="kv t-body-medium ann" data-n="2">
+        <div><dt class="muted">Forma de pagamento</dt><dd>${v.label}</dd></div>
+        <div><dt class="muted">Cartão</dt><dd class="num" aria-label="${v.last4 ? "final " + v.last4 : "não se aplica"}">${v.last4 ? "•••• " + v.last4 : "—"}</dd></div>
+        <div><dt class="muted">Código de autorização</dt><dd class="num">A1B2C3</dd></div>
+        <div><dt class="muted">NSU</dt><dd class="num">000123456</dd></div>
+      </dl>
+      <div class="actions">
+        <button class="btn filled t-label-large ann" data-n="3" data-ev="ShareReceiptClicked"><span class="ms" aria-hidden="true">share</span>Compartilhar comprovante</button>
+      </div>
+      ${s.snackbar ? `<div class="snackbar t-body-medium" role="status">${s.snackbar}</div>` : ""}`;
+  },
+};
+
+/* Pranchas: uma por estado da spec (seção 6). refs = IDs rastreáveis; notes = redlines numerados. */
+const BOARDS = [
+  { screen: "SCR-01", name: "Vendas do dia", boards: [
+    { state: { kind: "Content", filter: "all" }, label: "Content", refs: ["US-01", "BR-01", "BR-03", "AC-01", "AC-03"], notes: [
+      "<b>Resumo</b>: <code>DsSummaryCard</code> em <code>primaryContainer</code>; valor em <code>displaySmall</code> com dígitos tabulares. TalkBack lê o grupo inteiro: “Total vendido hoje, 1621 reais e 80 centavos, 6 vendas, 1 cancelada fora do total”.",
+      "<b>Filtro</b>: <code>FilterChip</code> M3, seleção única, rolagem horizontal. Estado anunciado como “selecionado”. Área de toque de 48dp.",
+      "<b>Item de venda</b>: <code>ListItem</code> com 72dp, clicável inteiro (<code>mergeDescendants</code>). Cartão aparece só como “final 4821” (PCI); o PAN não chega ao app.",
+      "<b>Status</b>: cor e texto juntos (nunca só cor). Tokens <code>success/warning/errorContainer</code> do design system.",
+    ] },
+    { state: { kind: "Loading" }, label: "Loading", refs: ["AC-04"], notes: [
+      "<b>Skeleton</b> com a mesma geometria do conteúdo, para não deslocar o layout. Anuncia “Carregando vendas”; o pulso respeita a preferência de reduzir animações.",
+    ] },
+    { state: { kind: "Empty" }, label: "Empty", refs: ["BR-02", "AC-05"], notes: [
+      "<b>Estado vazio</b>: <code>DsEmptyState</code> com ícone, título, explicação do que vai aparecer e ação secundária (tonal).",
+    ] },
+    { state: { kind: "Error" }, label: "Error", refs: ["BR-04", "AC-06"], notes: [
+      "<b>Erro de rede</b>: <code>DsErrorState</code>. A mensagem diz o que houve e o que fazer, sem código técnico. Anunciada como alerta.",
+      "<b>Ação principal</b>: “Tentar de novo” recebe o foco ao entrar no estado. Emite <code>RetryClicked</code>.",
+    ] },
+  ] },
+  { screen: "SCR-02", name: "Detalhe da venda", boards: [
+    { state: { kind: "Content", saleId: "v1" }, label: "Content", refs: ["US-02", "BR-05", "AC-07"], notes: [
+      "<b>Valor</b> em destaque, com leitura natural (“189 reais e 90 centavos”). Status no topo.",
+      "<b>Dados da venda</b>: lista chave-valor. Cartão mascarado “•••• 4821”, lido como “final 4821”. Tela com dado de cartão: <code>FLAG_SECURE</code>.",
+      "<b>Compartilhar</b>: <code>DsButton.Filled</code>, abre a folha de compartilhamento do sistema com o comprovante.",
+    ] },
+  ] },
+];
+
+/* Protótipo: máquina de estados (equivalente ao ViewModel.onEvent). */
+const PROTOTYPE = {
+  help: "Toque no celular como no aparelho: filtre, abra uma venda, volte, atualize. Troque o cenário para ver vazio e erro; em erro, “Tentar de novo” carrega com sucesso.",
+  scenarios: [["content", "Sucesso com vendas"], ["empty", "Sucesso sem vendas"], ["error", "Falha de rede"]],
+  initial: () => ({ screen: "SCR-01", state: { kind: "Loading" } }),
+  load(scenario) { return { content: { kind: "Content", filter: "all" }, empty: { kind: "Empty" }, error: { kind: "Error" } }[scenario]; },
+  onEvent(nav, ev, arg, ctx) {
+    switch (ev) {
+      case "FilterSelected": return { ...nav, state: { ...nav.state, filter: arg } };
+      case "SaleClicked": return { screen: "SCR-02", state: { kind: "Content", saleId: arg } };
+      case "BackClicked": return { screen: "SCR-01", state: { kind: "Content", filter: "all" } };
+      case "ShareReceiptClicked": return { ...nav, state: { ...nav.state, snackbar: "Abre a folha de compartilhamento do sistema" } };
+      case "RetryClicked": ctx.reload("content"); return { screen: "SCR-01", state: { kind: "Loading" } };
+      case "RefreshClicked": ctx.reload(); return { screen: "SCR-01", state: { kind: "Loading" } };
+      default: return nav;
+    }
+  },
+};
+
+const FLOW = `flowchart LR
+  A([Início do app]) --> S1[SCR-01 Vendas do dia]
+  S1 -->|SaleClicked| S2[SCR-02 Detalhe da venda]
+  S2 -->|BackClicked| S1
+  S1 -->|RefreshClicked / RetryClicked| S1
+  S2 -->|ShareReceiptClicked| X([Folha de compartilhamento])`;
+
+const DECISION = [
+  "Revise cada prancha nos dois temas e com fonte 200%.",
+  "Percorra o protótipo nos três cenários.",
+  "Responda ao agente com <b>aprovado</b> ou com ajustes citando a tela e o estado (ex.: “SCR-01 Empty: trocar o texto do botão”).",
+  "O agente registra a decisão na seção “Revisão de design” da ui-spec.md e congela esta versão.",
+];
+/* ======================= FIM DOS DADOS DA FEATURE ======================= */
+
+/* Motor da prancha: não precisa editar abaixo. */
+const $ = (sel, el = document) => el.querySelector(sel);
+const prefs = { scheme: "light", fs: "1" };
+try {
+  const dark = document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  prefs.scheme = dark ? "dark" : "light";
+} catch (e) { /* mantém claro */ }
+
+function applyAppPrefs(el) { el.dataset.scheme = prefs.scheme; el.style.setProperty("--fs", prefs.fs); }
+function frame(inner) { return statusBar() + `<div class="body">${inner}</div><div class="gesture" aria-hidden="true"></div>`; }
+
+function renderMeta() {
+  $("#meta-eyebrow").textContent = META.eyebrow;
+  $("#meta-title").textContent = META.title;
+  $("#meta-facts").innerHTML = META.facts.map(([k, v]) => k === "Status"
+    ? `<span class="pill review">${v}</span>` : `<span>${k} <b class="id">${v}</b></span>`).join("");
+  $("#meta-lede").textContent = META.lede;
+  $("#flow-diagram").textContent = FLOW;
+  $("#decision-steps").innerHTML = DECISION.map((d) => `<li>${d}</li>`).join("");
+}
+
+function renderBoards() {
+  $("#view-boards").innerHTML = BOARDS.map((g) => `<section class="screen-group">
+    <h2><span class="id">${g.screen}</span>${g.name}</h2>
+    <div class="boards">${g.boards.map((b) => `<article class="board">
+      <div class="board-head"><strong>${b.label}</strong><span class="refs">${b.refs.map((r) => `<span class="ref">${r}</span>`).join("")}</span></div>
+      <div class="device"><div class="app" inert>${frame(SCREENS[g.screen](b.state))}</div></div>
+      <ol class="notes">${b.notes.map((n, i) => `<li><span class="n">${i + 1}</span><span>${n}</span></li>`).join("")}</ol>
+    </article>`).join("")}</div></section>`).join("");
+  document.querySelectorAll("#view-boards .app").forEach(applyAppPrefs);
+}
+
+let nav, scenario = "content", timer;
+const log = (t) => { const el = $("#proto-log"); el.textContent = (t + "\n" + el.textContent).slice(0, 2000); };
+const ctx = { reload(next) { clearTimeout(timer); const sc = next || scenario;
+  timer = setTimeout(() => { nav = { screen: "SCR-01", state: PROTOTYPE.load(sc) }; drawProto(); }, 1100); } };
+
+function drawProto() {
+  const app = $("#proto-app");
+  app.innerHTML = frame(SCREENS[nav.screen](nav.state));
+  applyAppPrefs(app);
+}
+function startProto() {
+  clearTimeout(timer); $("#proto-log").textContent = "";
+  nav = PROTOTYPE.initial(); drawProto(); log(`${nav.screen} · ${nav.state.kind}`); ctx.reload();
+}
+$("#proto-app").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-ev]"); if (!t) return;
+  const [ev, arg] = t.dataset.ev.split(":");
+  log(arg ? `${ev}(${arg})` : ev);
+  nav = PROTOTYPE.onEvent(nav, ev, arg, ctx); drawProto();
+});
+$("#proto-app").addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches("[role=button][data-ev]")) { e.preventDefault(); e.target.click(); }
+});
+
+function setup() {
+  $("#proto-help").textContent = PROTOTYPE.help;
+  $("#proto-scenario").innerHTML = PROTOTYPE.scenarios.map(([k, l]) => `<option value="${k}">${l}</option>`).join("");
+  $("#proto-scenario").addEventListener("change", (e) => { scenario = e.target.value; startProto(); });
+  $("#proto-restart").addEventListener("click", startProto);
+
+  const seg = (id, fn) => $(id).addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    $(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); fn(b.dataset.v);
+  });
+  const syncSeg = (id, v) => $(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.v === v)));
+  syncSeg("#seg-scheme", prefs.scheme);
+  seg("#seg-scheme", (v) => { prefs.scheme = v; document.querySelectorAll(".app").forEach(applyAppPrefs); });
+  seg("#seg-fs", (v) => { prefs.fs = v; document.querySelectorAll(".app").forEach(applyAppPrefs); });
+  seg("#seg-notes", (v) => document.body.classList.toggle("hide-notes", v === "off"));
+
+  const tabs = [["boards", "#tab-boards"], ["prototype", "#tab-prototype"], ["flow", "#tab-flow"]];
+  const show = (name) => tabs.forEach(([n, id]) => {
+    $(id).setAttribute("aria-selected", String(n === name)); $("#view-" + n).hidden = n !== name;
+  });
+  tabs.forEach(([n, id]) => $(id).addEventListener("click", () => { show(n); try { history.replaceState(null, "", "#" + n); } catch (e) {} }));
+  const h = (location.hash || "").slice(1);
+  if (tabs.some(([n]) => n === h)) show(h);
+}
+
+renderMeta(); renderBoards(); setup(); startProto();
+</script>

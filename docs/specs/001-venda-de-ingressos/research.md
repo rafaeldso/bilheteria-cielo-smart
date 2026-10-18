@@ -246,3 +246,21 @@ mas o L300 v3 roda 7.1 e o emulador 7/10; targetSdk 29 vs. políticas atuais de 
 - https://github.com/DeveloperCielo/LIO-SDK-Sample-Integracao-Local
 - https://github.com/DeveloperCielo/LIO-Hybrid-Integration-Sample-Flutter
 - https://github.com/orgs/DeveloperCielo/repositories (listagem)
+
+## 12. Verificação na fonte (2026-10-17, antes do plano)
+Leitura direta (`.md`) de `…/pagamento`, `…/recuperando-dados`, `…/listagem-de-pedidos`, `…/deep-link-exemplo-de-codigo`:
+- **JSON de pagamento confirmado:** `accessToken`, `clientID`, `reference` (opcional; exemplo em formato UUID), `merchantCode`,
+  `email`, `installments`, `items[{name, quantity, sku, unitOfMeasure, unitPrice}]`, `paymentCode`, `value` (string em centavos).
+  A tabela da doc dá exemplo de item com `unit_price: 10000` e `value: 10000` → enviar `unitPrice` em centavos e validar no emulador.
+- **Listagem `lio://orders?request=$base64&urlCallback=order://response`** (texto literal). Cada pedido em `results[]` traz
+  `reference`, `status` textual (`"PAID"`), `type` (`"PAYMENT"`), `price`, `paidAmount` e `payments[]`. **A recuperação por
+  `reference` é viável** filtrando no cliente.
+- **Leitura do retorno (literal):** `intent.data` → `getQueryParameter("response")` → `Base64.decode(response, Base64.DEFAULT)` → JSON.
+- **Dados sensíveis na resposta:** `payments[].mask` e `paymentFields.pan` (cartão mascarado), `paymentFields.bin` (6 primeiros dígitos),
+  `paymentFields.document` (CNPJ do lojista), `merchantCode`, `accessKey`. **Nunca logar nem persistir a resposta bruta**; extrair só
+  os campos do comprovante (spec §8).
+- **`brand` pode vir vazio** no exemplo (`"brand":""`); a bandeira do comprovante cai para "—" quando ausente (validar no emulador).
+- **Inconsistências da doc:** o exemplo de sucesso da listagem volta em `orders://response`, embora a chamada use `order://response`;
+  o exemplo de erro usa `responsecode=2`, o de pagamento `responsecode=0`. O app registra só `order://response` e classifica pelo JSON,
+  não pelo `responsecode`. Confirmar no emulador.
+- `…/deep-link-exemplo-de-codigo` não tem código: só aponta samples React Native e Flutter.

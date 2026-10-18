@@ -61,6 +61,14 @@ A trilha A (código) avança enquanto a trilha B (documentos) espera aprovação
 | S9 | Layout adaptativo (WindowSizeClass) | Terminal Smart tem tela fixa; tema escuro e a11y mantidos |
 | S10 | Cenários EV-01…EV-10 do harness | Meta-teste do harness, sem valor de produto |
 
+## Melhorias futuras
+Alimenta a seção "O que faria com mais tempo" do README (exigida pelo case) na entrega (D3).
+
+| # | Melhoria | Por que não agora | Origem |
+|---|---|---|---|
+| F1 | **Credenciais Cielo por configuração gerenciada** (Managed Configurations/MDM da Cielo Store, ou backend que emite credencial de curta duração) em vez de `BuildConfig` | Exige infraestrutura que o case não avalia; no case o token é fictício (emulador) | [ADR-0010](adr/0010-integracao-cielo-smart-por-deep-link.md), pedido do humano em 2026-10-17 |
+| F2 | Itens de produção pulados (Crashlytics, baseline profiles, assinatura, MobSF, proteção de branch etc.) | Custo sem valor para a avaliação | [ADR-0009](adr/0009-escopo-de-case-itens-de-producao-fora.md) |
+
 ## Decisões
 | Data | Decisão | Motivo |
 |---|---|---|
