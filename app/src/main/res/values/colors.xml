@@ -3,4 +3,7 @@
 
     <!-- Token `color.surface` (docs/design/tokens/color.light.tokens.json): splash background. -->
     <color name="splash_background">#F6FAFE</color>
+
+    <!-- Token `color.primary`: circle behind the ticket on the splash, same blue as the launcher icon (light and dark). -->
+    <color name="splash_icon_background">#00658F</color>
 </resources>
