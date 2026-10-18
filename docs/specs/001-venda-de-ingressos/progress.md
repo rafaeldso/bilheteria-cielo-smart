@@ -8,7 +8,7 @@
 
 ## Estado atual
 - **Última etapa concluída:** Fase 2.5 — design aprovado (UI Spec 0.4.0, 3 rodadas do `ui-design-reviewer`); spec 1.1.0 (navegação por mês, BR-25)
-- **Próxima etapa:** aprovação do `tasks.md` → Fase 0 (T01–T04) na sessão principal
+- **Próxima etapa:** Fase 0 — T01 (validar emulador Cielo) → T02 → T03 → T04, na sessão principal (`tasks.md` aprovado em 2026-10-17)
 - **CI:** `ci`/`release` verdes no GitHub; `security` com correções aplicadas localmente (cache do release, `taskAffinity`, gitleaks `-v`), ainda não enviadas
 - **Feito na Fase 3:** URIs/JSONs conferidos na fonte (research §12); `plan.md` escrito
 - **Pendente de código:** aplicar a paleta A em `core:designsystem` (tokens mudam em 3 lugares; a skill de design não escreve código) — primeira tarefa de UI do `tasks.md`

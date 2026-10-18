@@ -62,7 +62,7 @@ lint_case 1 feature/a/data/src/main/kotlin/L.kt 'logger.info("card ${cardNumber}
 lint_case 1 feature/a/domain/src/main/kotlin/M.kt 'data class P(val amount: Double)' 'dinheiro em Double'
 lint_case 1 feature/a/ui/src/main/kotlin/S.kt '@Suppress("MagicNumber")' '@Suppress sem aprovação'
 lint_case 0 feature/a/ui/src/main/kotlin/S.kt '@Suppress("MagicNumber") // harness:allow aprovado PR#12' '@Suppress aprovado'
-lint_case 1 app/src/main/kotlin/C.kt 'const val API_KEY = "abcd1234efgh5678"' 'segredo hardcoded'
+lint_case 1 app/src/main/kotlin/C.kt 'const val API_KEY = "abcd1234efgh5678"' 'segredo hardcoded' # gitleaks:allow (chave falsa: fixture que testa o sensor S-01)
 lint_case 0 feature/a/domain/src/main/kotlin/Ok.kt 'class GetBalanceUseCase(private val repo: BalanceRepository)' 'código limpo'
 
 # --- scan-sensitive-data.sh (S-02) -------------------------------------------
