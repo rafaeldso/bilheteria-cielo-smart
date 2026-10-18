@@ -1,0 +1,9 @@
+[
+  {
+    "id": "t-1",
+    "name": "Show de Teste",
+    "venue": "Teatro de Teste",
+    "priceCents": 8000,
+    "totalTickets": 10
+  }
+]

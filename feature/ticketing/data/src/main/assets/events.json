@@ -1,0 +1,66 @@
+[
+  {
+    "id": "evt-001",
+    "name": "Noite de Jazz no Parque",
+    "startsAt": "2026-11-14T20:00:00-03:00",
+    "venue": "Concha Acústica Municipal",
+    "priceCents": 8000,
+    "totalTickets": 120
+  },
+  {
+    "id": "evt-002",
+    "name": "Festival Sabores da Serra",
+    "startsAt": "2026-11-28T12:00:00-03:00",
+    "venue": "Praça das Fontes",
+    "priceCents": 3500,
+    "totalTickets": 300
+  },
+  {
+    "id": "evt-003",
+    "name": "Orquestra Jovem de Verão",
+    "startsAt": "2026-12-12T19:30:00-03:00",
+    "venue": "Teatro Vila Nova",
+    "priceCents": 12000,
+    "totalTickets": 80
+  },
+  {
+    "id": "evt-004",
+    "name": "Réveillon Luzes do Cais",
+    "startsAt": "2026-12-31T22:00:00-03:00",
+    "venue": "Cais do Porto Velho",
+    "priceCents": 25000,
+    "totalTickets": 200
+  },
+  {
+    "id": "evt-005",
+    "name": "Stand-up Risos de Janeiro",
+    "startsAt": "2027-01-16T21:00:00-03:00",
+    "venue": "Casa de Espetáculos Arco-Íris",
+    "priceCents": 6000,
+    "totalTickets": 150
+  },
+  {
+    "id": "evt-006",
+    "name": "Sarau Poético Lua Cheia",
+    "startsAt": "2027-02-06T18:00:00-03:00",
+    "venue": "Biblioteca Jardim das Letras",
+    "priceCents": 2000,
+    "totalTickets": 5
+  },
+  {
+    "id": "evt-007",
+    "name": "Carnaval de Rua Bloco do Sol",
+    "startsAt": "2027-02-13T15:00:00-03:00",
+    "venue": "Avenida Central",
+    "priceCents": 4500,
+    "totalTickets": 500
+  },
+  {
+    "id": "evt-008",
+    "name": "Cine Ar Livre: Clássicos do Cinema",
+    "startsAt": "2027-03-13T19:00:00-03:00",
+    "venue": "Parque da Lagoa",
+    "priceCents": 3000,
+    "totalTickets": 250
+  }
+]

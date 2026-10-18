@@ -1,0 +1,18 @@
+[
+  {
+    "id": "t-1",
+    "name": "Show de Teste",
+    "startsAt": "2026-11-14T20:00:00-03:00",
+    "venue": "Teatro de Teste",
+    "priceCents": 8000,
+    "totalTickets": 10
+  },
+  {
+    "id": "t-2",
+    "name": "Feira de Teste",
+    "startsAt": "2027-01-10T09:30:00Z",
+    "venue": "Praca de Teste",
+    "priceCents": 0,
+    "totalTickets": 0
+  }
+]

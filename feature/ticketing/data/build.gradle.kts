@@ -28,3 +28,11 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     testImplementation(testFixtures(projects.feature.ticketing.domain))
 }
+
+// BundledCatalogAssetTest reads the shipped asset from outside src/test: declare it so the test re-runs when it changes.
+tasks.withType<Test>().configureEach {
+    inputs
+        .file("src/main/assets/events.json")
+        .withPropertyName("eventsAsset")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}

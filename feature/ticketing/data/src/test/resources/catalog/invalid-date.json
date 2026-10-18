@@ -1,0 +1,10 @@
+[
+  {
+    "id": "t-1",
+    "name": "Show de Teste",
+    "startsAt": "14/11/2026 20:00",
+    "venue": "Teatro de Teste",
+    "priceCents": 8000,
+    "totalTickets": 10
+  }
+]

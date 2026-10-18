@@ -53,7 +53,7 @@
 - [ ] **T12** [P] `core:database` (Room v1: `BilheteriaDatabase`, `PurchaseEntity`, `PurchaseDao`) + `DefaultPurchaseRepository`
   (compra aberta única em transação, histórico, soma de aprovadas) + testes Room in-memory · BR-10, BR-17, BR-18 ·
   AC-08, AC-17, AC-18, AC-20 · **Pronto quando:** schema exportado; testes de repositório passam; matriz de erros (StorageFailure)
-- [ ] **T13** [P] Catálogo: `assets/events.json` (7+ eventos fictícios de nov/2026 a mar/2027, 3+ meses, um esgotável),
+- [x] **T13** [P] Catálogo: `assets/events.json` (7+ eventos fictícios de nov/2026 a mar/2027, 3+ meses, um esgotável),
   DTO, mapper, `DefaultEventCatalogRepository` + testes · BR-01, BR-04 · AC-01, AC-03 · **Pronto quando:** JSON inválido →
   `CatalogUnavailable`; mapper testado
 - [ ] **T14** [P] `CieloRequestEncoder` e `CieloResponseParser` + testes com fixtures da doc da Cielo (sucesso, erro `code` 1–4,
