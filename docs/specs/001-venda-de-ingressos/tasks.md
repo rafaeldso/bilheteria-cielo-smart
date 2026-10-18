@@ -50,7 +50,7 @@
   **Pronto quando:** API igual à ficha da UI Spec §5; reduzir animações respeitado; previews
 
 ## Fase 2 — Data (lote C, paralelo; depois T15 sequencial)
-- [ ] **T12** [P] `core:database` (Room v1: `BilheteriaDatabase`, `PurchaseEntity`, `PurchaseDao`) + `DefaultPurchaseRepository`
+- [x] **T12** [P] `core:database` (Room v1: `BilheteriaDatabase`, `PurchaseEntity`, `PurchaseDao`) + `DefaultPurchaseRepository`
   (compra aberta única em transação, histórico, soma de aprovadas) + testes Room in-memory · BR-10, BR-17, BR-18 ·
   AC-08, AC-17, AC-18, AC-20 · **Pronto quando:** schema exportado; testes de repositório passam; matriz de erros (StorageFailure)
 - [x] **T13** [P] Catálogo: `assets/events.json` (7+ eventos fictícios de nov/2026 a mar/2027, 3+ meses, um esgotável),

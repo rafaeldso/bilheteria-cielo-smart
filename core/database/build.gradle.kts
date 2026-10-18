@@ -25,4 +25,6 @@ android {
 
 dependencies {
     implementation(projects.core.common)
+    // The DAO and database types extend Room classes, so consumers need Room on their compile classpath.
+    api(libs.androidx.room.runtime)
 }

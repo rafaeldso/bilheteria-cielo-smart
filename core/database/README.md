@@ -6,7 +6,7 @@ Banco local Room do app (ADR-0007).
 **Camada:** data (core) · **Plano:** [plan.md](../../docs/specs/001-venda-de-ingressos/plan.md)
 
 ## API pública
-`BilheteriaDatabase`, `PurchaseDao`, `PurchaseEntity` (a criar na T12).
+`BilheteriaDatabase` (Room v1), `PurchaseDao`, `PurchaseEntity`, `EventQuantity`; módulo Hilt `DatabaseModule`. Expõe `room-runtime` (`api`) porque os tipos estendem classes do Room.
 
 ## Dependências
 <!-- module-graph:start -->

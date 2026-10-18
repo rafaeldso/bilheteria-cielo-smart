@@ -20,6 +20,7 @@ plugins {
 
 android {
     namespace = "com.rafaeloliveira.bilheteria.feature.ticketing.data"
+    testOptions { unitTests.isIncludeAndroidResources = true }
 }
 
 dependencies {
@@ -27,6 +28,9 @@ dependencies {
     implementation(projects.core.database)
     implementation(libs.kotlinx.serialization.json)
     testImplementation(testFixtures(projects.feature.ticketing.domain))
+    // Room in-memory tests need the Android framework (SQLite) on the JVM: Robolectric via the vintage engine.
+    testImplementation(libs.robolectric)
+    testImplementation(libs.junit.vintage.engine) // brings junit 4 (@Test, @RunWith) to the compile classpath
 }
 
 // BundledCatalogAssetTest reads the shipped asset from outside src/test: declare it so the test re-runs when it changes.
