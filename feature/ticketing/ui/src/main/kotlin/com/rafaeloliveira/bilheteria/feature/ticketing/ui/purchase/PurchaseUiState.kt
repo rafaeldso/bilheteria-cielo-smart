@@ -20,7 +20,7 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import java.time.Instant
 
 /**
- * State of SCR-02 (plan §4). `Loading` and `Completed` are additions approved on 2026-10-18:
+ * State of SCR-02 (plan §4, spec section 6). `Loading` and `Completed` are additions approved on 2026-10-18:
  * `Loading` covers the moment before the event and the open purchase are known (the screen must not offer "Pay"
  * before that, BR-10); `Completed` is the navigation signal to the receipt (navigation is state).
  */
@@ -56,14 +56,20 @@ internal sealed interface PurchaseUiState {
         val reason: PurchaseErrorReason,
     ) : PurchaseUiState
 
+    /** BR-27: the event cannot be loaded (or is gone) and no purchase is open; the Route offers the way back. */
+    data object Unavailable : PurchaseUiState
+
     /** The purchase reached Approved, Declined or Cancelled: the Route navigates to the receipt of [purchaseId]. */
     data class Completed(
         val purchaseId: String,
     ) : PurchaseUiState
 }
 
-/** Which message the `Error` state shows (ui-spec SCR-02, four variants). */
-internal enum class PurchaseErrorReason { NoCieloApp, Generic, Authentication, RecoveryNotFound }
+/**
+ * Which message the `Error` state shows (ui-spec SCR-02). [RecoveryFailed] is a lookup that could not be completed
+ * (BR-26): "Tentar novamente" repeats the lookup and never opens a payment.
+ */
+internal enum class PurchaseErrorReason { NoCieloApp, Generic, Authentication, RecoveryNotFound, RecoveryFailed }
 
 /** Why the quantity cannot grow (ui-spec SCR-02 strings `limit_max` and `limit_available`). */
 @Immutable

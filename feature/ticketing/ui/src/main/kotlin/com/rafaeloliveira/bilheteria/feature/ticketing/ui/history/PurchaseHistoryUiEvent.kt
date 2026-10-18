@@ -16,7 +16,7 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.history
 
 /** Events of SCR-04 (spec section 6). */
-sealed interface PurchaseHistoryUiEvent {
+internal sealed interface PurchaseHistoryUiEvent {
     /** "Tentar de novo" after an error (BR-21). */
     data object OnRetry : PurchaseHistoryUiEvent
 

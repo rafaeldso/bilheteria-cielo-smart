@@ -21,7 +21,6 @@ import androidx.lifecycle.viewModelScope
 import com.rafaeloliveira.bilheteria.core.common.AppError
 import com.rafaeloliveira.bilheteria.core.common.DataResult
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.error.TicketingError
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.AvailableEvent
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveAvailableEventsUseCase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveOpenPurchaseUseCase
@@ -36,6 +35,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -52,11 +52,13 @@ private const val PURCHASE_ID_KEY = "purchaseId"
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
 /**
- * SCR-02: quantity, payment, waiting, recovery and errors (BR-05 to BR-10, BR-14, BR-15, BR-25).
+ * SCR-02: quantity, payment, waiting, recovery and errors (BR-05 to BR-10, BR-14, BR-15, BR-25 to BR-27).
  *
  * The screen follows the local record: the open purchase decides `AwaitingPayment`/`Recovering`; when it settles the
- * state becomes `Completed` (a sale, to the receipt) or `Error` (`Failed`, with a new attempt allowed). On the first
- * read, an open purchase left from a previous run goes to the Cielo lookup before any new charge (BR-15).
+ * state becomes `Completed` (a sale, to the receipt) or `Error` (`Failed`, with a new attempt allowed). An open
+ * purchase left from a previous run goes to the Cielo lookup before any new charge (BR-15). While that lookup cannot be
+ * completed, or the open purchase cannot be read, the state is `Error(RecoveryFailed)` and "Tentar novamente" repeats
+ * the reading and the lookup: a payment is never started until the open purchase is known (BR-10, BR-26).
  */
 @HiltViewModel
 internal class PurchaseViewModel
@@ -71,14 +73,20 @@ internal class PurchaseViewModel
     ) : ViewModel() {
         private val open = MutableStateFlow<OpenPurchase>(OpenPurchase.Unknown)
         private val outcome = MutableStateFlow<AttemptOutcome>(AttemptOutcome.None)
-        private val selectedEvent = MutableStateFlow<AvailableEvent?>(null)
+        private val selectedEvent = MutableStateFlow<EventLookup>(EventLookup.Unknown)
+        private val recovery = MutableStateFlow(Recovery.Idle)
         private val quantity = savedStateHandle.getStateFlow(QUANTITY_KEY, QuantityLimits.MIN)
+        private var openJob: Job? = null
         private var startJob: Job? = null
+        private var recoveryJob: Job? = null
+
+        /** True until the Cielo lookup of an open purchase from an earlier run was requested with success. */
+        private var lookupPending = true
 
         val uiState: StateFlow<PurchaseUiState> =
-            combine(open, outcome, selectedEvent, quantity) { openPurchase, attempt, available, chosen ->
-                PurchaseInputs(openPurchase, attempt, available, chosen).toUiState()
-            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), PurchaseUiState.Loading)
+            combine(open, outcome, selectedEvent, quantity, recovery, ::PurchaseInputs)
+                .map { it.toUiState() }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), PurchaseUiState.Loading)
 
         init {
             collectEvent()
@@ -90,12 +98,16 @@ internal class PurchaseViewModel
                 PurchaseUiEvent.OnIncrement -> changeQuantity(+1)
                 PurchaseUiEvent.OnDecrement -> changeQuantity(-1)
                 PurchaseUiEvent.OnPay -> if (currentState() is PurchaseUiState.Editing) startPayment()
-                PurchaseUiEvent.OnRetry -> if (currentState() is PurchaseUiState.Error) startPayment()
+                PurchaseUiEvent.OnRetry -> if (currentState() is PurchaseUiState.Error) retry()
             }
         }
 
+        /**
+         * The inputs are read directly (not through [uiState]) because [uiState] is only updated while it has a
+         * collector, so its value can be stale when an event arrives.
+         */
         private fun currentState(): PurchaseUiState =
-            PurchaseInputs(open.value, outcome.value, selectedEvent.value, quantity.value).toUiState()
+            PurchaseInputs(open.value, outcome.value, selectedEvent.value, quantity.value, recovery.value).toUiState()
 
         private fun changeQuantity(step: Int) {
             val state = currentState() as? PurchaseUiState.Editing ?: return
@@ -104,61 +116,108 @@ internal class PurchaseViewModel
         }
 
         private fun collectEvent() {
-            val eventId = savedStateHandle.get<String>(EVENT_ID_KEY).orEmpty()
+            val eventId = savedStateHandle.get<String>(EVENT_ID_KEY)
+            if (eventId == null) {
+                selectedEvent.value = EventLookup.Missing
+                return
+            }
             viewModelScope.launch {
                 observeAvailableEvents().collect { result ->
-                    if (result is DataResult.Success) {
-                        selectedEvent.value =
-                            result.value.firstOrNull { it.event.id == eventId }
-                    }
+                    selectedEvent.value =
+                        when (result) {
+                            is DataResult.Failure -> {
+                                EventLookup.Missing
+                            }
+
+                            is DataResult.Success -> {
+                                result.value
+                                    .firstOrNull { it.event.id == eventId }
+                                    ?.let(EventLookup::Found) ?: EventLookup.Missing
+                            }
+                        }
                 }
             }
         }
 
+        /** (Re)starts reading the open purchase; the repository flow ends after it emits a failure. */
         private fun collectOpenPurchase() {
-            viewModelScope.launch {
-                var firstRead = true
-                observeOpenPurchase().collect { result ->
-                    when (result) {
-                        is DataResult.Failure -> open.value = OpenPurchase.Unreadable
-                        is DataResult.Success -> result.value?.let { present(it, firstRead) } ?: settle()
+            openJob?.cancel()
+            open.value = OpenPurchase.Unknown
+            recovery.value = Recovery.Idle
+            openJob =
+                viewModelScope.launch {
+                    observeOpenPurchase().collect { result ->
+                        when (result) {
+                            is DataResult.Failure -> open.value = OpenPurchase.Unreadable
+                            is DataResult.Success -> result.value?.let { present(it) } ?: settle()
+                        }
                     }
-                    firstRead = false
                 }
-            }
         }
 
-        private suspend fun present(
-            purchase: Purchase,
-            firstRead: Boolean,
-        ) {
+        private suspend fun present(purchase: Purchase) {
             savedStateHandle[PURCHASE_ID_KEY] = purchase.id
             open.value = OpenPurchase.Present(purchase)
-            // The purchase was left open by an earlier run: ask Cielo before allowing any new charge (BR-15).
-            // The result reaches the screen through the local record, so the return value is not needed here.
-            if (firstRead) recoverPending()
+            // Left open by an earlier run: ask Cielo before allowing any new charge (BR-15). A failed lookup is only
+            // repeated by the operator ("Tentar novamente"), never automatically.
+            if (lookupPending && recovery.value == Recovery.Idle) lookUpPending()
+        }
+
+        /** The result reaches the screen through the local record, except for a failure (BR-26). */
+        private suspend fun lookUpPending() {
+            when (recoverPending()) {
+                is DataResult.Success -> {
+                    lookupPending = false
+                    recovery.value = Recovery.Idle
+                }
+
+                is DataResult.Failure -> {
+                    recovery.value = Recovery.Failed
+                }
+            }
         }
 
         /** No open purchase: read how the one this screen followed ended, then release the screen state. */
         private suspend fun settle() {
+            lookupPending = false
+            recovery.value = Recovery.Idle
             val id = savedStateHandle.get<String>(PURCHASE_ID_KEY)
             if (id != null) {
                 when (val result = observePurchase(id).first()) {
-                    is DataResult.Success -> outcome.value = AttemptOutcome.Finished(result.value.rememberQuantity())
-                    is DataResult.Failure -> outcome.value = AttemptOutcome.Failed(PurchaseErrorReason.Generic)
+                    is DataResult.Success -> {
+                        // A failed attempt is retried with the same quantity (BR-15): the saved one follows the record.
+                        savedStateHandle[QUANTITY_KEY] = result.value.quantity
+                        outcome.value = AttemptOutcome.Finished(result.value)
+                    }
+
+                    is DataResult.Failure -> {
+                        outcome.value = AttemptOutcome.Failed(PurchaseErrorReason.Generic)
+                    }
                 }
             }
             open.value = OpenPurchase.None
         }
 
-        /** A failed attempt is retried with the same quantity (BR-15), so the saved quantity follows the record. */
-        private fun Purchase.rememberQuantity(): Purchase {
-            savedStateHandle[QUANTITY_KEY] = quantity
-            return this
+        /**
+         * "Tentar novamente" repeats whatever is unknown before paying (BR-26): the reading of the open purchase, then
+         * the Cielo lookup. Only an error that left no pending doubt starts a new payment.
+         */
+        private fun retry() {
+            when {
+                open.value is OpenPurchase.Unreadable -> collectOpenPurchase()
+                recovery.value == Recovery.Failed -> retryLookup()
+                else -> startPayment()
+            }
+        }
+
+        /** The error stays on screen until the lookup answers: success follows the record, failure keeps the error. */
+        private fun retryLookup() {
+            if (recoveryJob?.isActive == true) return
+            recoveryJob = viewModelScope.launch { lookUpPending() }
         }
 
         private fun startPayment() {
-            val selected = selectedEvent.value ?: return
+            val selected = (selectedEvent.value as? EventLookup.Found)?.event ?: return
             if (startJob?.isActive == true) return
             val chosen = clampQuantity(quantity.value, selected.available)
             outcome.value = AttemptOutcome.None

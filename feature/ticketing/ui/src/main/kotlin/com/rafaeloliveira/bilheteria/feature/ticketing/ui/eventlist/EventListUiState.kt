@@ -22,19 +22,20 @@ import kotlinx.collections.immutable.ImmutableList
 
 /** A month chip of the filter; "Todos" is not an option, it is `selectedMonth == null` (BR-23). */
 @Immutable
-data class MonthOption(
+internal data class MonthOption(
     val month: EventMonth,
 )
 
 /** Events of one month under a single header (BR-22). */
 @Immutable
-data class MonthGroup(
+internal data class MonthGroup(
     val month: EventMonth,
     val events: ImmutableList<AvailableEvent>,
 )
 
 /** State of SCR-01 (spec §6). */
-sealed interface EventListUiState {
+@Immutable
+internal sealed interface EventListUiState {
     data object Loading : EventListUiState
 
     /**
@@ -42,7 +43,6 @@ sealed interface EventListUiState {
      * @property selectedMonth the active filter; null means "Todos" (BR-23, BR-24).
      * @property groups every month when [selectedMonth] is null, otherwise only the selected one (BR-22, BR-23).
      */
-    @Immutable
     data class Content(
         val months: ImmutableList<MonthOption>,
         val selectedMonth: EventMonth?,

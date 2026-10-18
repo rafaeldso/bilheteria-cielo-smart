@@ -22,12 +22,12 @@ import kotlinx.collections.immutable.ImmutableList
 import java.time.Instant
 
 /** States of SCR-04 (spec section 6). */
-sealed interface PurchaseHistoryUiState {
+@Immutable
+internal sealed interface PurchaseHistoryUiState {
     /** Reading in progress (AC-18). */
     data object Loading : PurchaseHistoryUiState
 
     /** Sales from the newest to the oldest (BR-18, AC-18). */
-    @Immutable
     data class Content(
         val items: ImmutableList<HistoryItem>,
     ) : PurchaseHistoryUiState
@@ -44,7 +44,7 @@ sealed interface PurchaseHistoryUiState {
  * formatted by the screen (T23), never here. [status] is always a sale (approved, declined or cancelled).
  */
 @Immutable
-data class HistoryItem(
+internal data class HistoryItem(
     val id: String,
     val eventName: String,
     val createdAt: Instant,

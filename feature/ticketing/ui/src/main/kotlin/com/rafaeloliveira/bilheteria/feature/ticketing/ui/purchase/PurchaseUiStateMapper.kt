@@ -22,6 +22,27 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.QuantityLimits
 
+/** The event of the route in the catalog: not read yet, impossible to offer (BR-27), or found with its stock. */
+internal sealed interface EventLookup {
+    data object Unknown : EventLookup
+
+    /** Catalog failure, unknown id, missing id or sold out. */
+    data object Missing : EventLookup
+
+    data class Found(
+        val event: AvailableEvent,
+    ) : EventLookup
+}
+
+/** Where the lookup of an open purchase left from an earlier run stands (BR-15, BR-26). */
+internal enum class Recovery {
+    /** Nothing failed (the lookup is not needed, was requested, or is under way). */
+    Idle,
+
+    /** The lookup could not be completed: only "Tentar novamente" (the lookup again) leaves this state. */
+    Failed,
+}
+
 /** What the ViewModel knows about the open purchase (`Pending` or `Recovering`, BR-10). */
 internal sealed interface OpenPurchase {
     /** Nothing was read yet: the screen must not offer "Pay" (BR-10). */
@@ -29,7 +50,7 @@ internal sealed interface OpenPurchase {
 
     data object None : OpenPurchase
 
-    /** The open purchase could not be read; a new payment is not safe, so the screen shows an error. */
+    /** The open purchase could not be read; a new payment is not safe, so the screen shows `RecoveryFailed` (BR-26). */
     data object Unreadable : OpenPurchase
 
     data class Present(
@@ -56,17 +77,26 @@ internal sealed interface AttemptOutcome {
 internal data class PurchaseInputs(
     val open: OpenPurchase,
     val outcome: AttemptOutcome,
-    val event: AvailableEvent?,
+    val event: EventLookup,
     val quantity: Int,
+    val recovery: Recovery,
 )
 
 /** Pure mapping from the ViewModel inputs to the [PurchaseUiState] (plan §4, spec section 6). */
 internal fun PurchaseInputs.toUiState(): PurchaseUiState =
     when {
-        open is OpenPurchase.Present -> open.purchase.toOpenState()
+        open is OpenPurchase.Present -> open.purchase.toOpenState(recovery)
         open is OpenPurchase.Unknown -> PurchaseUiState.Loading
+        open is OpenPurchase.Unreadable -> withEvent { eventState(it, PurchaseErrorReason.RecoveryFailed) }
         outcome is AttemptOutcome.Finished -> outcome.purchase.toFinishedState()
-        else -> event?.let { eventState(it) } ?: PurchaseUiState.Loading
+        else -> withEvent { eventState(it, (outcome as? AttemptOutcome.Failed)?.reason) }
+    }
+
+private fun PurchaseInputs.withEvent(state: (AvailableEvent) -> PurchaseUiState): PurchaseUiState =
+    when (event) {
+        EventLookup.Unknown -> PurchaseUiState.Loading
+        EventLookup.Missing -> PurchaseUiState.Unavailable
+        is EventLookup.Found -> state(event.event)
     }
 
 /** Quantity actually offered: the saved value kept inside BR-07 for the current stock. */
@@ -75,15 +105,16 @@ internal fun clampQuantity(
     available: Int,
 ): Int = quantity.coerceIn(QuantityLimits.MIN, maxOf(QuantityLimits.MIN, QuantityLimits.max(available)))
 
-private fun PurchaseInputs.eventState(available: AvailableEvent): PurchaseUiState {
+private fun PurchaseInputs.eventState(
+    available: AvailableEvent,
+    failure: PurchaseErrorReason?,
+): PurchaseUiState {
     val selected = clampQuantity(quantity, available.available)
     val total = available.event.unitPrice * selected
-    val failure =
-        (outcome as? AttemptOutcome.Failed)?.reason
-            ?: if (open is OpenPurchase.Unreadable) PurchaseErrorReason.Generic else null
-    return when {
-        failure != null -> PurchaseUiState.Error(available.toSummary(), selected, total, failure)
-        else -> editing(available, selected, total)
+    return if (failure != null) {
+        PurchaseUiState.Error(available.toSummary(), selected, total, failure)
+    } else {
+        editing(available, selected, total)
     }
 }
 
@@ -110,10 +141,20 @@ private fun limitHint(available: Int): LimitHint =
         LimitHint.MaxPerPurchase(QuantityLimits.MAX_PER_PURCHASE)
     }
 
-private fun Purchase.toOpenState(): PurchaseUiState =
-    when (status) {
-        PurchaseStatus.Recovering -> PurchaseUiState.Recovering(toSummary(), quantity, total)
-        else -> PurchaseUiState.AwaitingPayment(toSummary(), quantity, total)
+/** The snapshot of the open purchase decides the state; a lookup that failed shows the error instead (BR-26). */
+private fun Purchase.toOpenState(recovery: Recovery = Recovery.Idle): PurchaseUiState =
+    when {
+        recovery == Recovery.Failed -> {
+            PurchaseUiState.Error(toSummary(), quantity, total, PurchaseErrorReason.RecoveryFailed)
+        }
+
+        status == PurchaseStatus.Recovering -> {
+            PurchaseUiState.Recovering(toSummary(), quantity, total)
+        }
+
+        else -> {
+            PurchaseUiState.AwaitingPayment(toSummary(), quantity, total)
+        }
     }
 
 private fun Purchase.toFinishedState(): PurchaseUiState =

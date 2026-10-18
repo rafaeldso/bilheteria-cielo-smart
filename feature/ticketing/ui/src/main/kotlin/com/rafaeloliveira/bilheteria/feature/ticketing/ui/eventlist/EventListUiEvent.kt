@@ -18,7 +18,7 @@ package com.rafaeloliveira.bilheteria.feature.ticketing.ui.eventlist
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.EventMonth
 
 /** Events of SCR-01 (spec §6). */
-sealed interface EventListUiEvent {
+internal sealed interface EventListUiEvent {
     data object OnRetry : EventListUiEvent
 
     data class OnEventSelected(

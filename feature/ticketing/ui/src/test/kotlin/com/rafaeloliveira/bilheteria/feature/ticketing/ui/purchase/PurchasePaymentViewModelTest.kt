@@ -15,47 +15,31 @@
  */
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.purchase
 
-import androidx.lifecycle.SavedStateHandle
-import app.cash.turbine.test
-import com.rafaeloliveira.bilheteria.core.common.Logger
-import com.rafaeloliveira.bilheteria.core.testing.MainDispatcherExtension
+import com.rafaeloliveira.bilheteria.core.common.DataResult
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.FailureReason
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.LookupOrder
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PaymentOutcome
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseReference
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakeEventCatalogRepository
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.payment.PaymentGateway
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePaymentGateway
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePurchaseRepository
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FixedReferenceGenerator
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.TEST_NOW
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aTransaction
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.anEvent
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.HandlePaymentOutcomeUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveAvailableEventsUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveOpenPurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObservePurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.RecoverPendingPurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.StartPurchaseUseCase
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.RegisterExtension
-import java.time.Clock
-import java.time.ZoneOffset
 
 internal class PurchasePaymentViewModelTest : PurchaseViewModelTestBase() {
     @Test
     fun `AC-07 - dado quantidade 2 quando pagar entao grava pendente antes de abrir a Cielo`() =
         runTest {
             val repository = repositoryWith()
-            val viewModel = createViewModel(repository)
+            val inspecting = InspectingGateway(gateway, repository)
+            val viewModel = createViewModel(repository, paymentGateway = inspecting)
             observing(viewModel) {
                 latest(viewModel)
                 viewModel.onEvent(PurchaseUiEvent.OnIncrement)
@@ -67,6 +51,8 @@ internal class PurchasePaymentViewModelTest : PurchaseViewModelTestBase() {
                 assertEquals(FIRST_REFERENCE, sent.reference.value)
                 assertEquals(2, sent.quantity)
                 assertEquals(Money(2 * UNIT_PRICE_CENTS), sent.total)
+                // At the moment the terminal was asked to charge, the record was already stored as Pending.
+                assertEquals(listOf(FIRST_REFERENCE to PurchaseStatus.Pending), inspecting.storedAtRequest)
                 assertEquals(PurchaseStatus.Pending, repository.all.single().status)
                 assertEquals(PurchaseUiState.AwaitingPayment(summary(null), 2, Money(2 * UNIT_PRICE_CENTS)), state)
             }
@@ -102,7 +88,7 @@ internal class PurchasePaymentViewModelTest : PurchaseViewModelTestBase() {
                 val state = latest(viewModel)
 
                 assertTrue(gateway.paymentRequests.isEmpty())
-                assertTrue(state !is PurchaseUiState.Editing)
+                assertEquals(PurchaseUiState.Recovering(summary(null), 2, Money(2 * UNIT_PRICE_CENTS)), state)
             }
         }
 
@@ -180,6 +166,20 @@ internal class PurchasePaymentViewModelTest : PurchaseViewModelTestBase() {
             assertEquals(PurchaseUiState.AwaitingPayment(summary(null), 2, total), retried)
             assertEquals(listOf(FIRST_REFERENCE, SECOND_REFERENCE), gateway.paymentRequests.map { it.reference.value })
             assertEquals(1, repository.all.count { it.status.isOpen })
+        }
+    }
+
+    /** Records which purchases were stored when the terminal was asked to charge (reference and status). */
+    private class InspectingGateway(
+        private val delegate: FakePaymentGateway,
+        private val repository: FakePurchaseRepository,
+    ) : PaymentGateway by delegate {
+        var storedAtRequest: List<Pair<String, PurchaseStatus>> = emptyList()
+            private set
+
+        override suspend fun requestPayment(purchase: Purchase): DataResult<Unit> {
+            storedAtRequest = repository.all.map { it.reference.value to it.status }
+            return delegate.requestPayment(purchase)
         }
     }
 }

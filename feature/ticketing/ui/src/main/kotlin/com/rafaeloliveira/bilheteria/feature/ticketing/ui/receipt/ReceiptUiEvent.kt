@@ -16,7 +16,10 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt
 
 /** Events of the receipt screen (SCR-03). */
-sealed interface ReceiptUiEvent {
+internal sealed interface ReceiptUiEvent {
     /** "Nova venda": back to the event list. The navigation itself belongs to the Route. */
     data object OnNewSale : ReceiptUiEvent
+
+    /** "Tentar novamente" after an error: reads the record again (BR-28, AC-27). */
+    data object OnRetry : ReceiptUiEvent
 }

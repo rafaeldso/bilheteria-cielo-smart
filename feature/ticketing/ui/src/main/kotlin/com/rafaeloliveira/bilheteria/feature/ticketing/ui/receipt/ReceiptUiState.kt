@@ -21,10 +21,11 @@ import java.time.Instant
 
 /**
  * State of the receipt screen (SCR-03). [Loading] is only the internal load of the local record (no board, plan §4);
- * the three result states mirror the spec §6 and carry the same [ReceiptData].
+ * the three result states mirror the spec §6 and carry the same [ReceiptData]; [Error] is a record that cannot be
+ * shown.
  */
 @Immutable
-sealed interface ReceiptUiState {
+internal sealed interface ReceiptUiState {
     data object Loading : ReceiptUiState
 
     /** BR-11, AC-09: approved purchase, with the transaction data (AC-16). */
@@ -41,6 +42,9 @@ sealed interface ReceiptUiState {
     data class Cancelled(
         val receipt: ReceiptData,
     ) : ReceiptUiState
+
+    /** BR-28, AC-27: the record cannot be read, does not exist or has no sale result; the operator can retry. */
+    data object Error : ReceiptUiState
 }
 
 /**
@@ -51,7 +55,7 @@ sealed interface ReceiptUiState {
  * @property transaction present only when the purchase is approved (AC-16).
  */
 @Immutable
-data class ReceiptData(
+internal data class ReceiptData(
     val purchaseNumber: String,
     val eventName: String,
     val eventStartsAt: Instant,
@@ -65,7 +69,7 @@ data class ReceiptData(
 
 /** Transaction data of an approved purchase: brand, authorization code and NSU (BR-16). */
 @Immutable
-data class ReceiptTransaction(
+internal data class ReceiptTransaction(
     val brand: String?,
     val authCode: String,
     val nsu: String,

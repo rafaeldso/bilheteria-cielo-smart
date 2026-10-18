@@ -17,38 +17,12 @@ package com.rafaeloliveira.bilheteria.feature.ticketing.ui.purchase
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.rafaeloliveira.bilheteria.core.common.Logger
-import com.rafaeloliveira.bilheteria.core.testing.MainDispatcherExtension
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.FailureReason
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.LookupOrder
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PaymentOutcome
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseReference
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakeEventCatalogRepository
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePaymentGateway
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePurchaseRepository
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FixedReferenceGenerator
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.TEST_NOW
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aTransaction
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.anEvent
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.HandlePaymentOutcomeUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveAvailableEventsUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveOpenPurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObservePurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.RecoverPendingPurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.StartPurchaseUseCase
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.RegisterExtension
-import java.time.Clock
-import java.time.ZoneOffset
 
 internal class PurchaseQuantityViewModelTest : PurchaseViewModelTestBase() {
     @Test

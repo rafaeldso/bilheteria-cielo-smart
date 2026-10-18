@@ -17,22 +17,20 @@ package com.rafaeloliveira.bilheteria.feature.ticketing.ui.purchase
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.rafaeloliveira.bilheteria.core.common.DataResult
 import com.rafaeloliveira.bilheteria.core.common.Logger
 import com.rafaeloliveira.bilheteria.core.testing.MainDispatcherExtension
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.FailureReason
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.LookupOrder
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PaymentOutcome
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.error.TicketingError
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseReference
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.payment.PaymentGateway
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.repository.PurchaseRepository
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakeEventCatalogRepository
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePaymentGateway
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePurchaseRepository
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FixedReferenceGenerator
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.TEST_NOW
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aTransaction
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.anEvent
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.HandlePaymentOutcomeUseCase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveAvailableEventsUseCase
@@ -40,12 +38,10 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveOpe
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObservePurchaseUseCase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.RecoverPendingPurchaseUseCase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.StartPurchaseUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.Clock
 import java.time.ZoneOffset
@@ -70,18 +66,19 @@ internal abstract class PurchaseViewModelTestBase {
     protected fun repositoryWith(vararg purchases: Purchase) = FakePurchaseRepository(purchases.toList())
 
     protected fun createViewModel(
-        repository: FakePurchaseRepository,
+        repository: PurchaseRepository,
         handle: SavedStateHandle = SavedStateHandle(mapOf("eventId" to event.id)),
+        paymentGateway: PaymentGateway = gateway,
     ) = PurchaseViewModel(
         observeAvailableEvents = ObserveAvailableEventsUseCase(catalog, repository, clock),
         observeOpenPurchase = ObserveOpenPurchaseUseCase(repository),
         observePurchase = ObservePurchaseUseCase(repository),
-        startPurchase = StartPurchaseUseCase(repository, gateway, references, clock),
-        recoverPending = RecoverPendingPurchaseUseCase(repository, gateway, clock),
+        startPurchase = StartPurchaseUseCase(repository, paymentGateway, references, clock),
+        recoverPending = RecoverPendingPurchaseUseCase(repository, paymentGateway, clock),
         savedStateHandle = handle,
     )
 
-    protected fun outcomes(repository: FakePurchaseRepository) =
+    protected fun outcomes(repository: PurchaseRepository) =
         HandlePaymentOutcomeUseCase(
             repository = repository,
             gateway = gateway,
@@ -118,6 +115,23 @@ internal abstract class PurchaseViewModelTestBase {
         advanceUntilIdle()
         return viewModel.uiState.value
     }
+}
+
+/**
+ * Repository whose open purchase cannot be read until [readable] is set: the real flow emits the failure and ends
+ * (BR-26). Every other operation goes to the in-memory [delegate].
+ */
+internal class UnreadableOpenPurchaseRepository(
+    private val delegate: FakePurchaseRepository,
+) : PurchaseRepository by delegate {
+    var readable: Boolean = false
+
+    override fun observeOpenPurchase(): Flow<DataResult<Purchase?>> =
+        if (readable) {
+            delegate.observeOpenPurchase()
+        } else {
+            flowOf(DataResult.Failure(TicketingError.StorageFailure))
+        }
 }
 
 private object SilentLogger : Logger {

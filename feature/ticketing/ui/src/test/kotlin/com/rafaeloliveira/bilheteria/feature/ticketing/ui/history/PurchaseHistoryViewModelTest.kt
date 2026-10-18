@@ -153,6 +153,23 @@ class PurchaseHistoryViewModelTest {
         }
 
     @Test
+    fun `dado historico exibido quando tentar de novo entao nao recarrega`() =
+        runTest {
+            val approved = purchase(REF_1, PurchaseStatus.Approved, minutesAgo = 10)
+            val viewModel = viewModel(FakePurchaseRepository(listOf(approved)))
+
+            viewModel.uiState.test {
+                skipItems(1) // Loading
+                val content = awaitItem()
+
+                viewModel.onEvent(PurchaseHistoryUiEvent.OnRetry)
+
+                expectNoEvents()
+                assertEquals(content, viewModel.uiState.value)
+            }
+        }
+
+    @Test
     fun `dado historico com compras quando selecionar uma compra entao o estado nao muda`() =
         runTest {
             val approved = purchase(REF_1, PurchaseStatus.Approved, minutesAgo = 10)

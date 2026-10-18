@@ -22,12 +22,19 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObservePurchaseHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+
+private const val STOP_TIMEOUT_MILLIS = 5_000L
 
 /**
  * SCR-04: shows the sales recorded on this device (BR-18, BR-20, BR-21).
@@ -37,46 +44,44 @@ import javax.inject.Inject
  * ([PurchaseHistoryUiEvent.OnPurchaseSelected] does not change the state).
  */
 @HiltViewModel
-class PurchaseHistoryViewModel
+internal class PurchaseHistoryViewModel
     @Inject
     constructor(
         private val observeHistory: ObservePurchaseHistoryUseCase,
     ) : ViewModel() {
-        private val _uiState = MutableStateFlow<PurchaseHistoryUiState>(PurchaseHistoryUiState.Loading)
-        val uiState: StateFlow<PurchaseHistoryUiState> = _uiState.asStateFlow()
+        private val attempt = MutableStateFlow(0)
 
-        private var observing: Job? = null
-
-        init {
-            observe()
-        }
+        @OptIn(ExperimentalCoroutinesApi::class)
+        val uiState: StateFlow<PurchaseHistoryUiState> =
+            attempt
+                .flatMapLatest { load() }
+                .stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
+                    PurchaseHistoryUiState.Loading,
+                )
 
         fun onEvent(event: PurchaseHistoryUiEvent) {
             when (event) {
+                // "Tentar de novo" is only offered in Error (BR-21); the state is read from what the operator sees.
                 PurchaseHistoryUiEvent.OnRetry -> {
-                    _uiState.value = PurchaseHistoryUiState.Loading
-                    observe()
+                    if (uiState.value == PurchaseHistoryUiState.Error) attempt.update { it + 1 }
                 }
 
                 is PurchaseHistoryUiEvent.OnPurchaseSelected -> {
-                    // Navigation by id is the Route's job; the state does not change.
+                    Unit
                 }
             }
         }
 
-        private fun observe() {
-            observing?.cancel()
-            observing =
-                viewModelScope.launch {
-                    observeHistory().collect { result ->
-                        _uiState.value =
-                            when (result) {
-                                is DataResult.Success -> result.value.toUiState()
-                                is DataResult.Failure -> PurchaseHistoryUiState.Error
-                            }
+        private fun load(): Flow<PurchaseHistoryUiState> =
+            observeHistory()
+                .map { result ->
+                    when (result) {
+                        is DataResult.Success -> result.value.toUiState()
+                        is DataResult.Failure -> PurchaseHistoryUiState.Error
                     }
-                }
-        }
+                }.onStart { emit(PurchaseHistoryUiState.Loading) }
 
         private fun List<Purchase>.toUiState(): PurchaseHistoryUiState =
             if (isEmpty()) {

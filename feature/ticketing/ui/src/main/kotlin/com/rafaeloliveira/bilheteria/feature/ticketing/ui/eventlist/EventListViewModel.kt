@@ -49,7 +49,7 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
  * handles them, so they do not change this state.
  */
 @HiltViewModel
-class EventListViewModel
+internal class EventListViewModel
     @Inject
     constructor(
         private val observeAvailableEvents: ObserveAvailableEventsUseCase,

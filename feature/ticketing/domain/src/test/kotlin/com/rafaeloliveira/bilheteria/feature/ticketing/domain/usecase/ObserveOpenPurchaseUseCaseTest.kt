@@ -16,17 +16,22 @@
 package com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase
 
 import com.rafaeloliveira.bilheteria.core.common.DataResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.error.TicketingError
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.repository.PurchaseRepository
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePurchaseRepository
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class ObserveOpenPurchaseUseCaseTest {
     @Test
-    fun `AC-08 - dado compra pendente quando observar entao emite a compra aberta`() =
+    fun `dado compra pendente quando observar entao emite a compra aberta`() =
         runTest {
             val pending = aPurchase(status = PurchaseStatus.Pending)
             val useCase = ObserveOpenPurchaseUseCase(FakePurchaseRepository(listOf(pending)))
@@ -35,7 +40,7 @@ class ObserveOpenPurchaseUseCaseTest {
         }
 
     @Test
-    fun `AC-15 - dado compra em recuperacao quando observar entao emite a compra aberta`() =
+    fun `dado compra em recuperacao quando observar entao emite a compra aberta`() =
         runTest {
             val recovering = aPurchase(status = PurchaseStatus.Recovering)
             val useCase = ObserveOpenPurchaseUseCase(FakePurchaseRepository(listOf(recovering)))
@@ -44,7 +49,7 @@ class ObserveOpenPurchaseUseCaseTest {
         }
 
     @Test
-    fun `AC-15 - dado so compras finalizadas quando observar entao emite nulo`() =
+    fun `dado so compras finalizadas quando observar entao emite nulo`() =
         runTest {
             val finished =
                 listOf(
@@ -54,5 +59,19 @@ class ObserveOpenPurchaseUseCaseTest {
             val useCase = ObserveOpenPurchaseUseCase(FakePurchaseRepository(finished))
 
             assertEquals(DataResult.Success(null), useCase().first())
+        }
+
+    @Test
+    fun `dado falha de armazenamento quando observar entao propaga a falha`() =
+        runTest {
+            // The fake honors failStorage only for the history, so the open purchase failure is set here.
+            val failure = DataResult.Failure(TicketingError.StorageFailure)
+            val repository =
+                object : PurchaseRepository by FakePurchaseRepository() {
+                    override fun observeOpenPurchase(): Flow<DataResult<Purchase?>> = flowOf(failure)
+                }
+            val useCase = ObserveOpenPurchaseUseCase(repository)
+
+            assertEquals(failure, useCase().first())
         }
 }

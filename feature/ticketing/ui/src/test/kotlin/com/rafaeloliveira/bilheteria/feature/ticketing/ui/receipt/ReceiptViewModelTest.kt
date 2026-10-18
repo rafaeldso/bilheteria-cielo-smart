@@ -17,18 +17,24 @@ package com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.rafaeloliveira.bilheteria.core.common.DataResult
 import com.rafaeloliveira.bilheteria.core.testing.MainDispatcherExtension
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.error.TicketingError
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.repository.PurchaseRepository
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePurchaseRepository
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.TEST_NOW
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aTransaction
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.anEvent
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObservePurchaseUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.Instant
@@ -41,11 +47,13 @@ class ReceiptViewModelTest {
 
     private val repository = FakePurchaseRepository()
 
-    private fun createViewModel(purchaseId: String?) =
-        ReceiptViewModel(
-            savedStateHandle = SavedStateHandle(purchaseId?.let { mapOf("purchaseId" to it) }.orEmpty()),
-            observePurchase = ObservePurchaseUseCase(repository),
-        )
+    private fun createViewModel(
+        purchaseId: String?,
+        source: PurchaseRepository = repository,
+    ) = ReceiptViewModel(
+        savedStateHandle = SavedStateHandle(purchaseId?.let { mapOf("purchaseId" to it) }.orEmpty()),
+        observePurchase = ObservePurchaseUseCase(source),
+    )
 
     @Test
     fun `AC-09 - dado compra em andamento quando a Cielo aprova entao exibe o comprovante aprovado`() =
@@ -185,34 +193,85 @@ class ReceiptViewModelTest {
         }
 
     @Test
-    fun `dado compra falha tecnica quando abrir o comprovante entao permanece carregando`() =
+    fun `dado compra em recuperacao quando abrir o comprovante entao permanece carregando`() =
+        runTest {
+            val recovering = aPurchase(status = PurchaseStatus.Recovering)
+            repository.createPending(recovering)
+
+            createViewModel(recovering.id).uiState.test {
+                assertEquals(ReceiptUiState.Loading, awaitItem())
+                expectNoEvents()
+            }
+        }
+
+    @Test
+    fun `AC-27 - dado compra com falha tecnica quando abrir o comprovante entao exibe erro`() =
         runTest {
             val failed = aPurchase(status = PurchaseStatus.Failed)
             repository.createPending(failed)
 
             createViewModel(failed.id).uiState.test {
                 assertEquals(ReceiptUiState.Loading, awaitItem())
-                expectNoEvents()
+                assertEquals(ReceiptUiState.Error, awaitItem())
             }
         }
 
     @Test
-    fun `dado id sem compra registrada quando abrir o comprovante entao permanece carregando`() =
+    fun `AC-27 - dado id sem compra registrada quando abrir o comprovante entao exibe erro`() =
         runTest {
             createViewModel("inexistente").uiState.test {
                 assertEquals(ReceiptUiState.Loading, awaitItem())
-                expectNoEvents()
+                assertEquals(ReceiptUiState.Error, awaitItem())
             }
         }
 
     @Test
-    fun `dado argumento de rota ausente quando abrir o comprovante entao permanece carregando`() =
+    fun `AC-27 - dado registro ilegivel quando tentar de novo entao volta a carregar e repete a leitura`() =
         runTest {
-            createViewModel(purchaseId = null).uiState.test {
+            val approved = aPurchase(status = PurchaseStatus.Approved, transaction = aTransaction())
+            repository.createPending(approved)
+            val unreadable = UnreadablePurchaseRepository(repository)
+            val viewModel = createViewModel(approved.id, unreadable)
+
+            viewModel.uiState.test {
                 assertEquals(ReceiptUiState.Loading, awaitItem())
-                expectNoEvents()
+                assertEquals(ReceiptUiState.Error, awaitItem())
+
+                viewModel.onEvent(ReceiptUiEvent.OnRetry)
+                assertEquals(ReceiptUiState.Loading, awaitItem())
+                assertEquals(ReceiptUiState.Error, awaitItem())
+
+                unreadable.readable = true
+                viewModel.onEvent(ReceiptUiEvent.OnRetry)
+                assertEquals(ReceiptUiState.Loading, awaitItem())
+                assertEquals(ReceiptUiState.Approved(expectedReceipt(approved, withTransaction = true)), awaitItem())
             }
         }
+
+    @Test
+    fun `dado comprovante exibido quando tentar de novo entao a leitura nao e repetida`() =
+        runTest {
+            val approved = aPurchase(status = PurchaseStatus.Approved, transaction = aTransaction())
+            repository.createPending(approved)
+            val viewModel = createViewModel(approved.id)
+
+            viewModel.uiState.test {
+                skipItems(1) // Loading
+                val shown = awaitItem()
+
+                viewModel.onEvent(ReceiptUiEvent.OnRetry)
+
+                expectNoEvents()
+                assertEquals(shown, viewModel.uiState.value)
+            }
+        }
+
+    @Test
+    fun `dado argumento de rota ausente quando criar o ViewModel entao e erro de programacao`() {
+        assertThrows(IllegalStateException::class.java) {
+            createViewModel(purchaseId = null)
+        }
+    }
 
     @Test
     fun `dado comprovante exibido quando tocar em nova venda entao o estado nao muda`() =
@@ -253,4 +312,18 @@ class ReceiptViewModelTest {
                 null
             },
     )
+
+    /** Fails to read any purchase until [readable] is set, like a storage error that goes away (BR-28). */
+    private class UnreadablePurchaseRepository(
+        private val delegate: FakePurchaseRepository,
+    ) : PurchaseRepository by delegate {
+        var readable: Boolean = false
+
+        override fun observePurchase(id: String): Flow<DataResult<Purchase>> =
+            if (readable) {
+                delegate.observePurchase(id)
+            } else {
+                flowOf(DataResult.Failure(TicketingError.StorageFailure))
+            }
+    }
 }

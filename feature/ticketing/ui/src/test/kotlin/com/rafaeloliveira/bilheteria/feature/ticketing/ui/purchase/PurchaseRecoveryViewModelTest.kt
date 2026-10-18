@@ -15,40 +15,18 @@
  */
 package com.rafaeloliveira.bilheteria.feature.ticketing.ui.purchase
 
-import androidx.lifecycle.SavedStateHandle
-import app.cash.turbine.test
-import com.rafaeloliveira.bilheteria.core.common.Logger
-import com.rafaeloliveira.bilheteria.core.testing.MainDispatcherExtension
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.FailureReason
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.LookupOrder
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PaymentOutcome
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Purchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseReference
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PurchaseStatus
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakeEventCatalogRepository
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePaymentGateway
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePurchaseRepository
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FixedReferenceGenerator
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.TEST_NOW
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aTransaction
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.anEvent
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.HandlePaymentOutcomeUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveAvailableEventsUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveOpenPurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObservePurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.RecoverPendingPurchaseUseCase
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.StartPurchaseUseCase
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.RegisterExtension
-import java.time.Clock
-import java.time.ZoneOffset
 
 internal class PurchaseRecoveryViewModelTest : PurchaseViewModelTestBase() {
     @Test
@@ -98,6 +76,7 @@ internal class PurchaseRecoveryViewModelTest : PurchaseViewModelTestBase() {
                 val total = Money(2 * UNIT_PRICE_CENTS)
                 val notFound = PurchaseErrorReason.RecoveryNotFound
                 assertEquals(PurchaseUiState.Error(summary(null), 2, total, notFound), state)
+                assertEquals(PurchaseStatus.Failed, repository.all.single().status)
                 assertEquals(FailureReason.NotFound, repository.all.single().failureReason)
 
                 viewModel.onEvent(PurchaseUiEvent.OnRetry)
@@ -120,11 +99,68 @@ internal class PurchaseRecoveryViewModelTest : PurchaseViewModelTestBase() {
                 outcomes(repository)(PaymentOutcome.LookupPage(0, 1, listOf(LookupOrder(pending.reference, approved))))
 
                 assertEquals(PurchaseUiState.Completed(FIRST_REFERENCE), latest(viewModel))
+                assertEquals(PurchaseStatus.Approved, repository.all.single().status)
             }
         }
 
     @Test
-    fun `AC-09 - dado compra em andamento quando a Cielo aprova entao sinaliza o comprovante`() =
+    fun `AC-25 - dado falha ao ler a compra aberta quando tentar de novo entao repete a leitura sem pagar`() =
+        runTest {
+            val pending = aPurchase(reference = FIRST_REFERENCE, event = event, quantity = 2)
+            val repository = UnreadableOpenPurchaseRepository(repositoryWith(pending))
+            val viewModel = createViewModel(repository)
+            observing(viewModel) {
+                val reason = PurchaseErrorReason.RecoveryFailed
+                val unreadable = PurchaseUiState.Error(summary(), 1, Money(UNIT_PRICE_CENTS), reason)
+                assertEquals(unreadable, latest(viewModel))
+
+                viewModel.onEvent(PurchaseUiEvent.OnPay)
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                assertEquals(unreadable, latest(viewModel))
+                assertTrue(gateway.paymentRequests.isEmpty())
+                assertTrue(gateway.lookupRequests.isEmpty())
+
+                repository.readable = true
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                val total = Money(2 * UNIT_PRICE_CENTS)
+                assertEquals(PurchaseUiState.Recovering(summary(null), 2, total), latest(viewModel))
+                assertEquals(listOf(0), gateway.lookupRequests)
+                assertTrue(gateway.paymentRequests.isEmpty())
+            }
+        }
+
+    @Test
+    fun `AC-25 - dado consulta que falha quando tentar de novo entao repete a consulta sem abrir pagamento`() =
+        runTest {
+            val pending = aPurchase(reference = FIRST_REFERENCE, event = event, quantity = 2)
+            val repository = repositoryWith(pending)
+            repository.failStorage = true
+            val viewModel = createViewModel(repository)
+            observing(viewModel) {
+                val total = Money(2 * UNIT_PRICE_CENTS)
+                val failed = PurchaseUiState.Error(summary(null), 2, total, PurchaseErrorReason.RecoveryFailed)
+                assertEquals(failed, latest(viewModel))
+                assertTrue(gateway.lookupRequests.isEmpty())
+
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                assertEquals(failed, latest(viewModel))
+                assertTrue(gateway.lookupRequests.isEmpty())
+
+                repository.failStorage = false
+                viewModel.onEvent(PurchaseUiEvent.OnRetry)
+
+                assertEquals(PurchaseUiState.Recovering(summary(null), 2, total), latest(viewModel))
+                assertEquals(listOf(0), gateway.lookupRequests)
+                assertEquals(PurchaseStatus.Recovering, repository.all.single().status)
+                assertTrue(gateway.paymentRequests.isEmpty())
+            }
+        }
+
+    @Test
+    fun `dado compra em andamento quando a Cielo aprova entao sinaliza a navegacao ao comprovante`() =
         runTest {
             val repository = repositoryWith()
             val viewModel = createViewModel(repository)
@@ -141,7 +177,7 @@ internal class PurchaseRecoveryViewModelTest : PurchaseViewModelTestBase() {
         }
 
     @Test
-    fun `AC-10 - dado compra em andamento quando a Cielo cancela entao sinaliza o comprovante`() =
+    fun `dado compra em andamento quando a Cielo cancela entao sinaliza a navegacao ao comprovante`() =
         runTest {
             val repository = repositoryWith()
             val viewModel = createViewModel(repository)
@@ -157,7 +193,7 @@ internal class PurchaseRecoveryViewModelTest : PurchaseViewModelTestBase() {
         }
 
     @Test
-    fun `AC-11 - dado compra em andamento quando a Cielo nega entao sinaliza o comprovante`() =
+    fun `dado compra em andamento quando a Cielo nega entao sinaliza a navegacao ao comprovante`() =
         runTest {
             val repository = repositoryWith()
             val viewModel = createViewModel(repository)
