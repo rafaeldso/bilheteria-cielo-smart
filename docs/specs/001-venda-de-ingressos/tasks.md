@@ -66,11 +66,11 @@
 
 ## Fase 3 — Presentation (lote D, paralelo)
 Cada tarefa: `UiState`/`UiEvent` exatamente como no plano §4, ViewModel com um `StateFlow` e um `onEvent`, testes com Turbine.
-- [ ] **T16** [P] `EventListViewModel` · AC-01, AC-02, AC-03, AC-17, AC-22, AC-23, AC-24
-- [ ] **T17** [P] `PurchaseViewModel` (quantidade no `SavedStateHandle`, recuperação ao abrir com compra aberta) · AC-04–AC-08,
+- [x] **T16** [P] `EventListViewModel` · AC-01, AC-02, AC-03, AC-17, AC-22, AC-23, AC-24
+- [x] **T17** [P] `PurchaseViewModel` (quantidade no `SavedStateHandle`, recuperação ao abrir com compra aberta) · AC-04–AC-08,
   AC-12–AC-15, AC-25, AC-26 (spec 1.2.0)
-- [ ] **T18** [P] `ReceiptViewModel` · AC-09, AC-10, AC-11, AC-16, AC-19, AC-27 (spec 1.2.0)
-- [ ] **T19** [P] `PurchaseHistoryViewModel` · AC-18, AC-20, AC-21
+- [x] **T18** [P] `ReceiptViewModel` · AC-09, AC-10, AC-11, AC-16, AC-19, AC-27 (spec 1.2.0)
+- [x] **T19** [P] `PurchaseHistoryViewModel` · AC-18, AC-20, AC-21
 
 **Pronto quando (todas):** testes `AC-xx` passam; Konsist (ViewModel com um `uiState` e um `onEvent`) verde.
 
