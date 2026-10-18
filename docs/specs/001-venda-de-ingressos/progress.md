@@ -8,7 +8,7 @@
 
 ## Estado atual
 - **Última etapa concluída:** lote C (T12–T14) commitado (ba3c3d9, 2708982, 62fa628) + correções da revisão (5aef7b1, 585b46b)
-- **Próxima etapa:** T15 (módulo Hilt `CieloDataModule` no pacote `cielo`)
+- **Próxima etapa:** T15 (módulo Hilt `CieloDataModule` em `data/di/`)
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
 - **Último sensor:** `verify.sh standard` → verde em 2026-10-18 (lote C)
@@ -24,7 +24,7 @@
 | 2026-10-18 | T10/T11 rodaram após T09 (dependem de cores estendidas e `DsIconButton`) | Lote B não era totalmente independente | Não |
 | 2026-10-18 | detekt `ForbiddenImport` excluído em testes data/ui + Konsist (JUnit 4 só com `@RunWith`; sem Log/Date) | Room in-memory exige Robolectric/JUnit 4 (aprovado pelo humano) | testing.md |
 | 2026-10-18 | Erro Cielo forjado sem `reference` = risco aceito | Consulta não distingue em andamento de cancelado; exige app malicioso no terminal gerenciado | Plano §7 |
-| 2026-10-18 | Módulo Hilt por pacote no data (sem `di/`) | Decisão humana; mantém cada responsabilidade autocontida | Plano §2 |
+| 2026-10-18 | Módulos Hilt do data na pasta única `di/` (como no plano §2) | Decisão humana; mesmo padrão de `core:*` | Não |
 | 2026-10-18 | Teto de 10 (BR-07) ligado ao `StartPurchase` na integração | T05 e T06 rodaram em paralelo sem dependência | Não |
 
 ## Bloqueios e perguntas abertas

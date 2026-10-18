@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rafaeloliveira.bilheteria.feature.ticketing.data.catalog
+package com.rafaeloliveira.bilheteria.feature.ticketing.data.di
 
-import com.rafaeloliveira.bilheteria.feature.ticketing.domain.repository.EventCatalogRepository
+import com.rafaeloliveira.bilheteria.feature.ticketing.data.purchase.DefaultPurchaseRepository
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.repository.PurchaseRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal interface CatalogDataModule {
+internal interface PurchaseDataModule {
     @Binds
-    fun bindEventCatalogRepository(impl: DefaultEventCatalogRepository): EventCatalogRepository
-
-    @Binds
-    fun bindCatalogTextSource(impl: AssetCatalogTextSource): CatalogTextSource
+    @Singleton
+    fun bindPurchaseRepository(impl: DefaultPurchaseRepository): PurchaseRepository
 }
