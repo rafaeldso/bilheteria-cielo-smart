@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | **ID** | 001 |
-| **Status** | Aprovada |
-| **Versão** | 1.1.0 |
+| **Status** | Em revisão |
+| **Versão** | 1.2.0 |
 | **Módulo** | `feature/ticketing` (provisório; o `plan.md` confirma a divisão de módulos) |
 | **Autor** | Rafael Oliveira (com Claude Code) |
 | **Links** | [case_android.md](../../../case_android.md) · [research.md](research.md) · Design ([ui-spec.md](ui-spec.md) v0.4.0 aprovada · [prancha](design/mockups.html)) |
@@ -101,6 +101,9 @@ Persona: **operador da bilheteria** usando o terminal Cielo Smart (Q1).
 | BR-22 | O sistema deve exibir os eventos disponíveis em ordem cronológica, agrupados por mês, com um cabeçalho por mês ("novembro de 2026"). | US-01, US-09 | Deveria ter |
 | BR-23 | O sistema deve oferecer um filtro de mês com a opção "Todos" (padrão ao abrir) e somente os meses que têm eventos disponíveis; QUANDO o operador selecionar um mês, o sistema deve exibir só os eventos disponíveis desse mês. | US-09 | Deveria ter |
 | BR-24 | SE o mês selecionado deixar de ter eventos disponíveis (ex.: último ingresso vendido), ENTÃO o sistema deve voltar o filtro para "Todos". | US-09 | Deveria ter |
+| BR-26 | SE a consulta da BR-15 não puder ser concluída (falha ao ler ou gravar a compra, ou falha ao consultar a Cielo), ENTÃO o sistema deve exibir erro com a opção de tentar novamente, e a nova tentativa deve repetir a consulta, sem abrir nova cobrança. | US-06, US-07 | Deve ter |
+| BR-27 | SE o evento da compra não puder ser carregado (catálogo ilegível, evento inexistente ou sem ingressos) e não houver compra em andamento, ENTÃO o sistema deve informar que o evento está indisponível e oferecer a volta para a lista de eventos. | US-02, US-07 | Deve ter |
+| BR-28 | SE o comprovante não puder ser carregado (falha de leitura, compra inexistente ou sem resultado de venda), ENTÃO o sistema deve exibir erro com a opção de tentar novamente. | US-05, US-07 | Deve ter |
 
 ## 5. Critérios de Aceite (Gherkin)
 Valores ilustrativos (preço, nomes) são dados de teste, não regra.
@@ -312,6 +315,30 @@ Quando esse ingresso é vendido e o operador volta para a lista
 Então o filtro está em "Todos" e dezembro não aparece mais como opção
 ```
 
+### AC-25 — Consulta que falha não libera cobrança (BR-26)
+```gherkin
+Dado uma compra "em andamento" sem resultado ao reabrir o app
+Quando a consulta à Cielo ou a leitura da compra falhar
+Então é exibido erro com "Tentar novamente"
+E tentar novamente repete a consulta sem abrir novo pagamento
+```
+
+### AC-26 — Evento indisponível na compra (BR-27)
+```gherkin
+Dado que não há compra em andamento
+Quando a tela de compra é aberta para um evento que não pode ser carregado
+Então é informado que o evento está indisponível, com a opção de voltar para os eventos
+E a ação de pagar não é oferecida
+```
+
+### AC-27 — Comprovante que não carrega (BR-28)
+```gherkin
+Dado uma compra cujo registro não pode ser lido
+Quando o comprovante é aberto
+Então é exibido erro com "Tentar novamente"
+E tentar novamente repete a leitura
+```
+
 ## 6. Estados de UI e Eventos
 **Tela de eventos** (`EventListUiState`):
 
@@ -329,7 +356,8 @@ Então o filtro está em "Todos" e dezembro não aparece mais como opção
 | `Editing` | Evento selecionado, sem compra em andamento | Evento, quantidade (+/−), total, "Pagar" | AC-04, AC-05, AC-06 |
 | `AwaitingPayment` | Compra "em andamento" | Aguardando pagamento no terminal; "Pagar" indisponível | AC-07, AC-08 |
 | `Recovering` | Reabertura com compra sem resultado, ou resposta ilegível da Cielo | Confirmando o pagamento com a Cielo antes de permitir nova cobrança | AC-14, AC-15 |
-| `Error` | App ausente, erro genérico/autenticação/código desconhecido, ou pagamento anterior não encontrado | Mensagem específica + "Tentar novamente" | AC-12, AC-13, AC-15 |
+| `Error` | App ausente, erro genérico/autenticação/código desconhecido, pagamento anterior não encontrado, ou consulta que falhou | Mensagem específica + "Tentar novamente" (na consulta que falhou, repete a consulta) | AC-12, AC-13, AC-15, AC-25 |
+| `Unavailable` | Evento não pode ser carregado e não há compra em andamento | Aviso de evento indisponível + "Voltar para eventos" | AC-26 |
 
 **Tela de resultado = comprovante/resumo** (`ReceiptUiState`), ao fim da compra ou aberta pelo histórico:
 
@@ -338,6 +366,7 @@ Então o filtro está em "Todos" e dezembro não aparece mais como opção
 | `Approved` | Compra aprovada | Sucesso + comprovante | AC-09, AC-16, AC-19 |
 | `Declined` | Compra negada | Resumo com aviso de pagamento negado | AC-11, AC-16 |
 | `Cancelled` | Cancelada no terminal | Resumo com aviso de cancelamento | AC-10, AC-16 |
+| `Error` | Registro não pode ser lido, não existe ou não tem resultado de venda | Mensagem + "Tentar novamente" | AC-27 |
 
 **Tela de histórico** (`PurchaseHistoryUiState`):
 
@@ -352,7 +381,7 @@ Então o filtro está em "Todos" e dezembro não aparece mais como opção
 
 | Evento | Origem | Efeito esperado |
 |---|---|---|
-| `OnRetry` | Eventos / compra / histórico | Repete a leitura ou a tentativa de pagamento |
+| `OnRetry` | Eventos / compra / comprovante / histórico | Repete a leitura, a consulta à Cielo ou a tentativa de pagamento |
 | `OnEventSelected(id)` | Lista de eventos | Abre a compra com quantidade 1 |
 | `OnMonthSelected(month)` | Filtro de mês | Mostra só os eventos do mês; `month` vazio = "Todos" |
 | `OnIncrement` / `OnDecrement` | Tela de compra | Altera a quantidade dentro dos limites |
@@ -427,3 +456,4 @@ Então o filtro está em "Todos" e dezembro não aparece mais como opção
 | 1.0.0 | 2026-10-17 | Rafael Oliveira | Aprovada. Q8 opção A (código 3 = Negada; status Falhou para falhas técnicas, fora do histórico); Q11 sim (BR-17: catálogo − aprovadas) |
 | 1.1.0 | 2026-10-17 | Rafael Oliveira (com Claude Code) | Navegação por mês (Q13): US-09, BR-22…BR-24, AC-22…AC-24, `OnMonthSelected`. Pendentes P1/P3 da UI Spec |
 | 1.1.0 | 2026-10-17 | Rafael Oliveira | Aprovada com P1 e P3 da UI Spec: BR-25 (resposta ilegível consulta a Cielo antes de nova cobrança; AC-14 reescrito); BR-15 define o destino quando o pagamento não é encontrado (AC-15) |
+| 1.2.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Estados presos achados na revisão do lote D: BR-26/AC-25 (consulta que falha → erro com retry da consulta), BR-27/AC-26 (`PurchaseUiState.Unavailable`), BR-28/AC-27 (`ReceiptUiState.Error`). Decisão humana na revisão |

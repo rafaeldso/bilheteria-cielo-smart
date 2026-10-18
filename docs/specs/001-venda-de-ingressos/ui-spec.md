@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Spec** | [spec.md](spec.md) (versão aprovada: 1.1.0) |
-| **Status** | Aprovada |
-| **Versão** | 0.4.1 |
+| **Spec** | [spec.md](spec.md) (versão: 1.2.0) |
+| **Status** | Em revisão |
+| **Versão** | 0.4.2 |
 | **Fidelidade** | Prancha hi-fi + protótipo (G) |
 | **Prancha** | [design/mockups.html](design/mockups.html) · revisão local: http://127.0.0.1:8766/specs/001-venda-de-ingressos/design/mockups.html (`python3 -m http.server 8766` em `docs/`) |
 | **Design system** | [DESIGN.md](../../design/DESIGN.md) v0.2.0 (direção A "Ciano Smart") · [components.md](../../design/components.md) |
@@ -146,13 +146,19 @@ Nenhum (dados de evento são públicos).
 #### 4.2 Estados
 | Estado (`PurchaseUiState`) | AC | O que aparece | Foco/anúncio inicial |
 |---|---|---|---|
+| `Loading` | — | `DsLoadingSkeleton` do cabeçalho e do card; sem "Pagar". Dura enquanto a compra aberta e o evento são lidos (impede pagar antes de saber se há compra em andamento, BR-10) | "Carregando a compra" (status) |
 | `Editing` | AC-04, AC-05, AC-06 | Evento, quantidade, total, "Pagar" | Nome do evento |
 | `AwaitingPayment` | AC-07, AC-08 | "Conclua o pagamento no terminal", progresso, "Pagar" desabilitado | Status anunciado |
 | `Recovering` | AC-14, AC-15 | "Confirmando o pagamento com a Cielo", progresso, sem ações. Usado na reabertura com compra sem resultado (BR-15) e na resposta ilegível (BR-25) | Status anunciado |
-| `Error` | AC-12, AC-13, AC-15 | Mensagem do tipo de erro, quantidade e total + "Tentar pagar R$ X de novo" | Alerta; foco no botão |
+| `Error` | AC-12, AC-13, AC-15, AC-25 | Mensagem do tipo de erro, quantidade e total + "Tentar pagar R$ X de novo" (na consulta que falhou: "Consultar de novo") | Alerta; foco no botão |
+| `Unavailable` | AC-26 | `DsErrorState`: "Evento indisponível" + "Voltar para eventos"; sem quantidade nem "Pagar" | Alerta; foco no botão |
 
-O `Error` tem quatro variantes de mensagem (o tipo vem no `UiState`): app Cielo ausente, erro genérico (código 2
-ou código desconhecido), autenticação (código 4) e pagamento anterior não encontrado (BR-15). Todas registram a tentativa como "Falhou" (spec, BR-14/BR-15) e mostram a
+`Completed(purchaseId)` não é tela: é o sinal para a Route abrir a SCR-03. A Route navega com
+`popUpTo<PurchaseRoute> { inclusive = true }`, então voltar do comprovante não reabre a compra (T24).
+
+O `Error` tem cinco variantes de mensagem (o tipo vem no `UiState`): app Cielo ausente, erro genérico (código 2
+ou código desconhecido), autenticação (código 4), pagamento anterior não encontrado (BR-15) e consulta que não pôde ser concluída
+(BR-26). Nesta última, "Consultar de novo" repete a consulta e nunca abre nova cobrança. Todas registram a tentativa como "Falhou" (spec, BR-14/BR-15) e mostram a
 quantidade e o total da compra, que se repetem no botão de nova tentativa (prevenção de erro).
 A resposta ilegível não é `Error`: vai para `Recovering` (BR-25).
 
@@ -194,6 +200,11 @@ A resposta ilegível não é `Error`: vai para `Recovering` (BR-25).
 | `ticketing_purchase_error_generic_title` / `_body` | Não foi possível concluir o pagamento / A Cielo informou um erro e a venda não foi registrada. Você pode tentar de novo. | `Error` | código 2 ou desconhecido |
 | `ticketing_purchase_error_auth_title` / `_body` | A Cielo não reconheceu este app / Erro de autenticação. Avise o responsável pelo terminal: tentar de novo só resolve depois que a configuração for corrigida. | `Error` | código 4 |
 | `ticketing_purchase_error_not_found_title` / `_body` | Pagamento anterior não encontrado / A Cielo não tem registro do pagamento interrompido. Você pode tentar de novo. | `Error` | BR-15 |
+| `ticketing_purchase_error_recovery_title` / `_body` | Não foi possível confirmar o pagamento / Ainda não sabemos se o pagamento anterior foi feito. Consulte de novo antes de cobrar outra vez. | `Error` | BR-26 |
+| `ticketing_purchase_retry_recovery` | Consultar de novo | Botão em `Error` (BR-26) | |
+| `ticketing_purchase_loading` | Carregando a compra | `Loading` (a11y) | |
+| `ticketing_purchase_unavailable_title` / `_body` | Evento indisponível / Não foi possível carregar este evento ou os ingressos acabaram. | `Unavailable` | BR-27 |
+| `ticketing_purchase_unavailable_back` | Voltar para eventos | Botão em `Unavailable` | |
 
 #### 4.5 Interações
 | Gesto | Elemento | `UiEvent` | Resultado | Feedback |
@@ -203,6 +214,8 @@ A resposta ilegível não é `Error`: vai para `Recovering` (BR-25).
 | Toque repetido | "Pagar" (já desabilitado) | `OnPay` | Ignorado (BR-10) | — |
 | Retorno da Cielo | — | `OnPaymentResult(response)` | Comprovante (aprovada/negada/cancelada) ou `Error` | Navegação ou alerta |
 | Toque | "Tentar pagar R$ X de novo" | `OnRetry` | Nova tentativa, com nova referência | Vai para `AwaitingPayment` |
+| Toque | "Consultar de novo" | `OnRetry` | Repete a consulta (BR-26), sem cobrar | Vai para `Recovering` |
+| Toque | "Voltar para eventos" | — (Route) | Volta a SCR-01 | — |
 | Voltar do sistema | Em `AwaitingPayment` e `Recovering` | — (Route) | Ignorado: há pagamento aberto ou em verificação (BR-10, BR-15, BR-25) | — |
 
 #### 4.6 Acessibilidade
@@ -241,6 +254,8 @@ Nenhum. O app não recebe nem exibe dados do cartão nesta tela.
 | `Approved` | AC-09, AC-16, AC-19 | Badge sucesso, total, campos da BR-16 + bandeira, autorização, NSU | Resultado anunciado |
 | `Declined` | AC-11, AC-16 | Badge erro, total, campos da BR-16 (sem dados da transação) | Resultado anunciado |
 | `Cancelled` | AC-10, AC-16 | Badge neutro, total, campos da BR-16 (sem dados da transação) | Resultado anunciado |
+| `Loading` | — | `DsLoadingSkeleton`. Também cobre compra ainda `Em andamento` (o resultado está chegando) | "Carregando o comprovante" (status) |
+| `Error` | AC-27 | `DsErrorState`: "Não foi possível abrir o comprovante" + "Tentar novamente" | Alerta; foco no botão |
 
 A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histórico" ou "Nova venda".
 
@@ -263,11 +278,15 @@ A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histór
 | `ticketing_receipt_field_*` | Nº da compra · Evento · Data do evento · Local · Quantidade · Valor unitário · Total · Data/hora da compra · Status · Bandeira · Código de autorização · NSU | Lista | uma chave por campo |
 | `ticketing_receipt_datetime_format` | 17/10/2026 às 14:32 | Data/hora da compra | data **absoluta** (`dd/MM/aaaa às HH:mm`): o comprovante pode ser reaberto dias depois |
 | `ticketing_receipt_new_sale` | Nova venda | Botão | |
+| `ticketing_receipt_loading` | Carregando o comprovante | `Loading` (a11y) | |
+| `ticketing_receipt_error_title` / `_body` | Não foi possível abrir o comprovante / Os dados desta compra não puderam ser lidos. | `Error` | BR-28 |
+| `ticketing_receipt_retry` | Tentar novamente | Botão em `Error` | |
 
 #### 4.5 Interações
 | Gesto | Elemento | `UiEvent` | Resultado | Feedback |
 |---|---|---|---|---|
 | Toque | "Nova venda" | `OnNewSale` | Volta a SCR-01 (disponíveis atualizados) | — |
+| Toque | "Tentar novamente" | `OnRetry` | Repete a leitura (BR-28) | Vai para `Loading` |
 
 #### 4.6 Acessibilidade
 - **Ordem de leitura:** título → badge → total → título e texto do resultado → lista → botão.
@@ -408,3 +427,4 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | 0.3.0 | 2026-10-17 | Rafael Oliveira (com Claude Code) | Navegação por mês (spec 1.1.0, US-09): filtro de mês e cabeçalhos fixos na SCR-01, prancha "Content · mês filtrado", catálogo de eventos fictício cobrindo 3 meses; componentes aprovados movidos para o kit; P4 fechada |
 | 0.4.0 | 2026-10-17 | Rafael Oliveira (com Claude Code) | P1 e P3 aprovadas (spec 1.1.0): resposta ilegível vai para `Recovering` (variante de erro removida); "pagamento anterior não encontrado" deixa de ser proposta; texto de `Recovering` cobre os dois casos |
 | 0.4.1 | 2026-10-18 | Rafael Oliveira (com Claude Code) | `DsQuantityStepper`: API ganha `decrementDescription`/`incrementDescription` para rotular os botões −/+ no TalkBack (achado na T11) |
+| 0.4.2 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Spec 1.2.0: SCR-02 ganha `Loading`, `Unavailable` (BR-27), variante de `Error` da consulta que falhou (BR-26) e `Completed` como sinal de navegação com `popUpTo`; SCR-03 ganha `Loading` e `Error` (BR-28). Prancha não atualizada: os estados novos reutilizam `DsErrorState`/`DsLoadingSkeleton` |

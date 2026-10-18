@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| **Spec** | [spec.md](spec.md) (versão 1.1.0) · [ui-spec.md](ui-spec.md) (0.4.0) · [research.md](research.md) |
+| **Spec** | [spec.md](spec.md) (versão 1.2.0) · [ui-spec.md](ui-spec.md) (0.4.2) · [research.md](research.md) |
 | **Status** | Aprovado (2026-10-17) · ADR: [0010](../../adr/0010-integracao-cielo-smart-por-deep-link.md) |
 | **Tamanho** | G |
 
@@ -207,6 +207,7 @@ class StartPurchaseUseCase            // BR-08..10
 class HandlePaymentOutcomeUseCase     // BR-11..14, BR-25, parte do BR-15 (lookup)
 class RecoverPendingPurchaseUseCase   // BR-15, BR-25
 class ObservePurchaseUseCase          // BR-16, BR-19
+class ObserveOpenPurchaseUseCase      // BR-10, BR-15: compra Pending/Recovering ou null (adicionado no lote D, 2026-10-18)
 class ObservePurchaseHistoryUseCase   // BR-18, BR-20, BR-21
 ```
 
@@ -260,13 +261,19 @@ sealed interface EventListUiEvent {
 }
 
 sealed interface PurchaseUiState {
+    data object Loading : PurchaseUiState                           // lendo compra aberta e evento; sem "Pagar" (BR-10)
     data class Editing(val event: EventSummary, val quantity: Int, val canDecrement: Boolean, val canIncrement: Boolean,
                        val limitHint: LimitHint?, val total: Money) : PurchaseUiState
     data class AwaitingPayment(val event: EventSummary, val quantity: Int, val total: Money) : PurchaseUiState
     data class Recovering(val event: EventSummary, val quantity: Int, val total: Money) : PurchaseUiState
     data class Error(val event: EventSummary, val quantity: Int, val total: Money, val reason: PurchaseErrorReason) : PurchaseUiState
+    data object Unavailable : PurchaseUiState                       // BR-27: evento não carrega e não há compra aberta
+    data class Completed(val purchaseId: String) : PurchaseUiState  // sinal de navegação para a SCR-03
 }
-enum class PurchaseErrorReason { NoCieloApp, Generic, Authentication, RecoveryNotFound }
+enum class PurchaseErrorReason { NoCieloApp, Generic, Authentication, RecoveryNotFound, RecoveryFailed }  // RecoveryFailed: BR-26
+data class EventSummary(val id: String, val name: String, val startsAt: Instant, val venue: String, val unitPrice: Money,
+                        val available: Int?)            // null quando o resumo vem do snapshot da compra
+sealed interface LimitHint { data class MaxPerPurchase(val max: Int) ; data class OnlyAvailable(val available: Int) }
 sealed interface PurchaseUiEvent {
     data object OnIncrement : PurchaseUiEvent ; data object OnDecrement : PurchaseUiEvent
     data object OnPay : PurchaseUiEvent ; data object OnRetry : PurchaseUiEvent
@@ -278,8 +285,11 @@ sealed interface ReceiptUiState {
     data class Approved(val receipt: ReceiptData) : ReceiptUiState
     data class Declined(val receipt: ReceiptData) : ReceiptUiState
     data class Cancelled(val receipt: ReceiptData) : ReceiptUiState
+    data object Error : ReceiptUiState                              // BR-28
 }
-sealed interface ReceiptUiEvent { data object OnNewSale : ReceiptUiEvent }
+sealed interface ReceiptUiEvent { data object OnNewSale : ReceiptUiEvent ; data object OnRetry : ReceiptUiEvent }
+// ReceiptData: valores crus (Money, Instant) formatados pela tela; ReceiptTransaction(brand?, authCode, nsu) só em Approved.
+// HistoryItem(id, eventName, createdAt, quantity, total, status); MonthOption(month), MonthGroup(month, events).
 
 sealed interface PurchaseHistoryUiState {
     data object Loading : PurchaseHistoryUiState
@@ -292,12 +302,16 @@ sealed interface PurchaseHistoryUiEvent {
     data class OnPurchaseSelected(val id: String) : PurchaseHistoryUiEvent
 }
 ```
-Navegação é estado: o ViewModel expõe o destino no `UiState` (ex.: resultado pronto) e a `Route` navega num `LaunchedEffect`
-e confirma via evento interno, conforme o compose-ui.md. Argumentos de rota são só IDs. A quantidade em edição vai para o
-`SavedStateHandle`.
+Navegação é estado quando o destino vem de um resultado assíncrono: `PurchaseUiState.Completed(purchaseId)` leva a `Route` a
+navegar num `LaunchedEffect` com `popUpTo<PurchaseRoute> { inclusive = true }`. O estado deriva do Room, então o consumo é
+a saída da compra da pilha, sem evento interno (decisão 2026-10-18; requisito da T24 e Journey da T25). Navegação por clique
+(`OnEventSelected`, `OnOpenHistory`, `OnPurchaseSelected`, `OnNewSale`, "Voltar para eventos") não muda o estado: a `Route`
+chama o callback. Argumentos de rota são só IDs. O `SavedStateHandle` da compra guarda `eventId` (rota), a quantidade e o
+`purchaseId` da tentativa atual. Todas as declarações do `ui` são `internal`; os `sealed interface *UiState` têm `@Immutable`.
 
-`ReceiptUiState.Loading` não está na seção 6 da spec: é o carregamento do registro local, sem prancha. **Decisão (2026-10-17):**
-aceito como detalhe técnico, sem AC.
+`ReceiptUiState.Loading` e `PurchaseUiState.Loading` não estão na seção 6 da spec: são o carregamento local. **Decisões
+(2026-10-17 e 2026-10-18):** aceitos como detalhe técnico, sem AC. `ReceiptUiState.Loading` também cobre a compra ainda em
+andamento; falha, registro inexistente ou `Failed` vão para `ReceiptUiState.Error` (BR-28).
 
 ## 5. Tratamento de Erros
 | Erro técnico | Erro de domínio | Estado de UI | Ação do usuário |
@@ -314,6 +328,9 @@ aceito como detalhe técnico, sem AC.
 | Aprovado com `reference` ou `payments[].amount` diferentes da compra aberta | descartado + log de segurança | Sem mudança (continua aguardando/recuperando) | — |
 | Callback sem compra aberta | descartado + log | — | — |
 | Consulta sem o `reference` em 4 páginas | `PaymentOutcome` → `Failed(NotFound)` | `Error(RecoveryNotFound)` | Tentar pagar de novo |
+| Falha ao ler a compra aberta, ou `recoverPending()` com `Failure` | `StorageFailure` / falha do gateway | `Error(RecoveryFailed)` (BR-26) | Consultar de novo (repete leitura e consulta; nunca paga) |
+| Catálogo ilegível, evento inexistente ou esgotado, sem compra aberta | `CatalogUnavailable` / ausência | `PurchaseUiState.Unavailable` (BR-27) | Voltar para eventos |
+| `SQLiteException` ou registro inexistente ao abrir o comprovante; compra `Failed` | `StorageFailure` | `ReceiptUiState.Error` (BR-28) | Tentar de novo |
 
 Nenhum retry automático de pagamento (escrita não idempotente, error-handling.md): só por ação do operador e só depois da
 consulta quando o resultado é desconhecido.
@@ -391,6 +408,6 @@ Nome de todo teste cita o `AC-xx` (S-09). Cobertura pelos limites do testing.md 
 | Ordenação e base de página do `lio://orders` | Baixa | Médio | **T01:** sem tela, ordem crescente → varrer as últimas páginas; base da página conferida na T25 |
 | "Negada" não demonstrável no emulador | Certa (T01: "Erro" = código 2) | Baixo | Regra coberta por teste unitário; limitação no README |
 | ~~Unidade de `unitPrice`~~ | — | — | **Resolvido na T01:** centavos |
-| `ReceiptUiState.Loading` fora da spec | — | Baixo | Aceito como detalhe técnico (2026-10-17) |
+| `ReceiptUiState.Loading` / `PurchaseUiState.Loading` fora da spec | — | Baixo | Aceitos como detalhe técnico (2026-10-17, 2026-10-18) |
 | Datas fixas no JSON envelhecerem (evento "passado" some da lista) | Média | Médio | Datas de nov/2026 a mar/2027; README explica como editar o JSON |
 | Token extraível do APK | Alta (é inerente) | Baixo no case | Explicado no ADR-0010; valores fictícios; melhoria futura F1 no roadmap (configuração gerenciada) |
