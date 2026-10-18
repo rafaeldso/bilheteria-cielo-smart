@@ -17,25 +17,21 @@ package com.rafaeloliveira.bilheteria.core.designsystem.component
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 
-private val ContainerSize = 48.dp
 private const val DISABLED_CONTENT_ALPHA = 0.38f
 
 /**
@@ -59,7 +55,7 @@ fun DsIconButton(
 ) {
     val colors = MaterialTheme.colorScheme
     val disabledContent = colors.onSurface.copy(alpha = DISABLED_CONTENT_ALPHA)
-    val buttonModifier = modifier.size(ContainerSize)
+    val buttonModifier = modifier.size(BilheteriaTheme.sizes.touchTargetMin)
     when (variant) {
         DsIconButtonVariant.Standard -> {
             IconButton(
@@ -99,8 +95,8 @@ fun DsIconButton(
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsIconButtonStandardPreview() {
-    DsIconButtonPreviewFrame {
-        DsIconButton(icon = ComponentIcons.ArrowBack, contentDescription = "Voltar", onClick = {})
+    DsPreviewSurface {
+        DsIconButton(icon = DsIcons.ArrowBack, contentDescription = "Voltar", onClick = {})
     }
 }
 
@@ -108,9 +104,9 @@ private fun DsIconButtonStandardPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsIconButtonStandardDisabledPreview() {
-    DsIconButtonPreviewFrame {
+    DsPreviewSurface {
         DsIconButton(
-            icon = ComponentIcons.ArrowBack,
+            icon = DsIcons.ArrowBack,
             contentDescription = "Voltar",
             onClick = {},
             enabled = false,
@@ -122,16 +118,16 @@ private fun DsIconButtonStandardDisabledPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsIconButtonTonalPreview() {
-    DsIconButtonPreviewFrame {
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+    DsPreviewSurface {
+        Row(horizontalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.lg)) {
             DsIconButton(
-                icon = ComponentIcons.Remove,
+                icon = DsIcons.Remove,
                 contentDescription = "Menos um ingresso",
                 onClick = {},
                 variant = DsIconButtonVariant.Tonal,
             )
             DsIconButton(
-                icon = ComponentIcons.Add,
+                icon = DsIcons.Add,
                 contentDescription = "Mais um ingresso",
                 onClick = {},
                 variant = DsIconButtonVariant.Tonal,
@@ -144,22 +140,13 @@ private fun DsIconButtonTonalPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsIconButtonTonalDisabledPreview() {
-    DsIconButtonPreviewFrame {
+    DsPreviewSurface {
         DsIconButton(
-            icon = ComponentIcons.Remove,
+            icon = DsIcons.Remove,
             contentDescription = "Menos um ingresso",
             onClick = {},
             variant = DsIconButtonVariant.Tonal,
             enabled = false,
         )
-    }
-}
-
-@Composable
-private fun DsIconButtonPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Box(modifier = Modifier.padding(16.dp)) { content() }
-        }
     }
 }

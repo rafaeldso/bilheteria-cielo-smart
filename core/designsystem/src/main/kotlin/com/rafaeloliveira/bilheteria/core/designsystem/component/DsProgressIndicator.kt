@@ -16,12 +16,9 @@
 package com.rafaeloliveira.bilheteria.core.designsystem.component
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -30,17 +27,16 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 
-/** Share of the track the indicator fills while motion is reduced; the bar is still, so it is a fixed segment. */
-private const val STATIC_PROGRESS = 0.4f
+/** While motion is reduced the bar is still: the whole track is filled at half opacity (the kit's `.progress`). */
+private const val STATIC_ALPHA = 0.5f
 
 /**
  * Indeterminate linear progress for waiting on an external event of unknown duration (the payment
  * result, a status lookup). 4dp, `primary` indicator on a `secondaryContainer` track, full width.
  *
- * It stays still when the user removed animations in the system settings. In both cases TalkBack
- * reads it as an indeterminate progress bar labeled by [contentDescription].
+ * It stays still when the user removed animations in the system settings: a full bar at half opacity. In both
+ * cases TalkBack reads it as an indeterminate progress bar labeled by [contentDescription].
  *
  * @param contentDescription what is being awaited, already localized (e.g. "Aguardando o pagamento").
  * @param modifier applied to the root.
@@ -58,10 +54,12 @@ fun DsProgressIndicator(
         }
     if (rememberReducedMotion()) {
         LinearProgressIndicator(
-            progress = { STATIC_PROGRESS },
+            progress = { 1f },
             modifier = semanticsModifier,
-            color = colors.primary,
+            color = colors.primary.copy(alpha = STATIC_ALPHA),
             trackColor = colors.secondaryContainer,
+            gapSize = 0.dp,
+            drawStopIndicator = {},
         )
     } else {
         LinearProgressIndicator(
@@ -76,16 +74,5 @@ fun DsProgressIndicator(
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsProgressIndicatorPreview() {
-    DsProgressIndicatorPreviewFrame {
-        DsProgressIndicator(contentDescription = "Aguardando o pagamento")
-    }
-}
-
-@Composable
-private fun DsProgressIndicatorPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Box(modifier = Modifier.padding(16.dp)) { content() }
-        }
-    }
+    DsPreviewSurface { DsProgressIndicator(contentDescription = "Aguardando o pagamento") }
 }

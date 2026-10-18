@@ -17,59 +17,27 @@ package com.rafaeloliveira.bilheteria.core.designsystem.component
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
-
-private const val ICON_VIEWPORT = 24f
-private const val ERROR_PATH =
-    "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2z" +
-        "m0-4h-2V7h2v6z"
-private const val REFRESH_PATH =
-    "M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08" +
-        "c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
-
-/** Generic failure glyph (Material `error`), used when the caller does not pass an icon. */
-private val ErrorIcon: ImageVector by lazy { glyph(name = "Error", path = ERROR_PATH) }
-
-/** Retry glyph (Material `refresh`) shown before the retry label. */
-private val RefreshIcon: ImageVector by lazy { glyph(name = "Refresh", path = REFRESH_PATH) }
-
-private fun glyph(
-    name: String,
-    path: String,
-): ImageVector =
-    ImageVector
-        .Builder(
-            name = name,
-            defaultWidth = 24.dp,
-            defaultHeight = 24.dp,
-            viewportWidth = ICON_VIEWPORT,
-            viewportHeight = ICON_VIEWPORT,
-        ).addPath(pathData = PathParser().parsePathString(path).toNodes(), fill = SolidColor(Color.Black))
-        .build()
+import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
+import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 
 /**
  * Error state with a retry action. A 72dp round glyph on `errorContainer`, a heading title, a message
  * that says what happened and what to do (no technical code) and a filled retry button.
  *
- * It is announced to TalkBack as an alert (assertive live region) and moves focus to the retry button
- * when it enters the composition.
+ * The title and body are announced to TalkBack as one alert (assertive live region) and focus moves to the
+ * retry button when the state enters the composition. The button is outside the alert, so it keeps its
+ * own label and role.
  *
  * @param title what failed, already localized (e.g. "Não foi possível carregar os eventos"); a heading.
  * @param body what happened and what to do next; already localized, never an error code or stack trace.
@@ -77,6 +45,8 @@ private fun glyph(
  * @param onRetryClick called when the retry button is clicked.
  * @param modifier applied to the root.
  * @param icon 32dp decorative glyph; defaults to a generic error mark.
+ * @param supportingContent optional content between the body and the button (e.g. the quantity and total of the
+ * purchase that failed); it is not part of the alert; null renders none.
  */
 @Composable
 fun DsErrorState(
@@ -85,7 +55,8 @@ fun DsErrorState(
     retryLabel: String,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
-    icon: ImageVector = ErrorIcon,
+    icon: ImageVector = DsIcons.Error,
+    supportingContent: (@Composable () -> Unit)? = null,
 ) {
     val retryFocus = remember { FocusRequester() }
     if (!LocalInspectionMode.current) {
@@ -97,13 +68,15 @@ fun DsErrorState(
         glyphContentColor = MaterialTheme.colorScheme.onErrorContainer,
         title = title,
         body = body,
-        modifier = modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+        modifier = modifier,
+        liveRegion = LiveRegionMode.Assertive,
+        supportingContent = supportingContent,
         action = {
             DsButton(
                 text = retryLabel,
                 onClick = onRetryClick,
                 modifier = Modifier.focusRequester(retryFocus),
-                leadingIcon = RefreshIcon,
+                leadingIcon = DsIcons.Refresh,
             )
         },
     )
@@ -113,12 +86,34 @@ fun DsErrorState(
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsErrorStatePreview() {
-    DsErrorStatePreviewFrame {
+    DsPreviewSurface(padded = false) {
         DsErrorState(
             title = "Não foi possível carregar os eventos",
             body = "Os dados dos eventos não puderam ser lidos. Tente de novo.",
             retryLabel = "Tentar de novo",
             onRetryClick = {},
+            icon = DsIcons.EventBusy,
+        )
+    }
+}
+
+@Preview(name = "Light")
+@Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun DsErrorStateWithSupportingContentPreview() {
+    DsPreviewSurface(padded = false) {
+        DsErrorState(
+            title = "Não foi possível concluir o pagamento",
+            body = "A Cielo informou um erro e a venda não foi registrada. Você pode tentar de novo.",
+            retryLabel = "Tentar pagar R$ 100,00 de novo",
+            onRetryClick = {},
+            supportingContent = {
+                Text(
+                    text = "2 ingressos · R$ 100,00",
+                    style = MaterialTheme.typography.bodyMedium.tabular(),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            },
         )
     }
 }
@@ -126,21 +121,13 @@ private fun DsErrorStatePreview() {
 @Preview(name = "Font 2x", fontScale = 2f)
 @Composable
 private fun DsErrorStateLargeFontPreview() {
-    DsErrorStatePreviewFrame {
+    DsPreviewSurface(padded = false) {
         DsErrorState(
             title = "Não foi possível carregar o histórico",
             body = "As compras registradas não puderam ser lidas. Tente de novo.",
             retryLabel = "Tentar de novo",
             onRetryClick = {},
+            icon = DsIcons.History,
         )
-    }
-}
-
-@Composable
-private fun DsErrorStatePreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            content()
-        }
     }
 }

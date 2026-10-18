@@ -17,13 +17,13 @@ package com.rafaeloliveira.bilheteria.core.designsystem.component
 
 /** Meaning of a [DsStatusBadge]. Each variant has its own color and icon, so meaning never relies on color alone. */
 enum class DsStatusBadgeVariant {
-    /** Positive outcome (`successContainer`, check icon). */
+    /** Positive outcome (`successContainer`, check-in-circle icon). */
     Success,
 
-    /** Negative outcome (`errorContainer`, close icon). */
+    /** Negative outcome (`errorContainer`, blocked-circle icon). */
     Error,
 
-    /** Neutral outcome, such as a cancellation (`surfaceContainerHighest`, blocked icon). */
+    /** Neutral outcome, such as a cancellation (`surfaceContainerHighest`, cross-in-circle icon). */
     Neutral,
 
     /** Attention needed (`warningContainer`, warning icon). */

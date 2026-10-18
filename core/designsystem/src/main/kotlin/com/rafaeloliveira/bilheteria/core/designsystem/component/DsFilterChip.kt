@@ -18,32 +18,33 @@ package com.rafaeloliveira.bilheteria.core.designsystem.component
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableChipColors
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 
 /**
- * Single or multiple selection filter chip: `outline` border when unselected, `secondaryContainer`
+ * Single selection filter chip: `outline` border when unselected, `secondaryContainer`
  * with a check icon when selected. `shape.small`, `labelLarge`, 48dp touch target.
- * TalkBack announces the selected state.
+ * TalkBack announces it as a radio button and its selected state: the filter is a single choice
+ * (one month or "Todos"), so the caller keeps exactly one chip selected.
  *
  * @param label visible text, already localized.
  * @param selected whether the filter is applied.
@@ -66,7 +67,7 @@ fun DsFilterChip(
         selected = selected,
         onClick = onClick,
         label = { ChipLabel(label = label, spokenLabel = spokenLabel) },
-        modifier = modifier,
+        modifier = modifier.semantics { role = Role.RadioButton },
         enabled = enabled,
         leadingIcon = if (selected) ({ SelectedCheck() }) else null,
         shape = MaterialTheme.shapes.small,
@@ -95,7 +96,7 @@ private fun ChipLabel(
 @Composable
 private fun SelectedCheck() {
     Icon(
-        imageVector = ComponentIcons.Check,
+        imageVector = DsIcons.Check,
         contentDescription = null,
         modifier = Modifier.size(FilterChipDefaults.IconSize),
     )
@@ -130,29 +131,29 @@ private fun chipBorder(
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsFilterChipUnselectedPreview() {
-    DsFilterChipPreviewFrame { DsFilterChip(label = "Dez", selected = false, onClick = {}) }
+    DsPreviewSurface { DsFilterChip(label = "Dez", selected = false, onClick = {}) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsFilterChipSelectedPreview() {
-    DsFilterChipPreviewFrame { DsFilterChip(label = "Todos", selected = true, onClick = {}) }
+    DsPreviewSurface { DsFilterChip(label = "Todos", selected = true, onClick = {}) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsFilterChipDisabledPreview() {
-    DsFilterChipPreviewFrame { DsFilterChip(label = "Jan 2027", selected = false, onClick = {}, enabled = false) }
+    DsPreviewSurface { DsFilterChip(label = "Jan 2027", selected = false, onClick = {}, enabled = false) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsFilterChipGroupPreview() {
-    DsFilterChipPreviewFrame {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    DsPreviewSurface {
+        Row(horizontalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.sm)) {
             DsFilterChip(label = "Todos", selected = true, onClick = {})
             DsFilterChip(label = "Nov", selected = false, onClick = {}, spokenLabel = "novembro de 2026")
             DsFilterChip(label = "Dez", selected = false, onClick = {}, spokenLabel = "dezembro de 2026")
@@ -160,11 +161,8 @@ private fun DsFilterChipGroupPreview() {
     }
 }
 
+@Preview(name = "Font 2x", fontScale = 2f)
 @Composable
-private fun DsFilterChipPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Box(modifier = Modifier.padding(16.dp)) { content() }
-        }
-    }
+private fun DsFilterChipLargeFontPreview() {
+    DsPreviewSurface { DsFilterChip(label = "Todos", selected = true, onClick = {}) }
 }

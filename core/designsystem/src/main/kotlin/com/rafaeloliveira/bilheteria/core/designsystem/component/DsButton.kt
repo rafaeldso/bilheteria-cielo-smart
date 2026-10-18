@@ -18,11 +18,9 @@ package com.rafaeloliveira.bilheteria.core.designsystem.component
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
@@ -30,7 +28,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,12 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
-
-private val IconSize = 18.dp
-private val IconTextGap = 8.dp
-private val HorizontalPadding = 24.dp
-private val HorizontalPaddingWithIcon = 16.dp
 
 /**
  * Button of the design system (Filled, Tonal or Outlined), `shape.full`, `labelLarge`.
@@ -71,10 +64,8 @@ fun DsButton(
     leadingIcon: ImageVector? = null,
 ) {
     val buttonModifier = if (fillMaxWidth) modifier.fillMaxWidth() else modifier
-    val contentPadding =
-        PaddingValues(
-            horizontal = if (leadingIcon != null) HorizontalPaddingWithIcon else HorizontalPadding,
-        )
+    val spacing = BilheteriaTheme.spacing
+    val contentPadding = PaddingValues(horizontal = if (leadingIcon != null) spacing.lg else spacing.xl)
     val content: @Composable () -> Unit = { DsButtonContent(text = text, leadingIcon = leadingIcon) }
 
     when (variant) {
@@ -121,11 +112,15 @@ private fun DsButtonContent(
     leadingIcon: ImageVector?,
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(IconTextGap, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.sm, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (leadingIcon != null) {
-            Icon(imageVector = leadingIcon, contentDescription = null, modifier = Modifier.size(IconSize))
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                modifier = Modifier.size(BilheteriaTheme.sizes.iconSmall),
+            )
         }
         Text(text = text, style = MaterialTheme.typography.labelLarge)
     }
@@ -137,42 +132,54 @@ private const val DISABLED_CONTAINER_ALPHA = 0.12f
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsButtonFilledPreview() {
-    DsButtonPreviewFrame { DsButton(text = "Pagar R$ 100,00 no terminal", onClick = {}) }
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) { DsButton(text = "Pagar R$ 100,00 no terminal", onClick = {}) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsButtonFilledWithIconPreview() {
-    DsButtonPreviewFrame { DsButton(text = "Nova venda", onClick = {}, leadingIcon = ComponentIcons.Add) }
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) {
+        DsButton(text = "Nova venda", onClick = {}, leadingIcon = DsIcons.AddShoppingCart)
+    }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsButtonFilledFullWidthPreview() {
-    DsButtonPreviewFrame { DsButton(text = "Nova venda", onClick = {}, fillMaxWidth = true) }
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) { DsButton(text = "Nova venda", onClick = {}, fillMaxWidth = true) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsButtonFilledDisabledPreview() {
-    DsButtonPreviewFrame { DsButton(text = "Pagar R$ 100,00", onClick = {}, enabled = false, fillMaxWidth = true) }
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) {
+        DsButton(
+            text = "Aguardando pagamento…",
+            onClick = {},
+            enabled = false,
+            fillMaxWidth = true,
+            leadingIcon = DsIcons.HourglassTop,
+        )
+    }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsButtonTonalPreview() {
-    DsButtonPreviewFrame { DsButton(text = "Atualizar", onClick = {}, variant = DsButtonVariant.Tonal) }
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) {
+        DsButton(text = "Atualizar", onClick = {}, variant = DsButtonVariant.Tonal)
+    }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsButtonTonalDisabledPreview() {
-    DsButtonPreviewFrame {
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) {
         DsButton(text = "Atualizar", onClick = {}, variant = DsButtonVariant.Tonal, enabled = false)
     }
 }
@@ -181,23 +188,31 @@ private fun DsButtonTonalDisabledPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsButtonOutlinedPreview() {
-    DsButtonPreviewFrame { DsButton(text = "Cancelar", onClick = {}, variant = DsButtonVariant.Outlined) }
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) {
+        DsButton(text = "Cancelar", onClick = {}, variant = DsButtonVariant.Outlined)
+    }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsButtonOutlinedDisabledPreview() {
-    DsButtonPreviewFrame {
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) {
         DsButton(text = "Cancelar", onClick = {}, variant = DsButtonVariant.Outlined, enabled = false)
     }
 }
 
+@Preview(name = "Font 2x", fontScale = 2f)
 @Composable
-private fun DsButtonPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Box(modifier = Modifier.width(360.dp).padding(16.dp)) { content() }
-        }
+private fun DsButtonLargeFontPreview() {
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) {
+        DsButton(
+            text = "Pagar R$ 100,00 no terminal",
+            onClick = {},
+            fillMaxWidth = true,
+            leadingIcon = DsIcons.PointOfSale,
+        )
     }
 }
+
+private val PREVIEW_WIDTH = 360.dp

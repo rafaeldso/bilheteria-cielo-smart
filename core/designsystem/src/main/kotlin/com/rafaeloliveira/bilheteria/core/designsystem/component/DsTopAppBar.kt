@@ -16,19 +16,28 @@
 package com.rafaeloliveira.bilheteria.core.designsystem.component
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 
 /**
@@ -36,14 +45,14 @@ import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
  * Edge-to-edge: the bar adds the status bar inset itself.
  *
  * Use [DsIconButton] inside [navigationIcon] and [actions] so every icon has a spoken label.
- * The title is limited to two lines because the bar has a fixed height.
+ * The bar is at least 64dp tall and grows with the font scale, so the title (up to two lines) is never
+ * cut at 200% font (compose-ui.md, "Texto").
  *
  * @param title screen title, already localized.
  * @param modifier applied to the root.
  * @param navigationIcon slot at the start, usually a "back" [DsIconButton]; empty when the screen has no back action.
  * @param actions slot at the end, for icon actions.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DsTopAppBar(
     title: String,
@@ -51,48 +60,58 @@ fun DsTopAppBar(
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    TopAppBar(
-        title = {
+    val spacing = BilheteriaTheme.spacing
+    Surface(modifier = modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface) {
+        Row(
+            modifier =
+                Modifier
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .heightIn(min = BAR_MIN_HEIGHT)
+                    .padding(horizontal = spacing.xs, vertical = spacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant) {
+                navigationIcon()
+            }
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = MAX_TITLE_LINES,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.semantics { heading() },
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .padding(horizontal = spacing.md)
+                        .semantics { heading() },
             )
-        },
-        modifier = modifier,
-        navigationIcon = navigationIcon,
-        actions = actions,
-        colors =
-            TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                scrolledContainerColor = MaterialTheme.colorScheme.surface,
-                navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            ),
-    )
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant) {
+                Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                    actions()
+                }
+            }
+        }
+    }
 }
 
+private val BAR_MIN_HEIGHT = 64.dp
 private const val MAX_TITLE_LINES = 2
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsTopAppBarWithoutNavigationPreview() {
-    DsTopAppBarPreviewFrame { DsTopAppBar(title = "Eventos à venda") }
+    DsPreviewSurface(padded = false) { DsTopAppBar(title = "Eventos à venda") }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsTopAppBarWithActionPreview() {
-    DsTopAppBarPreviewFrame {
+    DsPreviewSurface(padded = false) {
         DsTopAppBar(
             title = "Eventos à venda",
             actions = {
-                DsIconButton(icon = ComponentIcons.Add, contentDescription = "Histórico de compras", onClick = {})
+                DsIconButton(icon = DsIcons.ReceiptLong, contentDescription = "Histórico de compras", onClick = {})
             },
         )
     }
@@ -102,12 +121,12 @@ private fun DsTopAppBarWithActionPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsTopAppBarWithNavigationPreview() {
-    DsTopAppBarPreviewFrame {
+    DsPreviewSurface(padded = false) {
         DsTopAppBar(
             title = "Comprovante",
             navigationIcon = {
                 DsIconButton(
-                    icon = ComponentIcons.ArrowBack,
+                    icon = DsIcons.ArrowBack,
                     contentDescription = "Voltar",
                     onClick = {},
                 )
@@ -116,9 +135,28 @@ private fun DsTopAppBarWithNavigationPreview() {
     }
 }
 
+@Preview(name = "Font 2x", fontScale = 2f)
 @Composable
-private fun DsTopAppBarPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) { content() }
+private fun DsTopAppBarLargeFontPreview() {
+    DsPreviewSurface(padded = false) {
+        DsTopAppBar(
+            title = "Eventos à venda",
+            actions = {
+                DsIconButton(icon = DsIcons.ReceiptLong, contentDescription = "Histórico de compras", onClick = {})
+            },
+        )
+    }
+}
+
+@Preview(name = "Font 2x · long title", fontScale = 2f)
+@Composable
+private fun DsTopAppBarLargeFontLongTitlePreview() {
+    DsPreviewSurface(padded = false) {
+        DsTopAppBar(
+            title = "Histórico de compras",
+            navigationIcon = {
+                DsIconButton(icon = DsIcons.ArrowBack, contentDescription = "Voltar", onClick = {})
+            },
+        )
     }
 }

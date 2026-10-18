@@ -32,12 +32,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 
-private val BadgeHorizontalPadding = 8.dp
-private val BadgeVerticalPadding = 2.dp
 private val BadgeIconSize = 14.dp
-private val BadgeIconTextGap = 4.dp
 
 /**
  * Status badge: container color of the [variant], a 14dp icon and the [text], in `labelMedium` on `shape.small`.
@@ -57,6 +55,7 @@ fun DsStatusBadge(
     variant: DsStatusBadgeVariant = DsStatusBadgeVariant.Neutral,
 ) {
     val colors = badgeColors(variant)
+    val spacing = BilheteriaTheme.spacing
     Surface(
         modifier = modifier.semantics(mergeDescendants = true) {},
         shape = MaterialTheme.shapes.small,
@@ -64,8 +63,8 @@ fun DsStatusBadge(
         contentColor = colors.content,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = BadgeHorizontalPadding, vertical = BadgeVerticalPadding),
-            horizontalArrangement = Arrangement.spacedBy(BadgeIconTextGap),
+            modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs),
+            horizontalArrangement = Arrangement.spacedBy(spacing.xs),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -97,45 +96,42 @@ private fun badgeColors(variant: DsStatusBadgeVariant): BadgeColors {
 
 private fun badgeIcon(variant: DsStatusBadgeVariant): ImageVector =
     when (variant) {
-        DsStatusBadgeVariant.Success -> StatusBadgeIcons.Success
-        DsStatusBadgeVariant.Error -> StatusBadgeIcons.Error
-        DsStatusBadgeVariant.Neutral -> StatusBadgeIcons.Neutral
-        DsStatusBadgeVariant.Warning -> StatusBadgeIcons.Warning
+        DsStatusBadgeVariant.Success -> DsIcons.CheckCircle
+        DsStatusBadgeVariant.Error -> DsIcons.Block
+        DsStatusBadgeVariant.Neutral -> DsIcons.Cancel
+        DsStatusBadgeVariant.Warning -> DsIcons.Warning
     }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsStatusBadgeSuccessPreview() {
-    DsStatusBadgePreviewFrame { DsStatusBadge(text = "Aprovada", variant = DsStatusBadgeVariant.Success) }
+    DsPreviewSurface { DsStatusBadge(text = "Aprovada", variant = DsStatusBadgeVariant.Success) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsStatusBadgeErrorPreview() {
-    DsStatusBadgePreviewFrame { DsStatusBadge(text = "Negada", variant = DsStatusBadgeVariant.Error) }
+    DsPreviewSurface { DsStatusBadge(text = "Negada", variant = DsStatusBadgeVariant.Error) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsStatusBadgeNeutralPreview() {
-    DsStatusBadgePreviewFrame { DsStatusBadge(text = "Cancelada", variant = DsStatusBadgeVariant.Neutral) }
+    DsPreviewSurface { DsStatusBadge(text = "Cancelada", variant = DsStatusBadgeVariant.Neutral) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsStatusBadgeWarningPreview() {
-    DsStatusBadgePreviewFrame { DsStatusBadge(text = "Pendente", variant = DsStatusBadgeVariant.Warning) }
+    DsPreviewSurface { DsStatusBadge(text = "Pendente", variant = DsStatusBadgeVariant.Warning) }
 }
 
+@Preview(name = "Font 2x", fontScale = 2f)
 @Composable
-private fun DsStatusBadgePreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Row(modifier = Modifier.padding(16.dp)) { content() }
-        }
-    }
+private fun DsStatusBadgeLargeFontPreview() {
+    DsPreviewSurface { DsStatusBadge(text = "Aprovada", variant = DsStatusBadgeVariant.Success) }
 }

@@ -29,12 +29,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
-
-private val CardPadding = 16.dp
-private val CardGap = 4.dp
-private const val TABULAR_DIGITS = "tnum"
+import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 
 /**
  * Summary card with the dominant figure of a screen (e.g. the purchase total): `primaryContainer` on
@@ -58,6 +54,7 @@ fun DsSummaryCard(
     supportingText: String? = null,
     spokenLabel: String? = null,
 ) {
+    val spacing = BilheteriaTheme.spacing
     Surface(
         modifier = modifier.fillMaxWidth().summarySemantics(spokenLabel),
         shape = MaterialTheme.shapes.large,
@@ -65,18 +62,18 @@ fun DsSummaryCard(
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     ) {
         Column(
-            modifier = Modifier.padding(CardPadding),
-            verticalArrangement = Arrangement.spacedBy(CardGap),
+            modifier = Modifier.padding(spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs),
         ) {
             Text(text = label, style = MaterialTheme.typography.labelLarge)
             Text(
                 text = value,
-                style = MaterialTheme.typography.displaySmall.copy(fontFeatureSettings = TABULAR_DIGITS),
+                style = MaterialTheme.typography.displaySmall.tabular(),
             )
             if (supportingText != null) {
                 Text(
                     text = supportingText,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = TABULAR_DIGITS),
+                    style = MaterialTheme.typography.bodyMedium.tabular(),
                 )
             }
         }
@@ -94,7 +91,7 @@ private fun Modifier.summarySemantics(spokenLabel: String?): Modifier =
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsSummaryCardWithSupportingTextPreview() {
-    DsSummaryCardPreviewFrame {
+    DsPreviewSurface {
         DsSummaryCard(
             label = "Total",
             value = "R$ 100,00",
@@ -108,22 +105,13 @@ private fun DsSummaryCardWithSupportingTextPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsSummaryCardValueOnlyPreview() {
-    DsSummaryCardPreviewFrame { DsSummaryCard(label = "Total", value = "R$ 60,00") }
+    DsPreviewSurface { DsSummaryCard(label = "Total", value = "R$ 60,00") }
 }
 
 @Preview(name = "Font 2x", fontScale = 2f)
 @Composable
 private fun DsSummaryCardLargeFontPreview() {
-    DsSummaryCardPreviewFrame {
+    DsPreviewSurface {
         DsSummaryCard(label = "Total", value = "R$ 1.250,00", supportingText = "25 ingressos × R$ 50,00")
-    }
-}
-
-@Composable
-private fun DsSummaryCardPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Column(modifier = Modifier.padding(16.dp)) { content() }
-        }
     }
 }

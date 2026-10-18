@@ -17,16 +17,15 @@ package com.rafaeloliveira.bilheteria.core.designsystem.component
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -37,17 +36,15 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
-
-private val ContainerPadding = 4.dp
-private val ValueMinWidth = 56.dp
-private const val TABULAR_DIGITS = "tnum"
+import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 
 /**
  * Stepper to pick a whole quantity inside limits: minus button, value, plus button, on a
- * `surfaceContainerHigh` container with `shape.full`. One tap changes the value by one; there is no
- * long press. The component does not know the limits: the caller owns the value and says, through
+ * `surfaceContainerHigh` container with `shape.full` that fills the available width: the buttons sit at the
+ * ends and the value is centered between them (the `.stepper` of the kit). One tap changes the value by one;
+ * there is no long press. The component does not know the limits: the caller owns the value and says, through
  * [canDecrement] and [canIncrement], which buttons are enabled (a button at its limit renders disabled,
  * 38% `onSurface`, and TalkBack announces it as disabled). Pass both as false to disable the whole stepper.
  *
@@ -77,16 +74,19 @@ fun DsQuantityStepper(
     incrementDescription: String,
     modifier: Modifier = Modifier,
 ) {
+    val spacing = BilheteriaTheme.spacing
     Row(
         modifier =
             modifier
+                .fillMaxWidth()
                 .semantics { isTraversalGroup = true }
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
-                .padding(ContainerPadding),
+                .padding(spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(spacing.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         DsIconButton(
-            icon = ComponentIcons.Remove,
+            icon = DsIcons.Remove,
             contentDescription = decrementDescription,
             onClick = onDecrement,
             variant = DsIconButtonVariant.Tonal,
@@ -94,7 +94,7 @@ fun DsQuantityStepper(
         )
         StepperValue(value = value, valueDescription = valueDescription)
         DsIconButton(
-            icon = ComponentIcons.Add,
+            icon = DsIcons.Add,
             contentDescription = incrementDescription,
             onClick = onIncrement,
             variant = DsIconButtonVariant.Tonal,
@@ -104,26 +104,22 @@ fun DsQuantityStepper(
 }
 
 @Composable
-private fun StepperValue(
+private fun RowScope.StepperValue(
     value: Int,
     valueDescription: String,
 ) {
-    val style =
-        MaterialTheme.typography.headlineSmall.let { base ->
-            remember(base) { base.copy(fontFeatureSettings = TABULAR_DIGITS) }
-        }
     Text(
         text = value.toString(),
         modifier =
             Modifier
-                .widthIn(min = ValueMinWidth)
+                .weight(1f)
                 .clearAndSetSemantics {
                     contentDescription = valueDescription
                     liveRegion = LiveRegionMode.Polite
                 },
         color = MaterialTheme.colorScheme.onSurface,
         textAlign = TextAlign.Center,
-        style = style,
+        style = MaterialTheme.typography.headlineSmall.tabular(),
     )
 }
 
@@ -131,44 +127,34 @@ private fun StepperValue(
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsQuantityStepperEnabledPreview() {
-    DsQuantityStepperPreviewFrame {
-        PreviewStepper(value = 2, canDecrement = true, canIncrement = true)
-    }
+    DsPreviewSurface { PreviewStepper(value = 2, canDecrement = true, canIncrement = true) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsQuantityStepperAtMinimumPreview() {
-    DsQuantityStepperPreviewFrame {
-        PreviewStepper(value = 1, canDecrement = false, canIncrement = true)
-    }
+    DsPreviewSurface { PreviewStepper(value = 1, canDecrement = false, canIncrement = true) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsQuantityStepperAtMaximumPreview() {
-    DsQuantityStepperPreviewFrame {
-        PreviewStepper(value = 10, canDecrement = true, canIncrement = false)
-    }
+    DsPreviewSurface { PreviewStepper(value = 10, canDecrement = true, canIncrement = false) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsQuantityStepperDisabledPreview() {
-    DsQuantityStepperPreviewFrame {
-        PreviewStepper(value = 2, canDecrement = false, canIncrement = false)
-    }
+    DsPreviewSurface { PreviewStepper(value = 2, canDecrement = false, canIncrement = false) }
 }
 
 @Preview(name = "Font 2x", fontScale = 2f)
 @Composable
 private fun DsQuantityStepperLargeFontPreview() {
-    DsQuantityStepperPreviewFrame {
-        PreviewStepper(value = 2, canDecrement = true, canIncrement = true)
-    }
+    DsPreviewSurface { PreviewStepper(value = 2, canDecrement = true, canIncrement = true) }
 }
 
 @Composable
@@ -187,13 +173,4 @@ private fun PreviewStepper(
         decrementDescription = "Diminuir quantidade",
         incrementDescription = "Aumentar quantidade",
     )
-}
-
-@Composable
-private fun DsQuantityStepperPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Box(modifier = Modifier.padding(16.dp)) { content() }
-        }
-    }
 }

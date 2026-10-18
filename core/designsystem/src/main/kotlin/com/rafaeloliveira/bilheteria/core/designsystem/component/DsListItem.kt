@@ -31,7 +31,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,16 +42,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
+import com.rafaeloliveira.bilheteria.core.designsystem.theme.Spacing
+import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 
 private val ItemMinHeight = 72.dp
-private val ItemStartPadding = 16.dp
-private val ItemEndPadding = 24.dp
-private val ItemVerticalPadding = 8.dp
-private val ItemGap = 16.dp
-private val LeadingSize = 40.dp
 private val LeadingIconSize = 20.dp
-private val TrailingGap = 4.dp
 
 /**
  * List row of the design system: optional 40dp circular leading icon (`secondaryContainer`), a headline in
@@ -66,12 +62,12 @@ private val TrailingGap = 4.dp
  * @param modifier applied to the root.
  * @param supportingText second line (e.g. date, venue); null shows only the headline.
  * @param leadingIcon decorative icon inside the leading circle; null omits the circle.
- * @param trailing slot at the end for the value and a second line (price and availability, total and badge);
- * its content is aligned to the end.
  * @param onClick called on click; null makes the row non-interactive.
  * @param spokenLabel full sentence TalkBack reads for the row, with dates and amounts spelled out; null reads
  * the merged visible texts.
  * @param showTopDivider true draws an `outlineVariant` line above the row, to separate it from the previous one.
+ * @param trailing slot at the end for the value and a second line (price and availability, total and badge);
+ * its content is aligned to the end; null omits it.
  */
 @Composable
 fun DsListItem(
@@ -79,18 +75,19 @@ fun DsListItem(
     modifier: Modifier = Modifier,
     supportingText: String? = null,
     leadingIcon: ImageVector? = null,
-    trailing: (@Composable ColumnScope.() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     spokenLabel: String? = null,
     showTopDivider: Boolean = false,
+    trailing: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
+    val spacing = BilheteriaTheme.spacing
     Column(modifier = modifier.fillMaxWidth()) {
         if (showTopDivider) {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
         Row(
-            modifier = itemRowModifier(onClick = onClick, spokenLabel = spokenLabel),
-            horizontalArrangement = Arrangement.spacedBy(ItemGap),
+            modifier = itemRowModifier(spacing = spacing, onClick = onClick, spokenLabel = spokenLabel),
+            horizontalArrangement = Arrangement.spacedBy(spacing.lg),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (leadingIcon != null) {
@@ -103,7 +100,7 @@ fun DsListItem(
             )
             if (trailing != null) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(TrailingGap),
+                    verticalArrangement = Arrangement.spacedBy(spacing.xs),
                     horizontalAlignment = Alignment.End,
                     content = trailing,
                 )
@@ -113,6 +110,7 @@ fun DsListItem(
 }
 
 private fun itemRowModifier(
+    spacing: Spacing,
     onClick: (() -> Unit)?,
     spokenLabel: String?,
 ): Modifier =
@@ -123,10 +121,10 @@ private fun itemRowModifier(
         .semantics(mergeDescendants = true) {
             if (spokenLabel != null) contentDescription = spokenLabel
         }.padding(
-            start = ItemStartPadding,
-            top = ItemVerticalPadding,
-            end = ItemEndPadding,
-            bottom = ItemVerticalPadding,
+            start = spacing.lg,
+            top = spacing.sm,
+            end = spacing.xl,
+            bottom = spacing.sm,
         )
 
 private fun Modifier.itemClickable(onClick: (() -> Unit)?): Modifier =
@@ -137,7 +135,7 @@ private fun LeadingCircle(icon: ImageVector) {
     Box(
         modifier =
             Modifier
-                .size(LeadingSize)
+                .size(BilheteriaTheme.sizes.iconLarge)
                 .background(color = MaterialTheme.colorScheme.secondaryContainer, shape = CircleShape),
         contentAlignment = Alignment.Center,
     ) {
@@ -182,14 +180,14 @@ private const val MAX_TEXT_LINES = 2
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsListItemHeadlineOnlyPreview() {
-    DsListItemPreviewFrame { DsListItem(headline = "Noite de Jazz no Parque") }
+    DsPreviewSurface(padded = false) { DsListItem(headline = "Noite de Jazz no Parque") }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsListItemTwoLinesPreview() {
-    DsListItemPreviewFrame {
+    DsPreviewSurface(padded = false) {
         DsListItem(
             headline = "Noite de Jazz no Parque",
             supportingText = "sáb., 15 nov · 20:00 · Concha Acústica Municipal",
@@ -202,22 +200,21 @@ private fun DsListItemTwoLinesPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsListItemEventPreview() {
-    DsListItemPreviewFrame {
+    DsPreviewSurface(padded = false) {
         DsListItem(
             headline = "Noite de Jazz no Parque",
             supportingText = "sáb., 15 nov · 20:00 · Concha Acústica Municipal",
-            leadingIcon = ComponentIcons.Add,
-            trailing = {
-                Text(text = "R$ 50,00", style = MaterialTheme.typography.labelLarge)
-                Text(
-                    text = "48 disponíveis",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            },
+            leadingIcon = DsIcons.ConfirmationNumber,
             onClick = {},
             spokenLabel = "Noite de Jazz no Parque, sábado, 15 de novembro, às 20 horas, 50 reais por ingresso",
-        )
+        ) {
+            Text(text = "R$ 50,00", style = MaterialTheme.typography.labelLarge.tabular())
+            Text(
+                text = "48 disponíveis",
+                style = MaterialTheme.typography.labelMedium.tabular(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
@@ -225,18 +222,17 @@ private fun DsListItemEventPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsListItemPurchasePreview() {
-    DsListItemPreviewFrame {
+    DsPreviewSurface(padded = false) {
         DsListItem(
             headline = "Noite de Jazz no Parque",
             supportingText = "hoje às 14:32 · 2 ingressos",
-            leadingIcon = StatusBadgeIcons.Success,
-            trailing = {
-                Text(text = "R$ 100,00", style = MaterialTheme.typography.labelLarge)
-                DsStatusBadge(text = "Aprovada", variant = DsStatusBadgeVariant.Success)
-            },
+            leadingIcon = DsIcons.CheckCircle,
             onClick = {},
             showTopDivider = true,
-        )
+        ) {
+            Text(text = "R$ 100,00", style = MaterialTheme.typography.labelLarge.tabular())
+            DsStatusBadge(text = "Aprovada", variant = DsStatusBadgeVariant.Success)
+        }
     }
 }
 
@@ -245,23 +241,15 @@ private fun DsListItemPurchasePreview() {
 @Preview(name = "Font 2x", fontScale = 2f)
 @Composable
 private fun DsListItemLongTextPreview() {
-    DsListItemPreviewFrame {
+    DsPreviewSurface(padded = false) {
         DsListItem(
             headline = "Festival de Música Eletrônica e Artes Visuais do Litoral Norte",
             supportingText = "sáb., 15 nov · 20:00 · Arena Multiuso do Complexo Esportivo Municipal",
-            leadingIcon = ComponentIcons.Add,
-            trailing = {
-                Text(text = "R$ 1.250,00", style = MaterialTheme.typography.labelLarge)
-                Text(text = "1.000 disponíveis", style = MaterialTheme.typography.labelMedium)
-            },
+            leadingIcon = DsIcons.ConfirmationNumber,
             onClick = {},
-        )
-    }
-}
-
-@Composable
-private fun DsListItemPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) { content() }
+        ) {
+            Text(text = "R$ 1.250,00", style = MaterialTheme.typography.labelLarge.tabular())
+            Text(text = "1.000 disponíveis", style = MaterialTheme.typography.labelMedium.tabular())
+        }
     }
 }

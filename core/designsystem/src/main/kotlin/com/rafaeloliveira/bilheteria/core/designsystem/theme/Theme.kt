@@ -19,6 +19,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 
 /**
  * App theme: direction A "Ciano Smart" (docs/design/DESIGN.md). Colors, type and shapes come from
@@ -29,9 +30,14 @@ fun BilheteriaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = if (darkTheme) darkBilheteriaColorScheme() else lightBilheteriaColorScheme()
-    val extendedColors = if (darkTheme) darkExtendedColors() else lightExtendedColors()
-    CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
+    val colorScheme =
+        remember(darkTheme) { if (darkTheme) darkBilheteriaColorScheme() else lightBilheteriaColorScheme() }
+    val extendedColors = remember(darkTheme) { if (darkTheme) darkExtendedColors() else lightExtendedColors() }
+    CompositionLocalProvider(
+        LocalExtendedColors provides extendedColors,
+        LocalSpacing provides remember { bilheteriaSpacing() },
+        LocalSizes provides remember { bilheteriaSizes() },
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = BilheteriaTypography,

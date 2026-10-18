@@ -31,18 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.text
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
+import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 
-private val RowHorizontalPadding = 16.dp
 private val RowVerticalPadding = 14.dp
-private val LabelEndPadding = 16.dp
-private val StackedGap = 4.dp
-private const val TABULAR_DIGITS = "tnum"
 
 /**
  * Read-only list of label/value pairs (e.g. the fields of a receipt) on a `surfaceContainerLow` card with
@@ -51,7 +46,8 @@ private const val TABULAR_DIGITS = "tnum"
  * In each row the label (`bodyMedium`, `onSurfaceVariant`) is at the start and the value (`bodyMedium`,
  * `onSurface`, tabular digits) at the end. When both do not fit on a line (large fonts), the value goes
  * below the label, so nothing is truncated. Each row is one node that TalkBack reads as a pair
- * ("Nº da compra, 7F3K-9Q2L"); the list itself has no extra semantics.
+ * ("Nº da compra, 7F3K-9Q2L"), or "label, spokenValue" when the item has a [DsKeyValue.spokenValue];
+ * the list itself has no extra semantics.
  *
  * @param items rows in display order; an empty list draws nothing visible.
  * @param modifier applied to the root; the list fills the available width.
@@ -81,53 +77,50 @@ fun DsKeyValueList(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun KeyValueRow(item: DsKeyValue) {
+    val spacing = BilheteriaTheme.spacing
     FlowRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .semantics(mergeDescendants = true) {}
-                .padding(horizontal = RowHorizontalPadding, vertical = RowVerticalPadding),
+                .rowSemantics(item)
+                .padding(horizontal = spacing.lg, vertical = RowVerticalPadding),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalArrangement = Arrangement.spacedBy(StackedGap),
+        verticalArrangement = Arrangement.spacedBy(spacing.xs),
     ) {
         Text(
             text = item.label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(end = LabelEndPadding),
+            modifier = Modifier.padding(end = spacing.lg),
         )
         Text(
             text = item.value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = TABULAR_DIGITS),
+            style = MaterialTheme.typography.bodyMedium.tabular(),
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.End,
-            modifier = spokenValueModifier(item.spokenValue),
         )
     }
 }
 
-private fun spokenValueModifier(spokenValue: String?): Modifier =
-    if (spokenValue != null) {
-        Modifier.clearAndSetSemantics {
-            contentDescription = spokenValue
-            text = AnnotatedString(spokenValue)
-        }
+private fun Modifier.rowSemantics(item: DsKeyValue): Modifier =
+    if (item.spokenValue != null) {
+        clearAndSetSemantics { contentDescription = "${item.label}, ${item.spokenValue}" }
     } else {
-        Modifier
+        semantics(mergeDescendants = true) {}
     }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsKeyValueListPreview() {
-    DsKeyValueListPreviewFrame { DsKeyValueList(items = previewReceiptFields()) }
+    DsPreviewSurface { DsKeyValueList(items = previewReceiptFields()) }
 }
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsKeyValueListSingleRowPreview() {
-    DsKeyValueListPreviewFrame {
+    DsPreviewSurface {
         DsKeyValueList(items = listOf(DsKeyValue(label = "Nº da compra", value = "7F3K-9Q2L")))
     }
 }
@@ -135,7 +128,7 @@ private fun DsKeyValueListSingleRowPreview() {
 @Preview(name = "Font 2x", fontScale = 2f)
 @Composable
 private fun DsKeyValueListLargeFontPreview() {
-    DsKeyValueListPreviewFrame { DsKeyValueList(items = previewReceiptFields()) }
+    DsPreviewSurface { DsKeyValueList(items = previewReceiptFields()) }
 }
 
 private fun previewReceiptFields(): List<DsKeyValue> =
@@ -146,12 +139,3 @@ private fun previewReceiptFields(): List<DsKeyValue> =
         DsKeyValue(label = "Total", value = "R$ 100,00", spokenValue = "100 reais"),
         DsKeyValue(label = "Data/hora da compra", value = "17/10/2026 às 14:32"),
     )
-
-@Composable
-private fun DsKeyValueListPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Column(modifier = Modifier.padding(16.dp)) { content() }
-        }
-    }
-}

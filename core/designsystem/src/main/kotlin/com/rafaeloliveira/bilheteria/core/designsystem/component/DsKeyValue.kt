@@ -23,7 +23,8 @@ import androidx.compose.runtime.Immutable
  * @property label name of the field, already localized (e.g. "Nº da compra").
  * @property value value of the field, already formatted (e.g. "7F3K-9Q2L").
  * @property spokenValue text TalkBack reads instead of [value] when the visible text is abbreviated or
- * formatted for the eye (e.g. "100 reais" for "R$ 100,00"); null reads [value].
+ * formatted for the eye (e.g. "100 reais" for "R$ 100,00"); the row is then read as "label, spokenValue".
+ * Null reads the visible label and [value].
  */
 @Immutable
 data class DsKeyValue(

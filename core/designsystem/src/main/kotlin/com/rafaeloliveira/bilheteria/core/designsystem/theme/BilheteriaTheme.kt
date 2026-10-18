@@ -25,4 +25,16 @@ object BilheteriaTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalExtendedColors.current
+
+    /** Spacing scale (`spacing.*` tokens). */
+    val spacing: Spacing
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalSpacing.current
+
+    /** Fixed sizes (`size.*` tokens). */
+    val sizes: Sizes
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalSizes.current
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -184,6 +185,63 @@ class ThemeTokensTest {
             val outline = shape.createOutline(Size(SHAPE_BOX, SHAPE_BOX), LayoutDirection.Ltr, Density(1f))
             val corner = (outline as Outline.Rounded).roundRect.topLeftCornerRadius.x
             assertEquals(radius.jsonPrimitive.double.toFloat(), corner, 0f, "$name radius")
+        }
+    }
+
+    @Test
+    fun `dado tokens de espacamento quando comparar com Spacing entao todos os valores batem`() {
+        val spacing = bilheteriaSpacing()
+        val actual =
+            mapOf(
+                "none" to spacing.none,
+                "xxs" to spacing.xxs,
+                "xs" to spacing.xs,
+                "sm" to spacing.sm,
+                "md" to spacing.md,
+                "lg" to spacing.lg,
+                "xl" to spacing.xl,
+                "xxl" to spacing.xxl,
+                "xxxl" to spacing.xxxl,
+            )
+
+        assertDimensionsMatchTokens(group = "spacing", actual = actual)
+    }
+
+    @Test
+    fun `dado tokens de tamanho quando comparar com Sizes entao todos os valores batem`() {
+        val sizes = bilheteriaSizes()
+        val actual =
+            mapOf(
+                "touchTargetMin" to sizes.touchTargetMin,
+                "iconSmall" to sizes.iconSmall,
+                "iconMedium" to sizes.iconMedium,
+                "iconLarge" to sizes.iconLarge,
+                "contentMaxWidth" to sizes.contentMaxWidth,
+            )
+
+        assertDimensionsMatchTokens(group = "size", actual = actual)
+    }
+
+    private fun assertDimensionsMatchTokens(
+        group: String,
+        actual: Map<String, Dp>,
+    ) {
+        val tokens =
+            loadTokens("base.tokens.json")
+                .getValue(group)
+                .jsonObject
+                .filterKeys { !it.startsWith("$") }
+        assertEquals(tokens.keys, actual.keys, "$group tokens without a theme value, or the other way around")
+        actual.forEach { (name, dp) ->
+            val value =
+                tokens
+                    .getValue(name)
+                    .jsonObject
+                    .getValue("\$value")
+                    .jsonObject
+                    .getValue("value")
+                    .jsonPrimitive.double
+            assertEquals(value, dp.value.toDouble(), FLOAT_DELTA, "$group.$name")
         }
     }
 

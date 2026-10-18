@@ -34,7 +34,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
@@ -60,16 +59,10 @@ private const val SHORT_TEXT_LINE_FRACTION = 0.4f
 private const val CARD_TITLE_FRACTION = 0.5f
 private const val CARD_BODY_FRACTION = 0.9f
 private const val CARD_LAST_LINE_FRACTION = 0.7f
-private val RowPadding = 16.dp
-private val RowGap = 16.dp
-private val LeadingSize = 40.dp
 private val TrailingWidth = 64.dp
 private val TrailingHeight = 20.dp
 private val LineHeight = 16.dp
 private val ShortLineHeight = 12.dp
-private val LineGap = 8.dp
-private val CardPadding = 16.dp
-private val CardGap = 12.dp
 
 /**
  * Placeholder shown while content loads, with the same geometry as the content to avoid layout shift.
@@ -125,13 +118,14 @@ private fun rememberPulseAlpha(): State<Float> {
 
 @Composable
 private fun SkeletonRow() {
+    val spacing = BilheteriaTheme.spacing
     Row(
-        modifier = Modifier.fillMaxWidth().padding(RowPadding),
-        horizontalArrangement = Arrangement.spacedBy(RowGap),
+        modifier = Modifier.fillMaxWidth().padding(spacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(spacing.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SkeletonShape(shape = CircleShape, modifier = Modifier.size(LeadingSize))
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(LineGap)) {
+        SkeletonShape(shape = CircleShape, modifier = Modifier.size(BilheteriaTheme.sizes.iconLarge))
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
             SkeletonShape(modifier = Modifier.fillMaxWidth(TEXT_LINE_FRACTION).height(LineHeight))
             SkeletonShape(modifier = Modifier.fillMaxWidth(SHORT_TEXT_LINE_FRACTION).height(ShortLineHeight))
         }
@@ -141,14 +135,15 @@ private fun SkeletonRow() {
 
 @Composable
 private fun SkeletonCard() {
+    val spacing = BilheteriaTheme.spacing
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(CardPadding)
+                .padding(spacing.lg)
                 .background(MaterialTheme.colorScheme.surfaceContainerLow, MaterialTheme.shapes.medium)
-                .padding(CardPadding),
-        verticalArrangement = Arrangement.spacedBy(CardGap),
+                .padding(spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(spacing.md),
     ) {
         SkeletonShape(modifier = Modifier.fillMaxWidth(CARD_TITLE_FRACTION).height(LineHeight))
         SkeletonShape(modifier = Modifier.fillMaxWidth(CARD_BODY_FRACTION).height(ShortLineHeight))
@@ -169,7 +164,7 @@ private fun SkeletonShape(
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsLoadingSkeletonListPreview() {
-    DsLoadingSkeletonPreviewFrame {
+    DsPreviewSurface(modifier = Modifier.width(PREVIEW_WIDTH), padded = false) {
         DsLoadingSkeleton(contentDescription = "Carregando eventos", rows = 4)
     }
 }
@@ -178,16 +173,9 @@ private fun DsLoadingSkeletonListPreview() {
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DsLoadingSkeletonCardPreview() {
-    DsLoadingSkeletonPreviewFrame {
+    DsPreviewSurface(modifier = Modifier.width(PREVIEW_WIDTH), padded = false) {
         DsLoadingSkeleton(contentDescription = "Carregando compra", variant = DsLoadingSkeletonVariant.Card)
     }
 }
 
-@Composable
-private fun DsLoadingSkeletonPreviewFrame(content: @Composable () -> Unit) {
-    BilheteriaTheme {
-        Surface(color = MaterialTheme.colorScheme.surface) {
-            Box(modifier = Modifier.width(360.dp)) { content() }
-        }
-    }
-}
+private val PREVIEW_WIDTH = 360.dp

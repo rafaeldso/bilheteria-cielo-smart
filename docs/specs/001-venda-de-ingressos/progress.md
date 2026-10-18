@@ -7,8 +7,8 @@
 **Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.1.0 (Aprovada) · **UI Spec:** v0.4.1 (Aprovada) · **Branch:** `main` (pushed)
 
 ## Estado atual
-- **Última etapa concluída:** lote B: T09 (commit becfc11) e T10 integradas; T11 integrada, aguardando aprovação do desvio de API (ver bloqueios)
-- **Próxima etapa:** aprovar ajuste da ficha §5 da UI Spec → marcar T11 e commitar T10+T11; depois lote C (T12–T14)
+- **Última etapa concluída:** lote B (T09–T11) commitado (becfc11, 2a9c68c); `review-changes` 2 rodadas, correções e F1 commitados
+- **Próxima etapa:** lote C (T12–T14)
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
 - **Último sensor:** `verify.sh full` → verde em 2026-10-18
@@ -25,6 +25,8 @@
 | 2026-10-18 | Teto de 10 (BR-07) ligado ao `StartPurchase` na integração | T05 e T06 rodaram em paralelo sem dependência | Não |
 
 ## Bloqueios e perguntas abertas
+- [x] F1 (Importante, compose-ui-reviewer): `DsTopAppBar` com `maxLines = 1` + elipse corta "Histórico de compras" em 200% (compose-ui.md:239). Opções: barra própria que cresce com a fonte ou `expandedHeight` dinâmico.
+- [ ] Sugestões abertas da revisão: remover `DsIcons.Lock` (sem uso); registrar `DsStatusMessage` em docs/design/components.md; confirmar ícones do `DsStatusBadge` (Error=Block, Neutral=Cancel) com a prancha; papel RadioButton do chip só verificável no dispositivo.
 - [x] T11: API do `DsQuantityStepper` aprovada (UI Spec 0.4.1)
 - [ ] Tokens sem `background`/`surfaceTint`/`surfaceDim`/`surfaceBright` (derivados em `Color.kt`); detekt não reconhece `@PreviewLightDark` (`config/`).
 - [ ] Conferir na fonte (texto literal) as URIs e JSONs do deep link antes do `plan.md` (ressalva do spike).
@@ -37,3 +39,4 @@
 | 2026-10-17 | Claude Code + `general-purpose` (sonnet) | Spike Cielo → research.md |
 | 2026-10-17 | Claude Code (sessão principal) | Spec 0.1.0 → 1.0.0 com 12 perguntas respondidas pelo humano |
 | 2026-10-18 | Claude Code + 3× `android-implementer` | Lote B (T09 → T10 ∥ T11), sensores fast verdes |
+| 2026-10-18 | Claude Code + revisores (arch, compose, test) + `android-implementer` | review-changes: rodada 1 com 15 achados Importantes → correções (DsIcons, DsStatusMessage, Spacing/Sizes, tabular, a11y); rodada 2: arch e test aprovados, compose com F1 pendente |

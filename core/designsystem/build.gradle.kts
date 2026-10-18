@@ -25,3 +25,10 @@ android {
 dependencies {
     testImplementation(libs.kotlinx.serialization.json) // reads docs/design/tokens in ThemeTokensTest
 }
+
+// ThemeTokensTest reads docs/design/tokens: editing a token file must invalidate the cached test result.
+tasks.withType<Test>().configureEach {
+    inputs
+        .dir(rootProject.layout.projectDirectory.dir("docs/design/tokens"))
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
