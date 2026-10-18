@@ -1,0 +1,16 @@
+{
+  "id": "6b1f7a2e-0000-4000-8000-00000000a002",
+  "status": "PAID",
+  "reference": "0b8f2d1c-1111-4222-8333-444455556666",
+  "price": 10000,
+  "paidAmount": 0,
+  "payments": [
+    {
+      "amount": 10000,
+      "authCode": "123456",
+      "cieloCode": "987654",
+      "brand": "",
+      "paymentFields": { "statusCode": 1 }
+    }
+  ]
+}

@@ -56,7 +56,7 @@
 - [x] **T13** [P] Catálogo: `assets/events.json` (7+ eventos fictícios de nov/2026 a mar/2027, 3+ meses, um esgotável),
   DTO, mapper, `DefaultEventCatalogRepository` + testes · BR-01, BR-04 · AC-01, AC-03 · **Pronto quando:** JSON inválido →
   `CatalogUnavailable`; mapper testado
-- [ ] **T14** [P] `CieloRequestEncoder` e `CieloResponseParser` + testes com fixtures da doc da Cielo (sucesso, erro `code` 1–4,
+- [x] **T14** [P] `CieloRequestEncoder` e `CieloResponseParser` + testes com fixtures da doc da Cielo (sucesso, erro `code` 1–4,
   desconhecido, ilegível, listagem com `reference`, campos sensíveis ignorados, limite de tamanho) · BR-09, BR-11–14, BR-25 ·
   AC-07, AC-09–AC-15 · **Pronto quando:** URI igual ao research §12; `bin`/`mask`/`document` nunca chegam ao modelo
 - [ ] **T15** `CieloDeepLinkGateway` (intent explícita com allowlist de pacote), `CieloCallbackActivity`, `PaymentForegroundService`,

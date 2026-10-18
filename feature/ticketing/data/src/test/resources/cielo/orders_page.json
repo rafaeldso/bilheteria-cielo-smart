@@ -1,0 +1,68 @@
+{
+  "currentPage": 3,
+  "pageSize": 5,
+  "totalItems": 12,
+  "totalPages": 3,
+  "results": [
+    {
+      "id": "6b1f7a2e-0000-4000-8000-00000000b001",
+      "status": "ENTERED",
+      "type": "PAYMENT",
+      "reference": "0b8f2d1c-1111-4222-8333-444455556666",
+      "price": 10000,
+      "paidAmount": 0,
+      "payments": [
+        {
+          "amount": 10000,
+          "authCode": "123456",
+          "cieloCode": "987654",
+          "brand": "mock_brand",
+          "mask": "411111******1111",
+          "paymentFields": { "statusCode": "1", "bin": "411111", "document": "11222333000181" }
+        }
+      ]
+    },
+    {
+      "id": "6b1f7a2e-0000-4000-8000-00000000b002",
+      "status": "ENTERED",
+      "type": "PAYMENT",
+      "reference": "aaaa2d1c-1111-4222-8333-444455556666",
+      "price": 5000,
+      "paidAmount": 0,
+      "payments": []
+    },
+    {
+      "id": "6b1f7a2e-0000-4000-8000-00000000b003",
+      "status": "ENTERED",
+      "type": "PAYMENT",
+      "price": 7000,
+      "paidAmount": 0,
+      "payments": [
+        {
+          "amount": 7000,
+          "authCode": "555555",
+          "cieloCode": "444444",
+          "brand": "mock_brand",
+          "paymentFields": { "statusCode": "1" }
+        }
+      ]
+    },
+    {
+      "id": "6b1f7a2e-0000-4000-8000-00000000b004",
+      "status": "ENTERED",
+      "type": "PAYMENT",
+      "reference": "bbbb2d1c-1111-4222-8333-444455556666",
+      "price": 3000,
+      "paidAmount": 0,
+      "payments": [
+        {
+          "amount": 3000,
+          "authCode": "777777",
+          "cieloCode": "666666",
+          "brand": "mock_brand",
+          "paymentFields": { "statusCode": "2" }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "currentPage": 1,
+  "totalPages": 1,
+  "results": [
+    {
+      "id": "6b1f7a2e-0000-4000-8000-00000000c001",
+      "reference": "0b8f2d1c-1111-4222-8333-444455556666",
+      "payments": [
+        { "amount": 10000, "brand": "mock_brand", "paymentFields": { "statusCode": "1" } }
+      ]
+    }
+  ]
+}
