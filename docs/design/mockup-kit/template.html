@@ -102,6 +102,32 @@
 .t-display-small { font: 400 calc(36px * var(--fs))/calc(44px * var(--fs)) var(--font-brand); }
 .month-header { position: sticky; top: 0; z-index: 1; background: var(--md-surface); }
 
+
+/* ===== Adicionados pela spec 002 (aprovados em 2026-10-19) =====
+   DsQrCode (.qr) com tokens qr.* fixos nos dois temas; cartão de ingresso (.ticket, composição local); barra de ações
+   fixa (.sticky-actions); ação do snackbar; botão ocupado (.btn.busy); utilitários de skeleton em escala de 4dp. */
+.app { --md-qr-foreground: #000000; --md-qr-background: #FFFFFF; }
+.ticket { margin: 0 16px 12px; padding: 16px; border-radius: var(--md-shape-large); background: var(--md-surface-container-low);
+  display: grid; gap: 12px; justify-items: center; }
+.ticket > h4 { justify-self: start; margin: 0; }
+.ticket-sub { text-align: center; }
+.qr { width: 200px; height: 200px; border-radius: var(--md-shape-small); background: var(--md-qr-background); overflow: hidden; }
+.sticky-actions { position: sticky; bottom: 0; z-index: 2; display: grid; gap: 8px; padding: 12px 16px;
+  background: var(--md-surface); border-top: 1px solid var(--md-outline-variant); }
+.sticky-actions .snackbar { position: absolute; left: 12px; right: 12px; bottom: calc(100% + 8px); z-index: 3; }
+.app.fs-large .sticky-actions { position: static; }
+.app.fs-large .sticky-actions .snackbar { position: static; }
+.snackbar > span:first-child { flex: 1; }
+.snack-action { background: transparent; border: 0; color: var(--md-inverse-primary); min-height: 48px; padding: 0 8px; cursor: pointer; border-radius: var(--md-shape-extra-small); }
+.btn.busy { cursor: default; }
+.spin { animation: ds-spin 1s linear infinite; }
+@keyframes ds-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+.sk-h16 { height: 16px; } .sk-h20 { height: 20px; }
+.sk-w40 { width: 40%; } .sk-w55 { width: 55%; } .sk-w70 { width: 70%; }
+.sk-qr { width: 200px; height: 200px; }
+.sk-start { justify-self: start; }
+
 /* ===== Página ===== */
 html { background: var(--bg); }
 body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-ui); }
@@ -513,7 +539,7 @@ try {
   prefs.scheme = dark ? "dark" : "light";
 } catch (e) { /* mantém claro */ }
 
-function applyAppPrefs(el) { el.dataset.scheme = prefs.scheme; el.style.setProperty("--fs", prefs.fs); }
+function applyAppPrefs(el) { el.dataset.scheme = prefs.scheme; el.style.setProperty("--fs", prefs.fs); el.classList.toggle("fs-large", Number(prefs.fs) >= 1.5); }
 function frame(inner) { return statusBar() + `<div class="body">${inner}</div><div class="gesture" aria-hidden="true"></div>`; }
 
 function renderMeta() {
