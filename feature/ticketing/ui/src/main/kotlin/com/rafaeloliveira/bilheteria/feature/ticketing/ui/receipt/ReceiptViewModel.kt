@@ -67,10 +67,10 @@ internal class ReceiptViewModel
                 .flatMapLatest { load() }
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), ReceiptUiState.Loading)
 
-        /** "Nova venda" changes no state: leaving the screen is navigation, executed by the Route. */
+        /** "Nova venda" and "Ver ingressos" change no state: leaving the screen is navigation, run by the Route. */
         fun onEvent(event: ReceiptUiEvent) {
             when (event) {
-                ReceiptUiEvent.OnNewSale -> Unit
+                ReceiptUiEvent.OnNewSale, ReceiptUiEvent.OnOpenTickets -> Unit
 
                 // Read from the state the operator is looking at (the Error button is only shown in it).
                 ReceiptUiEvent.OnRetry -> if (uiState.value == ReceiptUiState.Error) attempt.update { it + 1 }

@@ -74,3 +74,6 @@ internal data class ReceiptTransaction(
     val authCode: String,
     val nsu: String,
 )
+
+/** Only an approved purchase offers its tickets (BR-34, AC-33); declined, cancelled, loading and error do not. */
+internal fun ReceiptUiState.offersTickets(): Boolean = this is ReceiptUiState.Approved

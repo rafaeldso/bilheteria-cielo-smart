@@ -94,6 +94,12 @@ private fun ReceiptScreenApprovedPreview() {
 }
 
 @Preview(name = "Light", showBackground = true, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
+@Composable
+private fun ReceiptScreenApprovedFromHistoryPreview() {
+    ReceiptPreview(uiState = ReceiptUiState.Approved(PreviewApproved), origin = ReceiptOrigin.History)
+}
+
+@Preview(name = "Light", showBackground = true, widthDp = PREVIEW_WIDTH_DP, heightDp = PREVIEW_HEIGHT_DP)
 @Preview(
     name = "Dark",
     uiMode = UI_MODE_NIGHT_YES,

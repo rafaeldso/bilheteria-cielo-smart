@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2026 Rafael Oliveira
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<resources>
+    <!-- SCR-05 Ingressos (spec 002, ui-spec 4.4) -->
+    <string name="ticketing_tickets_title">Ingressos</string>
+    <string name="ticketing_tickets_back">Voltar ao comprovante</string>
+    <plurals name="ticketing_tickets_count">
+        <item quantity="one">%d ingresso</item>
+        <item quantity="other">%d ingressos</item>
+    </plurals>
+
+    <string name="ticketing_tickets_event_lines">%1$s\n%2$s</string>
+    <string name="ticketing_tickets_item_title">Ingresso %1$d de %2$d</string>
+    <string name="ticketing_tickets_qr_description">QR Code do ingresso %1$d de %2$d, %3$s</string>
+
+    <string name="ticketing_tickets_print">Imprimir ingressos</string>
+    <string name="ticketing_tickets_printing">Imprimindo…</string>
+    <string name="ticketing_tickets_printing_a11y">Imprimindo os ingressos</string>
+    <string name="ticketing_tickets_share">Compartilhar ingressos</string>
+    <string name="ticketing_tickets_action_retry">Tentar novamente</string>
+    <string name="ticketing_tickets_printed">Ingressos impressos</string>
+
+    <string name="ticketing_tickets_print_error_terminal">Impressão Cielo indisponível neste aparelho. Nenhum ingresso foi impresso.</string>
+    <string name="ticketing_tickets_print_error_paper">A impressora está sem papel. Coloque papel e tente de novo.</string>
+    <string name="ticketing_tickets_print_error_printer">A impressora não concluiu a impressão. Confira o papel.</string>
+    <string name="ticketing_tickets_print_error_unknown">Não foi possível imprimir os ingressos.</string>
+    <string name="ticketing_tickets_print_error_timeout">A impressora não respondeu. Confira o terminal.</string>
+    <plurals name="ticketing_tickets_print_progress">
+        <item quantity="one">Imprimiu %1$d de %2$d ingresso.</item>
+        <item quantity="other">Imprimiu %1$d de %2$d ingressos.</item>
+    </plurals>
+    <string name="ticketing_tickets_print_failed_format">%1$s %2$s</string>
+    <string name="ticketing_tickets_share_error">Não foi possível compartilhar os ingressos.</string>
+
+    <!-- Texto enviado ao menu de compartilhamento: só evento, data absoluta e local (BR-31, BR-41). -->
+    <string name="ticketing_tickets_share_text">Ingresso %1$d de %2$d · %3$s · %4$s · %5$s</string>
+    <string name="ticketing_tickets_share_datetime">%1$s às %2$s</string>
+    <string name="ticketing_tickets_share_chooser">Compartilhar ingressos</string>
+
+    <string name="ticketing_tickets_loading">Carregando ingressos</string>
+    <string name="ticketing_tickets_error_title">Não foi possível abrir os ingressos</string>
+    <string name="ticketing_tickets_error_body">Os dados desta compra não puderam ser lidos ou os QR Codes não puderam ser gerados.</string>
+    <string name="ticketing_tickets_retry">Tentar novamente</string>
+
+    <!-- SCR-03 (UI Spec 001 0.5.0) -->
+    <string name="ticketing_receipt_view_tickets">Ver ingressos</string>
+</resources>

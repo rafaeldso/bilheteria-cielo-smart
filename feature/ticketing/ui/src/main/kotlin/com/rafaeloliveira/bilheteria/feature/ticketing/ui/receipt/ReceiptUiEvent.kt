@@ -20,6 +20,9 @@ internal sealed interface ReceiptUiEvent {
     /** "Nova venda": back to the event list. The navigation itself belongs to the Route. */
     data object OnNewSale : ReceiptUiEvent
 
+    /** "Ver ingressos" (only when approved): opens SCR-05 (spec 002, BR-34). The navigation belongs to the Route. */
+    data object OnOpenTickets : ReceiptUiEvent
+
     /** "Tentar novamente" after an error: reads the record again (BR-28, AC-27). */
     data object OnRetry : ReceiptUiEvent
 }

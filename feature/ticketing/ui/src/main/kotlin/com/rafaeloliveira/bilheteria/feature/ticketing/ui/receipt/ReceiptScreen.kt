@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.AnnotatedString
 import com.rafaeloliveira.bilheteria.core.designsystem.component.DsButton
+import com.rafaeloliveira.bilheteria.core.designsystem.component.DsButtonVariant
 import com.rafaeloliveira.bilheteria.core.designsystem.component.DsErrorState
 import com.rafaeloliveira.bilheteria.core.designsystem.component.DsIconButton
 import com.rafaeloliveira.bilheteria.core.designsystem.component.DsKeyValueList
@@ -50,7 +51,9 @@ import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
 import com.rafaeloliveira.bilheteria.core.designsystem.theme.tabular
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.R
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.ActionBar
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.SaleResult
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.common.actionsScrollWithContent
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.format.spokenMoney
 import java.time.ZoneId
 
@@ -62,6 +65,8 @@ import java.time.ZoneId
  * Dates are absolute and in pt-BR, in [zoneId] (the receipt can be reopened days later). The screen never reads the
  * clock: the Route decides the zone.
  *
+ * @param announceResult false after the result was already announced (coming back from the tickets screen must not
+ * read it again).
  * @param origin sale shows "Nova venda" and announces the result; history shows the back arrow ([onNavigateUp]) and
  * stays silent, because the operator opened the receipt on purpose.
  * @param zoneId zone used to show the instants.
@@ -77,18 +82,26 @@ internal fun ReceiptScreen(
     onEvent: (ReceiptUiEvent) -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    announceResult: Boolean = true,
 ) {
+    val actionsInline = actionsScrollWithContent()
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = { ReceiptTopBar(origin = origin, uiState = uiState, onNavigateUp = onNavigateUp) },
+        bottomBar = {
+            // Approved: the way out is a fixed bar (UI Spec 001 0.5.0), unless the font is so large that it scrolls.
+            if (uiState.offersTickets() && !actionsInline) {
+                ApprovedActionBar(fromSale = origin == ReceiptOrigin.Sale, onEvent = onEvent)
+            }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()),
             contentAlignment = Alignment.TopCenter,
         ) {
             Column(modifier = Modifier.widthIn(max = BilheteriaTheme.sizes.contentMaxWidth)) {
-                ReceiptBody(uiState = uiState, origin = origin, onEvent = onEvent, zoneId = zoneId)
+                ReceiptBody(uiState, origin, onEvent, zoneId, actionsInline, announceResult)
             }
         }
     }
@@ -125,6 +138,8 @@ private fun ReceiptBody(
     origin: ReceiptOrigin,
     onEvent: (ReceiptUiEvent) -> Unit,
     zoneId: ZoneId,
+    actionsInline: Boolean,
+    announceResult: Boolean,
 ) {
     val fromSale = origin == ReceiptOrigin.Sale
     val onNewSaleClick = { onEvent(ReceiptUiEvent.OnNewSale) }
@@ -147,15 +162,16 @@ private fun ReceiptBody(
         }
 
         is ReceiptUiState.Approved -> {
-            ReceiptContent(SaleResult.Approved, uiState.receipt, zoneId, fromSale, onNewSaleClick)
+            ReceiptContent(SaleResult.Approved, uiState.receipt, zoneId, fromSale, announceResult, onNewSaleClick)
+            if (actionsInline) ApprovedActions(fromSale = fromSale, onEvent = onEvent)
         }
 
         is ReceiptUiState.Declined -> {
-            ReceiptContent(SaleResult.Declined, uiState.receipt, zoneId, fromSale, onNewSaleClick)
+            ReceiptContent(SaleResult.Declined, uiState.receipt, zoneId, fromSale, announceResult, onNewSaleClick)
         }
 
         is ReceiptUiState.Cancelled -> {
-            ReceiptContent(SaleResult.Cancelled, uiState.receipt, zoneId, fromSale, onNewSaleClick)
+            ReceiptContent(SaleResult.Cancelled, uiState.receipt, zoneId, fromSale, announceResult, onNewSaleClick)
         }
     }
 }
@@ -170,6 +186,7 @@ private fun ReceiptContent(
     receipt: ReceiptData,
     zoneId: ZoneId,
     fromSale: Boolean,
+    announceResult: Boolean,
     onNewSaleClick: () -> Unit,
 ) {
     val rows = remember(receipt, outcome, zoneId) { receipt.toRows(outcome, zoneId) }
@@ -178,9 +195,10 @@ private fun ReceiptContent(
         modifier = Modifier.fillMaxWidth().padding(BilheteriaTheme.spacing.lg),
         verticalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.lg),
     ) {
-        ReceiptResult(outcome = outcome, total = total, announce = fromSale)
+        ReceiptResult(outcome = outcome, total = total, announce = fromSale && announceResult)
         DsKeyValueList(items = rememberKeyValues(rows))
-        if (fromSale) {
+        // Approved has its own actions ("Ver ingressos" first); the other results keep "Nova venda" as the main one.
+        if (fromSale && outcome != SaleResult.Approved) {
             DsButton(
                 text = stringResource(R.string.ticketing_receipt_new_sale),
                 onClick = onNewSaleClick,
@@ -188,6 +206,49 @@ private fun ReceiptContent(
                 leadingIcon = DsIcons.AddShoppingCart,
             )
         }
+    }
+}
+
+/** Fixed bar of the approved receipt: "Ver ingressos" is the main action, "Nova venda" (only after a sale) is tonal. */
+@Composable
+private fun ApprovedActionBar(
+    fromSale: Boolean,
+    onEvent: (ReceiptUiEvent) -> Unit,
+) {
+    ActionBar { ApprovedButtons(fromSale = fromSale, onEvent = onEvent) }
+}
+
+/** The same actions at the end of the scrolling content, for large fonts. */
+@Composable
+private fun ApprovedActions(
+    fromSale: Boolean,
+    onEvent: (ReceiptUiEvent) -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(BilheteriaTheme.spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.sm),
+    ) { ApprovedButtons(fromSale = fromSale, onEvent = onEvent) }
+}
+
+@Composable
+private fun ApprovedButtons(
+    fromSale: Boolean,
+    onEvent: (ReceiptUiEvent) -> Unit,
+) {
+    DsButton(
+        text = stringResource(R.string.ticketing_receipt_view_tickets),
+        onClick = { onEvent(ReceiptUiEvent.OnOpenTickets) },
+        fillMaxWidth = true,
+        leadingIcon = DsIcons.ConfirmationNumber,
+    )
+    if (fromSale) {
+        DsButton(
+            text = stringResource(R.string.ticketing_receipt_new_sale),
+            onClick = { onEvent(ReceiptUiEvent.OnNewSale) },
+            fillMaxWidth = true,
+            variant = DsButtonVariant.Tonal,
+            leadingIcon = DsIcons.AddShoppingCart,
+        )
     }
 }
 
