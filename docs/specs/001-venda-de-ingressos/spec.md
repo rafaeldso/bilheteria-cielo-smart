@@ -7,7 +7,7 @@
 | **Versão** | 1.3.0 |
 | **Módulo** | `feature/ticketing` (provisório; o `plan.md` confirma a divisão de módulos) |
 | **Autor** | Rafael Oliveira (com Claude Code) |
-| **Links** | [case_android.md](../../../case_android.md) · [research.md](research.md) · Design ([ui-spec.md](ui-spec.md) v0.4.2 aprovada · [prancha](design/mockups.html)) |
+| **Links** | [case_android.md](../../../case_android.md) · [research.md](research.md) · Design ([ui-spec.md](ui-spec.md) v0.4.4 aprovada · [prancha](design/mockups.html)) |
 
 > Esta spec descreve **o quê** e **por quê**. Detalhes de implementação ficam no `plan.md`.
 > Fonte dos requisitos: o case (RF-1…RF-5, RNFs), a documentação oficial da Cielo Smart resumida no
@@ -324,8 +324,10 @@ Quando a tela da compra é exibida e a consulta à Cielo ou a leitura da compra 
 Então é exibido erro com "Tentar novamente"
 E tentar novamente repete a consulta sem abrir novo pagamento
 ```
-> Nota (2026-10-18, T25): o erro aparece na tela da compra, para onde o app leva o operador ao reabrir com compra em
-> andamento; a lista de eventos não mostra esse erro. Em nenhum caso há nova cobrança.
+> Nota (2026-10-18, T25): o erro aparece na tela da compra. O app leva o operador a ela ao reabrir com compra em
+> andamento legível; se a compra aberta não puder ser lida, o app abre na lista de eventos (sem o `eventId` não há
+> para onde ir) e o erro aparece quando o operador abre a compra. A lista não mostra esse erro. Em nenhum caso há
+> nova cobrança.
 
 ### AC-26 — Evento indisponível na compra (BR-27)
 ```gherkin
@@ -455,7 +457,7 @@ E uma compra em andamento, se houver, não é alterada
 | Q11 | Decrementar disponibilidade após aprovação? | **Sim**: catálogo − aprovadas, por aparelho (limitação vai para os trade-offs do README) | Respondida |
 | Q12 | Credenciais Cielo | Fictícias no emulador; se recusadas, cadastro no Portal Cielo | Respondida |
 | Q13 | Como achar eventos de um mês sem rolar a lista toda? | Filtro por mês (chips) + lista agrupada com cabeçalho por mês (A+B). O catálogo JSON passa a cobrir 3–4 meses | Respondida |
-| Q14 | O operador deve ser avisado quando uma compra Falhou for aprovada depois (BR-29)? | Por ora **não**: a venda aparece no histórico como Aprovada. O risco é cobrar de novo o comprador se o operador já tentou pagar outra vez; avaliar aviso e estorno em spec futura | Aberta |
+| Q14 | O operador deve ser avisado quando uma compra Falhou for aprovada depois (BR-29)? | Por ora **não**: a venda aparece no histórico como Aprovada. O risco é cobrar de novo o comprador se o operador já tentou pagar outra vez; avaliar aviso e estorno em spec futura | Respondida (2026-10-18): aceito sem aviso e sem prazo máximo; reavaliar aviso, prazo e estorno em spec futura |
 
 ## 11. Definition of Ready
 - [x] Problema, objetivo e métricas definidos
@@ -464,7 +466,7 @@ E uma compra em andamento, se houver, não é alterada
 - [x] Todos os estados de UI e eventos estão mapeados
 - [x] Dados classificados (PII / cartão)
 - [x] Nenhum `[PRECISA ESCLARECIMENTO]` aberto
-- [x] Design disponível (quando houver UI): `ui-spec.md` v0.4.2 aprovada em 2026-10-18
+- [x] Design disponível (quando houver UI): `ui-spec.md` v0.4.4 aprovada em 2026-10-18
 
 ## 12. Changelog
 | Versão | Data | Autor | Mudança |
@@ -477,3 +479,4 @@ E uma compra em andamento, se houver, não é alterada
 | 1.2.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Estados presos achados na revisão do lote D: BR-26/AC-25 (consulta que falha → erro com retry da consulta), BR-27/AC-26 (`PurchaseUiState.Unavailable`), BR-28/AC-27 (`ReceiptUiState.Error`). Decisão humana na revisão |
 | 1.2.0 | 2026-10-18 | Rafael Oliveira | Aprovada (BR-26..28, AC-25..27) |
 | 1.3.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da T25 no emulador, recomendações aprovadas pelo humano: BR-29/AC-28 (pagamento aprovado depois de "não encontrado" vira Aprovada); AC-25 ajustado (o erro aparece na tela da compra); fora do escopo: reabrir o app após venda concluída; Q14 aberta |
+| 1.3.0 | 2026-10-18 | Rafael Oliveira | Aprovada. Q14 respondida: aprovação tardia sem aviso ao operador e sem prazo máximo, risco de cobrança dupla aceito (aviso, prazo e estorno ficam para spec futura); nota do AC-25 corrigida (compra aberta ilegível abre na lista de eventos, sem cobrança) |

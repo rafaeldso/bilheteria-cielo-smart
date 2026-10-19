@@ -15,7 +15,7 @@ após aprovação.
 | `DsButton` | designsystem | `Button`, `FilledTonalButton`, `OutlinedButton`, `TextButton` | `.btn.filled/.tonal/.outlined` | Filled, Tonal, Outlined, Text; com ícone; carregando | 48dp; estado desabilitado/carregando anunciado | Planejado |
 | `DsIconButton` | designsystem | `IconButton` | `.icon-btn` | padrão, tonal | `contentDescription` obrigatório | Planejado |
 | `DsFilterChip` | designsystem | `FilterChip` | `.chip` | seleção única/múltipla | estado "selecionado"; 48dp | Planejado |
-| `DsListItem` | designsystem | `ListItem` | `.item` | 1, 2 ou 3 linhas; com avatar/ícone; com trailing | clicável inteiro com `mergeDescendants` | Planejado |
+| `DsListItem` | designsystem | `ListItem` | `.item` | 1, 2 ou 3 linhas; com avatar/ícone; com trailing; com `fontScale` ≥ 1,5× o trailing fica abaixo dos textos, alinhado ao início deles (decisão por escala, não por largura; UI Spec 0.4.4) | clicável inteiro com `mergeDescendants` | Planejado |
 | `DsSummaryCard` | designsystem | `Card` | `.summary` | — | lido como grupo único | Planejado |
 | `DsStatusBadge` | designsystem | — (custom sobre `Surface`) | `.status.ok/.warn/.bad` | sucesso, alerta, erro, neutro | cor + ícone + texto | Planejado |
 | `DsKeyValueList` | designsystem | `ListItem` | `.kv` | — | par chave/valor lido junto | Planejado |

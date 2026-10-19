@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Spec** | [spec.md](spec.md) (versão: 1.2.0) |
+| **Spec** | [spec.md](spec.md) (versão: 1.3.0) |
 | **Status** | Aprovada |
-| **Versão** | 0.4.3 |
+| **Versão** | 0.4.4 |
 | **Fidelidade** | Prancha hi-fi + protótipo (G) |
 | **Prancha** | [design/mockups.html](design/mockups.html) · revisão local: http://127.0.0.1:8766/specs/001-venda-de-ingressos/design/mockups.html (`python3 -m http.server 8766` em `docs/`) |
 | **Design system** | [DESIGN.md](../../design/DESIGN.md) v0.2.0 (direção A "Ciano Smart") · [components.md](../../design/components.md) |
@@ -448,4 +448,6 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | 0.4.1 | 2026-10-18 | Rafael Oliveira (com Claude Code) | `DsQuantityStepper`: API ganha `decrementDescription`/`incrementDescription` para rotular os botões −/+ no TalkBack (achado na T11) |
 | 0.4.2 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Spec 1.2.0: SCR-02 ganha `Loading`, `Unavailable` (BR-27), variante de `Error` da consulta que falhou (BR-26) e `Completed` como sinal de navegação com `popUpTo`; SCR-03 ganha `Loading` e `Error` (BR-28). Prancha não atualizada: os estados novos reutilizam `DsErrorState`/`DsLoadingSkeleton` |
 | 0.4.2 | 2026-10-18 | Rafael Oliveira | Aprovada (estados `Loading`/`Unavailable`/`Error` da SCR-02 e `Loading`/`Error` da SCR-03; prancha não alterada) |
-| 0.4.3 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da revisão do lote E (decisões aprovadas pelo humano; redação a confirmar no PR): seta "Voltar para eventos" no `Error` do comprovante vindo da venda; `DsErrorState.retryIcon` (seta no `Unavailable`); `DsStatusMessage` registrado (§5); chaves reais da §4.4 (`strings_common.xml`, histórico, cabeçalho da compra); cabeçalho do snapshot sem "disponíveis"; Data do evento absoluta no comprovante; dia da semana por extenso no TalkBack; ícones substitutos por falta em `DsIcons` (`Block`, `History`, `Sync`); live region do comprovante só vindo da venda; texto do `Error` segue a UI Spec ("Tentar de novo" nas SCR-01/04, "Tentar novamente" na SCR-03; o `spec.md` descreve a ação, o texto exato é desta UI Spec) |
+| 0.4.3 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da revisão do lote E (decisões aprovadas pelo humano): seta "Voltar para eventos" no `Error` do comprovante vindo da venda; `DsErrorState.retryIcon` (seta no `Unavailable`); `DsStatusMessage` registrado (§5); chaves reais da §4.4 (`strings_common.xml`, histórico, cabeçalho da compra); cabeçalho do snapshot sem "disponíveis"; Data do evento absoluta no comprovante; dia da semana por extenso no TalkBack; ícones substitutos por falta em `DsIcons` (`Block`, `History`, `Sync`); live region do comprovante só vindo da venda; texto do `Error` segue a UI Spec ("Tentar de novo" nas SCR-01/04, "Tentar novamente" na SCR-03; o `spec.md` descreve a ação, o texto exato é desta UI Spec) |
+| 0.4.3 | 2026-10-18 | Rafael Oliveira | Aprovada (itens da linha anterior, já implementados) |
+| 0.4.4 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da T25/T26, aprovados pelo humano: `DsListItem` empilha o trailing abaixo dos textos (alinhado ao início deles) com escala de fonte ≥ 1,5×, decisão por `fontScale` e não por largura (SCR-01 e SCR-04; a prancha mostra o trailing ao final no tamanho padrão); splash nativa (`core-splashscreen`) com fundo `surface` e ícone de ingresso sobre círculo `primary`, e ícone adaptativo do app (fora das telas SCR-xx) |

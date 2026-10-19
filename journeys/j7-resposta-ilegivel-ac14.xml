@@ -1,0 +1,20 @@
+<journey name="AC-14 - Resposta ilegível consulta a Cielo antes de cobrar de novo">
+  <description>
+    Mesmo pré-requisito da J1. Execução: skill android-cli (Journeys); lio-emulator 1.61.8 no AVD Android 10.
+    Limpe o pedido abandonado do emulador antes (am force-stop br.com.cielosmart.orderservice).
+  </description>
+  <actions>
+    <action>
+      Open the Bilheteria app, tap "Noite de Jazz no Parque" and tap "Pagar R$ 80,00 no terminal"
+    </action>
+    <action>
+      In the Cielo emulator, complete the payment so that the app receives a response it cannot read
+    </action>
+    <action>
+      Verify the screen "Compra" shows the payment being confirmed with Cielo and does not offer a button to pay again
+    </action>
+    <action>
+      Verify that, after the lookup finds no order for this purchase, the screen shows the "not found" error with a button to try again
+    </action>
+  </actions>
+</journey>

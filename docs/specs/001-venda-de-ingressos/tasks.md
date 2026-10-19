@@ -1,6 +1,6 @@
 # Tarefas: Venda de ingressos com pagamento Cielo Smart
 
-**Spec:** [spec.md](spec.md) (1.1.0) · **Plano:** [plan.md](plan.md) · **UI Spec:** [ui-spec.md](ui-spec.md) (0.4.0) · **ADR:** [0010](../../adr/0010-integracao-cielo-smart-por-deep-link.md)
+**Spec:** [spec.md](spec.md) (1.3.0) · **Plano:** [plan.md](plan.md) · **UI Spec:** [ui-spec.md](ui-spec.md) (0.4.4) · **ADR:** [0010](../../adr/0010-integracao-cielo-smart-por-deep-link.md)
 
 > Regras:
 > - Tarefas em ordem de execução. `[P]` = pode rodar em paralelo com as outras `[P]` **do mesmo lote**
@@ -91,11 +91,13 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 - [x] **T25** Journeys no AVD Android 10 com `lio-emulator` (skill `verify-on-device`): aprovado, cancelado, erro, app fechado durante
   o pagamento, filtro de mês; capturar o código real do botão "Error", a unidade de `unitPrice` e a ordenação do `orders`;
   ajustar e registrar no README · AC-07, AC-09, AC-10, AC-13, AC-15 · **Pronto quando:** Journeys verdes e achados documentados
-  > Fechada em 2026-10-18 (J1–J7; J8 coberta por teste). Adiados pelo humano: TalkBack e AVD API 30+. Pendente fora do emulador: ordenação do `orders` em terminal real (plan §11).
+  > Fechada em 2026-10-18 (J1–J7 e J9, arquivos em `journeys/`; J8 coberta por teste). Adiados pelo humano: TalkBack e AVD API 30+. Pendente fora do emulador: ordenação do `orders` em terminal real (plan §11).
 
 ## Fase 6 — Fechamento
+- [x] **T30** Extras da T25 aprovados pelo humano: splash nativa (`androidx.core:core-splashscreen` 1.2.0, temas `values`/`values-night`, cores, `Theme.Bilheteria.Starting`), ícone adaptativo do app e `DsListItem` com trailing empilhado em fonte ≥ 1,5× (achado D1) · UI Spec 0.4.4 · **Pronto quando:** AVD sem quadro claro no cold start escuro e SCR-01 legível a 200% (conferido na T25)
 - [x] **T29** Aprovação tardia (BR-29, AC-28): `PurchaseRepository.findById` (domain, `DefaultPurchaseRepository`, DAO e fake) e ramo no `HandlePaymentOutcomeUseCase` que aprova a compra `Failed`/`NotFound` com `reference` e valor iguais, sem tocar a compra aberta nem o gateway · **Pronto quando:** testes JVM do AC-28 (aprova; mantém compra aberta; valor diferente descartado; falha por outro motivo descartada; `reference` desconhecido descartado) e `verify.sh standard` verdes
-- [ ] **T26** `review-changes` (architecture, security, test, compose-ui) e correção dos bloqueantes
+- [x] **T26** `review-changes` (architecture, security, test, compose-ui) e correção dos bloqueantes
+  > Fechada em 2026-10-18: 1 rodada de 5 revisores, sem bloqueante de código; Importantes corrigidos ou aceitos pelo humano (ver `progress.md`). Rodada 2 dos revisores não executada por decisão do humano.
 - [ ] **T27** `consistency-check` + `scripts/harness/check-traceability.sh docs/specs/001-venda-de-ingressos`
 - [ ] **T28** `scripts/harness/verify.sh full` verde; spec → Implementada; changelog; seção da integração Cielo no README
 
@@ -129,7 +131,7 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 | AC-25 | T17 | `AC-25 - dado falha na consulta a Cielo quando tentar de novo entao repete a consulta sem abrir pagamento` |
 | AC-26 | T17, T21 | `AC-26 - dado catalogo ilegivel e sem compra aberta quando abrir a compra entao exibe indisponivel` |
 | AC-27 | T18, T22 | `AC-27 - dado registro ilegivel quando tentar de novo entao volta a carregar e repete a leitura` |
-| AC-28 | T29 | `AC-28 - dado compra falhou nao encontrada quando chega aprovado com mesmo reference e valor entao registra aprovada` |
+| AC-28 | T29 | `AC-28 - dado compra falhou nao encontrada e nenhuma aberta quando chega aprovado entao registra aprovada` |
 
 ## Ordem de execução e paralelismo
 | Etapa | Tarefas | Quem | Paralelo |
