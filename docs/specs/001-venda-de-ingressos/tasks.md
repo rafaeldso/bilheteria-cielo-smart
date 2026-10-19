@@ -1,6 +1,6 @@
 # Tarefas: Venda de ingressos com pagamento Cielo Smart
 
-**Spec:** [spec.md](spec.md) (1.1.0) · **Plano:** [plan.md](plan.md) · **UI Spec:** [ui-spec.md](ui-spec.md) (0.4.0) · **ADR:** [0010](../../adr/0010-integracao-cielo-smart-por-deep-link.md)
+**Spec:** [spec.md](spec.md) (1.3.0) · **Plano:** [plan.md](plan.md) · **UI Spec:** [ui-spec.md](ui-spec.md) (0.4.4) · **ADR:** [0010](../../adr/0010-integracao-cielo-smart-por-deep-link.md)
 
 > Regras:
 > - Tarefas em ordem de execução. `[P]` = pode rodar em paralelo com as outras `[P]` **do mesmo lote**
@@ -91,13 +91,16 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 - [x] **T25** Journeys no AVD Android 10 com `lio-emulator` (skill `verify-on-device`): aprovado, cancelado, erro, app fechado durante
   o pagamento, filtro de mês; capturar o código real do botão "Error", a unidade de `unitPrice` e a ordenação do `orders`;
   ajustar e registrar no README · AC-07, AC-09, AC-10, AC-13, AC-15 · **Pronto quando:** Journeys verdes e achados documentados
-  > Fechada em 2026-10-18 (J1–J7; J8 coberta por teste). Adiados pelo humano: TalkBack e AVD API 30+. Pendente fora do emulador: ordenação do `orders` em terminal real (plan §11).
+  > Fechada em 2026-10-18 (J1–J6 executadas no AVD; **J7 e J9 escritas em `journeys/` e ainda não executadas**, pendência registrada na T27; J8 coberta por teste). Adiados pelo humano: TalkBack e AVD API 30+. Pendente fora do emulador: ordenação do `orders` em terminal real (plan §11).
 
 ## Fase 6 — Fechamento
+- [x] **T30** Extras da T25 aprovados pelo humano: splash nativa (`androidx.core:core-splashscreen` 1.2.0, temas `values`/`values-night`, cores, `Theme.Bilheteria.Starting`), ícone adaptativo do app e `DsListItem` com trailing empilhado em fonte ≥ 1,5× (achado D1) · UI Spec 0.4.4 · **Pronto quando:** AVD sem quadro claro no cold start escuro e SCR-01 legível a 200% (conferido na T25)
 - [x] **T29** Aprovação tardia (BR-29, AC-28): `PurchaseRepository.findById` (domain, `DefaultPurchaseRepository`, DAO e fake) e ramo no `HandlePaymentOutcomeUseCase` que aprova a compra `Failed`/`NotFound` com `reference` e valor iguais, sem tocar a compra aberta nem o gateway · **Pronto quando:** testes JVM do AC-28 (aprova; mantém compra aberta; valor diferente descartado; falha por outro motivo descartada; `reference` desconhecido descartado) e `verify.sh standard` verdes
-- [ ] **T26** `review-changes` (architecture, security, test, compose-ui) e correção dos bloqueantes
-- [ ] **T27** `consistency-check` + `scripts/harness/check-traceability.sh docs/specs/001-venda-de-ingressos`
-- [ ] **T28** `scripts/harness/verify.sh full` verde; spec → Implementada; changelog; seção da integração Cielo no README
+- [x] **T26** `review-changes` (architecture, security, test, compose-ui) e correção dos bloqueantes
+  > Fechada em 2026-10-18: 1 rodada de 5 revisores, sem bloqueante de código; Importantes corrigidos ou aceitos pelo humano (ver `progress.md`). Rodada 2 dos revisores não executada por decisão do humano.
+- [x] **T27** `consistency-check` + `scripts/harness/check-traceability.sh docs/specs/001-venda-de-ingressos`
+  > Fechada em 2026-10-18: sem divergência de comportamento; plano, tabela de rastreabilidade e docs alinhados; testes do `PurchaseWriteLock` nos dois use cases. Pendências registradas: J7 e J9 não executadas no AVD.
+- [x] **T28** `scripts/harness/verify.sh full` verde; spec → Implementada; changelog; seção da integração Cielo no README
 
 ## Rastreabilidade
 | AC | Tarefas | Testes (nome começa com) |
@@ -107,29 +110,29 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
 | AC-03 | T13, T16, T20 | `AC-03 - dado falha ao ler catalogo quando tentar de novo entao exibe lista` |
 | AC-04 | T05, T17 | `AC-04 - dado evento de 50 reais quando selecionar entao quantidade 1 e total 50` |
 | AC-05 | T05, T17 | `AC-05 - dado quantidade 1 quando aumentar para 3 entao total 150` |
-| AC-06 | T05, T17, T21 | `AC-06 - dado limite de quantidade quando tentar passar entao acao indisponivel` |
+| AC-06 | T05, T17, T21 | `AC-06 - dado limite de 10 por compra quando estiver no valor entao aumentar fica indisponivel` |
 | AC-07 | T06, T14, T15, T17, T25 | `AC-07 - dado compra confirmada quando pagar entao grava pendente antes de abrir a Cielo` |
 | AC-08 | T06, T12, T17, T21 | `AC-08 - dado compra em andamento quando pagar de novo entao nao abre segundo pagamento` |
 | AC-09 | T07, T14, T18, T25 | `AC-09 - dado retorno autorizado quando processar entao registra aprovada` |
 | AC-10 | T07, T14, T18, T25 | `AC-10 - dado codigo 1 quando processar entao registra cancelada` |
 | AC-11 | T07, T14, T18 | `AC-11 - dado codigo 3 quando processar entao registra negada` |
 | AC-12 | T06, T15, T17 | `AC-12 - dado app Cielo ausente quando pagar entao erro sem cobranca` |
-| AC-13 | T07, T14, T17, T25 | `AC-13 - dado codigo 2 ou 4 quando processar entao falhou com nova tentativa` |
-| AC-14 | T07, T14, T17 | `AC-14 - dado resposta ilegivel quando processar entao consulta a Cielo antes de cobrar` |
-| AC-15 | T07, T14, T17, T24, T25 | `AC-15 - dado compra aberta ao reabrir quando consultar entao aplica resultado ou nao encontrado` |
+| AC-13 | T07, T14, T17, T25 | `AC-13 - dado codigo 2 ou 4 quando processar entao registra falhou com o motivo` |
+| AC-14 | T07, T14, T17 | `AC-14 - dado resposta ilegivel quando processar entao confirma com a Cielo antes de cobrar` |
+| AC-15 | T07, T14, T17, T24, T25 | `AC-15 - dado compra aberta ao reabrir quando recuperar entao fica em recuperacao e consulta a pagina 0` |
 | AC-16 | T08, T18, T22 | `AC-16 - dado compra aprovada quando exibir comprovante entao mostra campos sem cartao` |
 | AC-17 | T05, T12, T16 | `AC-17 - dado 50 ingressos quando aprovar 1 entao mostra 49` |
 | AC-18 | T08, T12, T19 | `AC-18 - dado compras registradas quando abrir historico entao ordem decrescente sem falhas` |
-| AC-19 | T08, T18, T22 | `AC-19 - dado compra no historico quando selecionar entao abre comprovante` |
+| AC-19 | T08, T18, T22 | `AC-19 - dado historico com varias compras quando abrir uma delas entao exibe o comprovante dela` |
 | AC-20 | T08, T12, T19, T23 | `AC-20 - dado nenhuma compra quando abrir historico entao exibe vazio` |
-| AC-21 | T08, T19, T23 | `AC-21 - dado falha ao ler historico quando abrir entao exibe erro com nova tentativa` |
+| AC-21 | T08, T19, T23 | `AC-21 - dado falha ao ler historico quando abrir entao exibe erro` |
 | AC-22 | T05, T16, T20 | `AC-22 - dado eventos em dois meses quando abrir entao agrupa por mes` |
 | AC-23 | T05, T16, T20 | `AC-23 - dado filtro de mes quando selecionar dezembro entao so eventos de dezembro` |
 | AC-24 | T05, T16 | `AC-24 - dado mes esgotado quando voltar a lista entao filtro volta para todos` |
 | AC-25 | T17 | `AC-25 - dado falha na consulta a Cielo quando tentar de novo entao repete a consulta sem abrir pagamento` |
 | AC-26 | T17, T21 | `AC-26 - dado catalogo ilegivel e sem compra aberta quando abrir a compra entao exibe indisponivel` |
 | AC-27 | T18, T22 | `AC-27 - dado registro ilegivel quando tentar de novo entao volta a carregar e repete a leitura` |
-| AC-28 | T29 | `AC-28 - dado compra falhou nao encontrada quando chega aprovado com mesmo reference e valor entao registra aprovada` |
+| AC-28 | T29 | `AC-28 - dado compra falhou nao encontrada e nenhuma aberta quando chega aprovado entao registra aprovada` |
 
 ## Ordem de execução e paralelismo
 | Etapa | Tarefas | Quem | Paralelo |

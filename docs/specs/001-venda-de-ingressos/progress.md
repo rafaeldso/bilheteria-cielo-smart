@@ -4,14 +4,14 @@
 > fim de cada fase e antes de `/clear`. A lista de tarefas continua no [tasks.md](tasks.md).
 > Nunca registre segredos, PAN ou PII aqui.
 
-**Tamanho:** G · **Fase SDD:** 5 Implementar · **Spec:** v1.3.0 (Aprovada) · **UI Spec:** v0.4.2 (Aprovada) · **Branch:** `main` (commits locais do lote C em diante, sem push)
+**Tamanho:** G · **Fase SDD:** 6 Fechar · **Spec:** v1.3.0 (Implementada) · **UI Spec:** v0.4.4 (Aprovada) · **Branch:** `main` (commits locais do lote C em diante, sem push)
 
 ## Estado atual
 - **Última etapa concluída:** lote E (T20–T23) e T24 (navegação) commitados localmente; lote E revisado em 2 rodadas (compose-ui, architecture, ui-design) sem bloqueante
-- **Próxima etapa:** fechar a T25: sem TalkBack nem AVD API 30+ por ora (adiados pelo humano); restam terminal real (ordenação do `orders`) e a J8; depois T26 (`review-changes`). Extras desta sessão: splash nativa (`core-splashscreen` 1.2.0, aprovada) e ícone do app.
+- **Próxima etapa:** nenhuma da feature 001; push/PR só sob pedido (`verify.sh full`, spec → Implementada). T26 fechada. T25 fechada (TalkBack, AVD API 30+ e ordenação do `orders` em terminal real adiados pelo humano). Extras desta sessão: splash nativa (`core-splashscreen` 1.2.0, aprovada) e ícone do app.
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
-- **Último sensor:** `verify.sh standard` → verde (exit 0) e `assertModuleGraph` verde em 2026-10-18 (T24)
+- **Último sensor:** `verify.sh standard` → verde em 2026-10-18 (fim da T26; rodado sem o `gradle-daemon-jvm.properties` local, que quebra detekt/spotless)
 
 ## Decisões da implementação
 | Data | Decisão | Motivo | Afeta spec/plano? |
@@ -37,12 +37,17 @@
 | 2026-10-18 | Origem do comprovante (venda × histórico) derivada da pilha de navegação, sem argumento extra na rota | Argumentos de rota são só IDs; sobrevive à morte do processo | Plano §4 |
 | 2026-10-18 | `OpenPurchaseRedirect` (VM por activity, estado + evento de consumo) leva a SCR-01 → SCR-02 se abrir com compra aberta | Fluxo da UI Spec §3 (`A -.-> Recovering`) | Plano §4 |
 | 2026-10-18 | `ClockModule` movido de `data/di` para `core:common/di` com `systemDefaultZone` (como o `DispatchersModule`) | Agrupamento por mês (domain) e exibição (UI) no mesmo fuso; `app` agrega o grafo | Não |
+| 2026-10-18 | Callback e recuperação serializados por `PurchaseWriteLock` (Mutex singleton no domain); sem CAS no DAO | Corrida de `update` por snapshot (review T26); decisão humana | Plano §4 |
+| 2026-10-18 | Splash nativa (`core-splashscreen` 1.2.0), ícone do app e `DsListItem` empilhado em fonte ≥ 1,5× registrados como T30 e UI Spec 0.4.4 | Aprovados pelo humano; a dependência já fora aprovada | UI Spec 0.4.4 |
+| 2026-10-18 | Q14 aceita (aprovação tardia sem aviso e sem prazo máximo); spec 1.3.0 aprovada; nota do AC-25 ajustada (compra aberta ilegível abre na lista) | Decisão humana no review da T26; redirect mantido | Spec 1.3.0 |
 | 2026-10-18 | `androidx.navigation.compose` adicionado ao `app` (já no catálogo) | `NavHost` no `app` (architecture.md) | Não |
 
 ## Bloqueios e perguntas abertas
-- [ ] **Decisão do humano (lote E):** (1) saída do comprovante em `Error` vindo da venda (hoje só o voltar do sistema; recomendação: seta "Voltar para eventos"); (2) ícone do botão "Voltar para eventos" no `Unavailable` (`DsErrorState` fixa `Refresh`; precisa de `actionIcon` no core); (3) registrar `DsStatusMessage` no catálogo e na §5; (4) UI Spec 0.4.3: chaves reais da §4.4 (`ticketing_status_*`/`common_retry` em `strings_common.xml`, `ticketing_history_datetime_today/yesterday/other`, `ticketing_purchase_event_*`, `*_spoken_*`), cabeçalho do snapshot sem "disponíveis", "Data do evento" absoluta, dia da semana por extenso, ícones substitutos, "Tentar de novo" × "Tentar novamente" (spec §6 × UI Spec).
+- [x] **T27 fechada (2026-10-18):** plano, tasks e UI Spec alinhados; testes de que `HandlePaymentOutcomeUseCase` e `RecoverPendingPurchaseUseCase` usam o `PurchaseWriteLock` (provados por mutação); `docs/ai/log.md`, ADR-0010 (callback sem `BROWSABLE`, BR-29) e `research.md` §10 atualizados; README com a seção da integração Cielo. Pendências aceitas: J7 e J9 sem execução no AVD; `components.md` mantém "Planejado" nos componentes sem screenshot test.
+- [x] **T28 fechada (2026-10-18):** `verify.sh full` verde. Cobertura: testes do gerador de `reference` no `data` (≥ 75%) e ADR-0011 (decisão do humano, opção b): o Kover do `ui` exclui Compose, previews e classes geradas do Hilt, mantendo 85% sobre a lógica. Spec → Implementada; README com a seção da integração Cielo.
+- [x] **Decisão do humano (lote E), aprovada com a UI Spec 0.4.3 em 2026-10-18:** (1) saída do comprovante em `Error` vindo da venda (hoje só o voltar do sistema; recomendação: seta "Voltar para eventos"); (2) ícone do botão "Voltar para eventos" no `Unavailable` (`DsErrorState` fixa `Refresh`; precisa de `actionIcon` no core); (3) registrar `DsStatusMessage` no catálogo e na §5; (4) UI Spec 0.4.3: chaves reais da §4.4 (`ticketing_status_*`/`common_retry` em `strings_common.xml`, `ticketing_history_datetime_today/yesterday/other`, `ticketing_purchase_event_*`, `*_spoken_*`), cabeçalho do snapshot sem "disponíveis", "Data do evento" absoluta, dia da semana por extenso, ícones substitutos, "Tentar de novo" × "Tentar novamente" (spec §6 × UI Spec).
 - [ ] Sugestões do lote E: `spokenBody` no `DsStatusMessage` e rótulo falado do retry do `DsErrorState` (valor por extenso); "de 2026" no falado do comprovante; `heading` do resultado do comprovante com `mergeDescendants` (conferir no TalkBack, T25); `Year` do EventList congelado na virada do ano; `HistoryItem.status` já como `SaleResult` no mapper; `OtherDay` carregar `SpokenDateTime`; mover testes de `SpokenDateTime`; previews Font 2x dos Empty; live region do comprovante re-anuncia na rotação (ver origem na T24); sensores propostos: chaves da §4.4 × `strings_*.xml`, `ZoneId.systemDefault`/`Clock.system*` só em `*Route.kt`, `NumberFormat`/`DateTimeFormatter.ofPattern` só em `ui.format`, `UnusedResources` como erro.
-- [x] T24: `ClockModule` agora no `app` (`di/`), com `Clock.systemDefaultZone()`; `MainActivity` injeta o `Clock` e o passa a `ticketingGraph` e às Routes (domain e UI no mesmo fuso).
+- [x] T24: `MainActivity` injeta o `Clock` (módulo em `core:common/di`, ver decisão acima) e o passa a `ticketingGraph` e às Routes (domain e UI no mesmo fuso).
 - [x] Spec 1.2.0 e UI Spec 0.4.2 aprovadas pelo humano em 2026-10-18 (o S-09 passa a cobrir AC-25..27).
 - [ ] Backlog do lote D: `UuidReferenceGenerator` + teste de formato/unicidade; `toString` mascarado em `Purchase`/`TransactionData`; `purchaseId` (= `reference`) no `SavedStateHandle` enquanto aberta; `recoverPending` não atômico (`findOpen`+`update`, CAS no DAO); `clampQuantity` → `QuantityLimits`; `Loading` do EventList piscando ao reassinar; filtro de mês fora do `SavedStateHandle`; chaves `"eventId"`/`"purchaseId"` ligadas às rotas `:api` na T24 (`toRoute`); feedback visual em "Consultar de novo"; `MonthGroup` duplicado (ui × domain).
 - [ ] Sugestões da revisão final (aprovada): trocar o `check()` de `toFailedState` por ramo defensivo (`Error(RecoveryFailed)`) para não derrubar o app; ignorar no `settle` um `Finished` de id diferente da última tentativa (motivo de falha obsoleto, sem risco de dinheiro); teste `Finished(Failed)` + catálogo `Unknown` → `Loading`; contador de tentativas no `LookupFailingGateway`; renomear o teste "prevalece a compra" sem prefixo AC-26.
@@ -70,6 +75,8 @@
 ## Log de sessões
 | Data | Ferramenta / agente | Resumo |
 |---|---|---|
+| 2026-10-18 | Claude Code + `spec-consistency-analyzer` (sonnet) | T27: 24 divergências (6 Importantes, 7 Médias, 11 Baixas), nenhuma de comportamento; plano/tasks/ui-spec corrigidos; `verify.sh standard` verde; pendências acima |
+| 2026-10-18 | Claude Code + 5 revisores (architecture, security, test, compose-ui, spec-consistency) | T26: sem bloqueante de código; `PurchaseWriteLock`, testes da BR-29, UI Spec 0.4.4, spec 1.3.0 aprovada, J7/J9; Importantes restantes aceitos pelo humano: `toString` mascarado, `check()` do `toFailedState`, limite de tamanho no parser, testes de navegação tautológicos, motivos de descarte distintos, release sem `cielo.*`; sugestões ficam no backlog |
 | 2026-10-18 | Claude Code (sessão principal) | Decisões da T25 aprovadas: spec 1.3.0 (BR-29/AC-28), T29 (aprovação tardia), splash nativa e ícone de ingresso |
 | 2026-10-18 | Claude Code (sessão principal, `verify-on-device`) | T25 parcial: J1–J7 no AVD Android 10 com `lio-emulator`, fatos do README do data, D1 (fonte 200% da SCR-01) corrigido, `journeys/` criado; decisões do humano acima |
 | 2026-10-18 | Claude Code + 5× `android-implementer` + revisores (compose-ui, arch, ui-design) | Lote E (T20 ∥ T21 ∥ T22 ∥ T23) + 2 rodadas de revisão; standard verde |

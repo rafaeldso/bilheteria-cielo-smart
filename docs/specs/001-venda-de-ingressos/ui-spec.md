@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Spec** | [spec.md](spec.md) (versão: 1.2.0) |
+| **Spec** | [spec.md](spec.md) (versão: 1.3.0) |
 | **Status** | Aprovada |
-| **Versão** | 0.4.3 |
+| **Versão** | 0.4.4 |
 | **Fidelidade** | Prancha hi-fi + protótipo (G) |
 | **Prancha** | [design/mockups.html](design/mockups.html) · revisão local: http://127.0.0.1:8766/specs/001-venda-de-ingressos/design/mockups.html (`python3 -m http.server 8766` em `docs/`) |
 | **Design system** | [DESIGN.md](../../design/DESIGN.md) v0.2.0 (direção A "Ciano Smart") · [components.md](../../design/components.md) |
@@ -171,7 +171,7 @@ A resposta ilegível não é `Error`: vai para `Recovering` (BR-25).
 | 3 | `DsSummaryCard` | — | `primaryContainer`, `displaySmall`, `shape.large` | Informação dominante |
 | 4 | `DsButton` | Filled, ícone, largura total, desabilitado | `primary` | Valor na frase; desabilitado em `AwaitingPayment` |
 | — | `DsProgressIndicator` | linear indeterminado | `primary`, `secondaryContainer` | Aprovado; `Planejado` em [components.md](../../design/components.md) |
-| — | `DsErrorState` | com ação | `errorContainer` | 4 variantes de texto |
+| — | `DsErrorState` | com ação | `errorContainer` | 5 variantes de texto |
 
 #### 4.4 Conteúdo (strings)
 | Chave | Texto (pt-BR) | Onde | Observação |
@@ -415,7 +415,7 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | P1 | **Resposta ilegível pode esconder um pagamento aprovado.** Hoje a spec (BR-14/AC-14) registra "Falhou" e libera nova tentativa, o que pode cobrar duas vezes se a Cielo tiver aprovado e só a leitura falhou. Proposta: tratar resposta ilegível como a BR-15 (ir para `Recovering` e consultar a Cielo pelo `reference` antes de liberar nova tentativa). Enquanto não decidido, o texto do erro já pede para conferir o terminal. Exige spec 1.1.0 | Humano | Fechada: aprovada (spec 1.1.0, BR-25) |
 | P3 | **Recuperação sem resultado não tem destino definido.** A BR-15 diz "registrar Falhou e liberar nova tentativa", mas não diz para onde a tela vai nem o que o operador vê. Proposta: voltar à SCR-02 em `Error` (variante "pagamento anterior não encontrado") com o mesmo evento e quantidade e "Tentar pagar R$ X de novo". Desenhada como proposta. Exige spec 1.1.0 | Humano | Fechada: aprovada (spec 1.1.0, BR-15) |
 | P4 | Atalho "Refazer esta venda" após `Declined`/`Cancelled` | Humano | Fechada: não incluir (2026-10-17) |
-| P2 | A tela de espera pressupõe que o app da Cielo cobre a nossa durante o pagamento; confirmar no emulador como fica a volta ao app | Agente (implementação) | Aberta |
+| P2 | A tela de espera pressupõe que o app da Cielo cobre a nossa durante o pagamento; confirmar no emulador como fica a volta ao app | Agente (implementação) | Fechada: verificada no AVD na T25 (J1–J6) |
 
 ## 8. Design Ready (checklist antes do checkpoint)
 - [x] Toda tela tem ID `SCR-xx` e liga a uma `US-xx`
@@ -448,4 +448,6 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | 0.4.1 | 2026-10-18 | Rafael Oliveira (com Claude Code) | `DsQuantityStepper`: API ganha `decrementDescription`/`incrementDescription` para rotular os botões −/+ no TalkBack (achado na T11) |
 | 0.4.2 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Spec 1.2.0: SCR-02 ganha `Loading`, `Unavailable` (BR-27), variante de `Error` da consulta que falhou (BR-26) e `Completed` como sinal de navegação com `popUpTo`; SCR-03 ganha `Loading` e `Error` (BR-28). Prancha não atualizada: os estados novos reutilizam `DsErrorState`/`DsLoadingSkeleton` |
 | 0.4.2 | 2026-10-18 | Rafael Oliveira | Aprovada (estados `Loading`/`Unavailable`/`Error` da SCR-02 e `Loading`/`Error` da SCR-03; prancha não alterada) |
-| 0.4.3 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da revisão do lote E (decisões aprovadas pelo humano; redação a confirmar no PR): seta "Voltar para eventos" no `Error` do comprovante vindo da venda; `DsErrorState.retryIcon` (seta no `Unavailable`); `DsStatusMessage` registrado (§5); chaves reais da §4.4 (`strings_common.xml`, histórico, cabeçalho da compra); cabeçalho do snapshot sem "disponíveis"; Data do evento absoluta no comprovante; dia da semana por extenso no TalkBack; ícones substitutos por falta em `DsIcons` (`Block`, `History`, `Sync`); live region do comprovante só vindo da venda; texto do `Error` segue a UI Spec ("Tentar de novo" nas SCR-01/04, "Tentar novamente" na SCR-03; o `spec.md` descreve a ação, o texto exato é desta UI Spec) |
+| 0.4.3 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da revisão do lote E (decisões aprovadas pelo humano): seta "Voltar para eventos" no `Error` do comprovante vindo da venda; `DsErrorState.retryIcon` (seta no `Unavailable`); `DsStatusMessage` registrado (§5); chaves reais da §4.4 (`strings_common.xml`, histórico, cabeçalho da compra); cabeçalho do snapshot sem "disponíveis"; Data do evento absoluta no comprovante; dia da semana por extenso no TalkBack; ícones substitutos por falta em `DsIcons` (`Block`, `History`, `Sync`); live region do comprovante só vindo da venda; texto do `Error` segue a UI Spec ("Tentar de novo" nas SCR-01/04, "Tentar novamente" na SCR-03; o `spec.md` descreve a ação, o texto exato é desta UI Spec) |
+| 0.4.3 | 2026-10-18 | Rafael Oliveira | Aprovada (itens da linha anterior, já implementados) |
+| 0.4.4 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da T25/T26, aprovados pelo humano: `DsListItem` empilha o trailing abaixo dos textos (alinhado ao início deles) com escala de fonte ≥ 1,5×, decisão por `fontScale` e não por largura (SCR-01 e SCR-04; a prancha mostra o trailing ao final no tamanho padrão); splash nativa (`core-splashscreen`) com fundo `surface` e ícone de ingresso sobre círculo `primary`, e ícone adaptativo do app (fora das telas SCR-xx) |

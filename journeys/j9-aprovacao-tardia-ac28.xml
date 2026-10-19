@@ -1,0 +1,17 @@
+<journey name="AC-28 - Pagamento concluído depois de 'não encontrado' vira venda aprovada">
+  <description>
+    Mesmo pré-requisito da J1. Pré-condição: uma compra em Falhou por "não encontrado" (resultado da J7) cujo pagamento
+    ainda está pendente no lio-emulator. Execução: skill android-cli (Journeys); lio-emulator 1.61.8 no AVD Android 10.
+  </description>
+  <actions>
+    <action>
+      In the Cielo emulator, complete the pending payment of the earlier purchase ("Pagar" and "Aprovar")
+    </action>
+    <action>
+      Open the Bilheteria app and tap "Histórico de compras"
+    </action>
+    <action>
+      Verify the history lists the purchase "Noite de Jazz no Parque" with the status "Aprovada" and the total "R$ 80,00"
+    </action>
+  </actions>
+</journey>

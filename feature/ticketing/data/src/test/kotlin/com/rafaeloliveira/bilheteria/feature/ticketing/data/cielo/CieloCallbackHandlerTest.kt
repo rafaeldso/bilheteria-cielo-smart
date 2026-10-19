@@ -22,6 +22,7 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePurcha
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.TEST_NOW
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.HandlePaymentOutcomeUseCase
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.PurchaseWriteLock
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.RecoverPendingPurchaseUseCase
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -33,6 +34,7 @@ import java.time.ZoneOffset
 
 class CieloCallbackHandlerTest {
     private val clock = Clock.fixed(TEST_NOW.plusSeconds(30), ZoneOffset.UTC)
+    private val writeLock = PurchaseWriteLock()
     private val gateway = FakePaymentGateway()
     private val logger = RecordingLogger()
     private val reference = "0b8f2d1c-1111-4222-8333-444455556666" // the one in payment_approved.json (10000 cents)
@@ -46,9 +48,10 @@ class CieloCallbackHandlerTest {
             HandlePaymentOutcomeUseCase(
                 repository = repository,
                 gateway = gateway,
-                recover = RecoverPendingPurchaseUseCase(repository, gateway, clock),
+                recover = RecoverPendingPurchaseUseCase(repository, gateway, clock, writeLock),
                 clock = clock,
                 logger = logger,
+                lock = writeLock,
             ),
         scope = scope,
         logger = logger,

@@ -17,6 +17,7 @@ package com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase
 
 import com.rafaeloliveira.bilheteria.core.common.DataResult
 import com.rafaeloliveira.bilheteria.core.common.Logger
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.error.TicketingError
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.FailureReason
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.Money
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.model.PaymentOutcome
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.time.Clock
 import java.time.ZoneOffset
 
@@ -42,6 +44,7 @@ import java.time.ZoneOffset
 class LateApprovalUseCaseTest {
     private val now = TEST_NOW.plusSeconds(30)
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
+    private val writeLock = PurchaseWriteLock()
     private val gateway = FakePaymentGateway()
     private val logger = RecordingLogger()
     private val total = Money(10_000)
@@ -50,9 +53,10 @@ class LateApprovalUseCaseTest {
         HandlePaymentOutcomeUseCase(
             repository = repository,
             gateway = gateway,
-            recover = RecoverPendingPurchaseUseCase(repository, gateway, clock),
+            recover = RecoverPendingPurchaseUseCase(repository, gateway, clock, writeLock),
             clock = clock,
             logger = logger,
+            lock = writeLock,
         )
 
     private fun approved(
@@ -97,16 +101,74 @@ class LateApprovalUseCaseTest {
             assertEquals(0, gateway.finished)
         }
 
-    @Test
-    fun `AC-28 - dado valor pago diferente do total quando chega aprovado tardio entao descarta`() =
+    @ParameterizedTest
+    @ValueSource(longs = [100, 9_999, 10_001, 20_000])
+    fun `AC-28 - dado valor pago diferente do total quando chega aprovado tardio entao descarta`(cents: Long) =
         runTest {
             val failure = notFoundFailure()
             val repository = FakePurchaseRepository(listOf(failure))
 
-            useCase(repository)(approved(reference = lateReference, amount = Money(100)))
+            useCase(repository)(approved(reference = lateReference, amount = Money(cents)))
 
             assertEquals(listOf(failure), repository.all)
             assertEquals(listOf("callback_discarded reason=no_open_purchase"), logger.warnings)
+        }
+
+    @Test
+    fun `AC-28 - dado reference desconhecido quando chega aprovado entao descarta e nao cria compra`() =
+        runTest {
+            val failure = notFoundFailure()
+            val repository = FakePurchaseRepository(listOf(failure))
+
+            val result = useCase(repository)(approved(reference = PurchaseReference("unknown-reference")))
+
+            assertEquals(DataResult.Success(Unit), result)
+            assertEquals(listOf(failure), repository.all)
+            assertEquals(listOf("callback_discarded reason=no_open_purchase"), logger.warnings)
+            assertEquals(emptyList<String>(), logger.infos)
+        }
+
+    @ParameterizedTest
+    @EnumSource(PurchaseStatus::class, names = ["Approved", "Declined", "Cancelled"])
+    fun `AC-28 - dado compra que nao esta falha quando chega aprovado com o mesmo reference entao nao altera`(
+        status: PurchaseStatus,
+    ) = runTest {
+        // failureReason is NotFound on purpose: only the status must keep the purchase out of the late approval.
+        val purchase = notFoundFailure().copy(status = status)
+        val repository = FakePurchaseRepository(listOf(purchase))
+
+        useCase(repository)(approved(reference = lateReference))
+
+        assertEquals(listOf(purchase), repository.all)
+        assertEquals(listOf("callback_discarded reason=no_open_purchase"), logger.warnings)
+        assertEquals(emptyList<String>(), logger.infos)
+    }
+
+    @Test
+    fun `AC-28 - dado aprovacao tardia registrada quando chega outro callback igual entao nao reescreve`() =
+        runTest {
+            val repository = FakePurchaseRepository(listOf(notFoundFailure()))
+            val useCase = useCase(repository)
+            useCase(approved(reference = lateReference))
+            val afterFirst = repository.all
+
+            useCase(PaymentOutcome.Approved(lateReference, total, aTransaction().copy(authCode = "999999")))
+
+            assertEquals(afterFirst, repository.all)
+            assertEquals(1, logger.infos.size)
+        }
+
+    @Test
+    fun `AC-28 - dado falha de armazenamento quando chega aprovado tardio entao devolve a falha e nao registra`() =
+        runTest {
+            val failure = notFoundFailure()
+            val repository = FakePurchaseRepository(listOf(failure)).apply { failStorage = true }
+
+            val result = useCase(repository)(approved(reference = lateReference))
+
+            assertEquals(DataResult.Failure(TicketingError.StorageFailure), result)
+            assertEquals(listOf(failure), repository.all)
+            assertEquals(emptyList<String>(), logger.infos)
         }
 
     @ParameterizedTest

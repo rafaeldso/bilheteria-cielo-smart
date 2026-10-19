@@ -42,6 +42,7 @@ import java.time.ZoneOffset
 class HandlePaymentOutcomeUseCaseTest {
     private val now = TEST_NOW.plusSeconds(30)
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
+    private val writeLock = PurchaseWriteLock()
     private val gateway = FakePaymentGateway()
     private val logger = RecordingLogger()
     private val reference = PurchaseReference("91ccb5d9-ccf6-4471-bfe2-413d5bc48637")
@@ -51,9 +52,10 @@ class HandlePaymentOutcomeUseCaseTest {
         HandlePaymentOutcomeUseCase(
             repository = repository,
             gateway = gateway,
-            recover = RecoverPendingPurchaseUseCase(repository, gateway, clock),
+            recover = RecoverPendingPurchaseUseCase(repository, gateway, clock, writeLock),
             clock = clock,
             logger = logger,
+            lock = writeLock,
         )
 
     private fun approved(

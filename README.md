@@ -4,7 +4,7 @@
 > com pagamento pelo ecossistema Cielo Smart / Cielo LIO. Case técnico ([case_android.md](case_android.md))
 > construído com Spec-Driven Development, Clean Architecture modular e agentes de IA guiados por harness.
 
-**Status:** fundação pronta (000); feature de venda (001) em especificação. Plano: [roadmap](docs/roadmap.md).
+**Status:** fundação pronta (000); feature de venda (001) implementada. Plano: [roadmap](docs/roadmap.md).
 Uso de IA no processo: [docs/ai/](docs/ai/README.md).
 
 ## Comece por aqui
@@ -59,5 +59,24 @@ uma GitHub Release com o APK anexado.
 | Regras que nunca quebramos | [constitution.md](docs/constitution.md) |
 | Como os agentes de IA trabalham aqui | [docs/harness/](docs/harness/README.md) |
 
-<!-- Seções exigidas pelo case (decisões, bibliotecas, integração Cielo, trade-offs, próximos passos)
-     entram na entrega (D3 do roadmap). -->
+## Integração Cielo
+O app pede o pagamento ao app da Cielo por **Deep Link** (`lio://payment`), sem SDK, e recebe o resultado em
+`order://response`. Motivos e alternativas: [ADR-0010](docs/adr/0010-integracao-cielo-smart-por-deep-link.md).
+- **Compra no Room antes do pagamento** (`Pending`, `reference` UUID v4): se o processo morrer, a reabertura consulta
+  `lio://orders` (paginado) e decide pelo pagamento encontrado (BR-15, BR-25).
+- **Resposta validada**: `reference` e valor precisam bater com a compra; respostas forjadas são descartadas. Um pagamento
+  aprovado depois de "não encontrado" vira venda aprovada (BR-29). Callback e recuperação são serializados por um lock.
+- **Dados de cartão** (`bin`, `mask`, `document`) nunca chegam ao modelo, ao banco nem aos logs.
+- **Credenciais**: propriedades Gradle `cielo.clientId` e `cielo.accessToken` (fora do repositório); sem elas o build usa
+  valores fictícios, aceitos pelo `lio-emulator`. O gateway só abre o `lio://` em pacote da allowlist, com intent explícita.
+- **Testar no emulador**: instale o `lio-emulator.apk` no AVD Android 10 (seção acima) e o app com
+  `./gradlew :app:installDebug`. Fatos verificados e limitações (por exemplo, "Negada" não é simulável):
+  [README do data](feature/ticketing/data/README.md).
+
+### Trade-offs
+- A disponibilidade de ingressos é o catálogo menos as compras aprovadas **neste aparelho** (Q11); não há backend.
+- Aprovação tardia sem aviso ao operador e sem prazo máximo (Q14); risco de cobrança dupla aceito. Aviso, prazo e estorno
+  ficam para uma spec futura.
+- Fora de foco por ora: testes de UI Compose e de screenshot, TalkBack, AVD API 30+, e a ordenação do `orders` em terminal real.
+
+<!-- Decisões, bibliotecas e próximos passos entram na entrega (D3 do roadmap). -->

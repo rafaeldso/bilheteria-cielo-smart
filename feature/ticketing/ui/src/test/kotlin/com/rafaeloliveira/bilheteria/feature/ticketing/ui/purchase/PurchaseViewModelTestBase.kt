@@ -36,6 +36,7 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.HandlePaym
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveAvailableEventsUseCase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObserveOpenPurchaseUseCase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.ObservePurchaseUseCase
+import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.PurchaseWriteLock
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.RecoverPendingPurchaseUseCase
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.usecase.StartPurchaseUseCase
 import kotlinx.coroutines.flow.Flow
@@ -59,6 +60,7 @@ internal abstract class PurchaseViewModelTestBase {
     val mainDispatcher = MainDispatcherExtension()
 
     protected val clock = Clock.fixed(TEST_NOW, ZoneOffset.UTC)
+    private val writeLock = PurchaseWriteLock()
     protected val event = anEvent(unitPriceCents = UNIT_PRICE_CENTS, totalTickets = TOTAL_TICKETS)
     protected val catalog = FakeEventCatalogRepository(listOf(event))
     protected val gateway = FakePaymentGateway()
@@ -75,7 +77,7 @@ internal abstract class PurchaseViewModelTestBase {
         observeOpenPurchase = ObserveOpenPurchaseUseCase(repository),
         observePurchase = ObservePurchaseUseCase(repository),
         startPurchase = StartPurchaseUseCase(repository, paymentGateway, references, clock),
-        recoverPending = RecoverPendingPurchaseUseCase(repository, paymentGateway, clock),
+        recoverPending = RecoverPendingPurchaseUseCase(repository, paymentGateway, clock, writeLock),
         savedStateHandle = handle,
     )
 
@@ -83,9 +85,10 @@ internal abstract class PurchaseViewModelTestBase {
         HandlePaymentOutcomeUseCase(
             repository = repository,
             gateway = gateway,
-            recover = RecoverPendingPurchaseUseCase(repository, gateway, clock),
+            recover = RecoverPendingPurchaseUseCase(repository, gateway, clock, writeLock),
             clock = clock,
             logger = SilentLogger,
+            lock = writeLock,
         )
 
     /** Approved sales that leave [remaining] tickets of the event. */
