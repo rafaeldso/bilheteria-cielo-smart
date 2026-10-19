@@ -1,6 +1,7 @@
 # Prompts do humano
 
 > Na íntegra, em ordem. Prompts de skill (`/android-cli`, `/feature-flow`) entram só pelo nome.
+> Os Prompts 0–2 são literais. A seção "Chamadas por tarefa" lista as skills acionadas em cada tarefa da feature 001.
 
 ## Prompt 0
 `/android-cli` (carrega a skill do Android CLI; verificação do ambiente)
@@ -15,3 +16,42 @@
 > 4. Pode
 > 5. Pode colocar o meu primeiro e ultimo nome Rafael Oliveira. O nome do app pode ser um genérico relacionado ao tema do Case.
 > 6. Sim
+
+## Chamadas por tarefa (feature 001)
+> **Procedência:** as linhas marcadas **literal** foram informadas pelo autor. As demais foram **reconstruídas** a partir do
+> `tasks.md`, do `progress.md`, do [log.md](log.md) e dos commits, na forma `/skill pasta tarefas`. O texto exato digitado
+> em cada sessão não foi preservado, e as decisões do humano (respostas, aprovações) estão nas tabelas do `progress.md`.
+> Pasta da spec: `docs/specs/001-venda-de-ingressos`, abreviada como `001` na coluna "Chamada".
+
+| Etapa | Tarefas | Chamada | Procedência |
+|---|---|---|---|
+| Demanda e classificação (G) | — | `/feature-flow` (case + feature 001) | reconstruída |
+| Spec, esclarecimento, aprovação | Fases 1–2 | `/sdd-specify 001` | reconstruída |
+| Direção visual, UI Spec e prancha | Fase 2.5 | `/sdd-design 001` | reconstruída |
+| Plano e ADR-0010 | Fase 3 | `/sdd-plan 001` · `/create-adr` | reconstruída |
+| Tarefas | Fase 4 | `/sdd-tasks 001` | reconstruída |
+| Validar o emulador Cielo | T01 | `/verify-on-device 001 T01` (Android CLI) | reconstruída |
+| Catálogo, convenções e módulos | T02, T03 | `/android-feature-scaffold ticketing` | reconstruída |
+| Contratos do domain | T04 | `/implement-task 001 T04` | reconstruída |
+| Lote A: use cases | T05–T08 | `/implement-parallel 001 T05,T06,T07,T08` | reconstruída |
+| Lote B: design system | T09–T11 | `/implement-parallel 001 T09,T10,T11` · `/review-changes 001` | reconstruída |
+| Lote C: dados | T12–T14 | `/implement-parallel 001 T12,T13,T14` · `/review-changes 001` | reconstruída |
+| Gateway Cielo, callback e serviço | T15 | `/implement-task 001 T15` · `/security-scan` | reconstruída |
+| Lote D: ViewModels | T16–T19 | `/implement-parallel 001 T16,T17,T18,T19` | **literal** |
+| Lote E: telas | T20–T23 | `/implement-parallel 001 T20,T21,T22,T23` · `/review-changes 001` | reconstruída |
+| Navegação | T24 | `/implement-task 001 T24` | reconstruída |
+| Journeys no AVD com `lio-emulator` | T25 | `/verify-on-device 001 T25` | **literal** |
+| Aprovação tardia (BR-29) e extras | T29, T30 | `/implement-task 001 T29` · `/implement-task 001 T30` | reconstruída |
+| Revisão final | T26 | `/review-changes 001 T26` | **literal** |
+| Análise de consistência | T27 | `/consistency-check 001 T27` | **literal** |
+| Fechamento: `verify.sh full`, spec Implementada | T28 | `/verify full` | reconstruída |
+| PR | — | `/open-pr` (PR #7) | acionada manualmente pelo autor |
+
+### Prompt de handoff da T27 (resumo)
+A T27 foi disparada com um prompt de handoff: estado de partida (T01–T26 e T29–T30 concluídas), leitura obrigatória (AGENTS.md,
+constitution, guias, spec, plano, tasks), as ações (traceability, `spec-consistency-analyzer`, cruzamentos) e as **proibições**
+(não editar `build-logic/`, `config/`, `quality/`, `scripts/harness/` nem CI; não enfraquecer sensores; sem dependência nova;
+sem publicar nem alterar o remoto; não ler `local.properties`). O agente parou antes do commit para pedir aprovação, e o humano
+autorizou os passos seguintes, incluindo a exclusão de cobertura do `ui` do
+[ADR-0011](../adr/0011-cobertura-do-ui-exclui-composables-e-previews.md).
+

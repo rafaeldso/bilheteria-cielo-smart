@@ -4,7 +4,7 @@
 > com pagamento pelo ecossistema Cielo Smart / Cielo LIO. Case técnico ([case_android.md](case_android.md))
 > construído com Spec-Driven Development, Clean Architecture modular e agentes de IA guiados por harness.
 
-**Status:** fundação pronta (000); feature de venda (001) implementada. Plano: [roadmap](docs/roadmap.md).
+**Status:** fundação pronta (000); feature de venda de ingressos (001) implementada; QR Code (opcional no case) não feito. Plano: [roadmap](docs/roadmap.md).
 Uso de IA no processo: [docs/ai/](docs/ai/README.md).
 
 ## Comece por aqui
@@ -14,6 +14,12 @@ Uso de IA no processo: [docs/ai/](docs/ai/README.md).
 | Quem vai mudar código | [ARCHITECTURE.md](ARCHITECTURE.md) → [CONTRIBUTING.md](CONTRIBUTING.md) | 30 min |
 | Quem vai revisar PR | [Guia de code review](docs/code-review.md) | 10 min |
 | Agente de IA | [AGENTS.md](AGENTS.md) | — |
+
+## O app
+Capturas no AVD Android 10 com o `lio-emulator` da Cielo (tema escuro; dados fictícios do emulador).
+| Eventos à venda | Filtro por mês | Compra | Comprovante | Histórico |
+|:--:|:--:|:--:|:--:|:--:|
+| <img src="docs/images/01-eventos.png" width="170" alt="Lista de eventos agrupada por mês"> | <img src="docs/images/05-filtro-de-mes.png" width="170" alt="Lista filtrada por dezembro"> | <img src="docs/images/02-compra.png" width="170" alt="Compra com seletor de quantidade e total"> | <img src="docs/images/03-comprovante.png" width="170" alt="Comprovante de pagamento aprovado"> | <img src="docs/images/04-historico.png" width="170" alt="Histórico de compras"> |
 
 ## Rodando localmente
 ### Requisitos
@@ -42,7 +48,7 @@ android emulator start Bilheteria_API29
 adb -s emulator-5554 install lio-emulator.apk                          # emulador Cielo
 ANDROID_SERIAL=emulator-5554 ./gradlew :app:installDebug               # o app (id com sufixo .debug)
 ```
-O passo a passo do pagamento no emulador entra com a feature 001.
+O passo a passo do pagamento no emulador está em [Integração Cielo](#integração-cielo).
 
 ### APK pronto
 Cada push na `main` publica o APK de debug como artefato do workflow `release`; cada tag `v*` cria
@@ -79,4 +85,46 @@ O app pede o pagamento ao app da Cielo por **Deep Link** (`lio://payment`), sem 
   ficam para uma spec futura.
 - Fora de foco por ora: testes de UI Compose e de screenshot, TalkBack, AVD API 30+, e a ordenação do `orders` em terminal real.
 
-<!-- Decisões, bibliotecas e próximos passos entram na entrega (D3 do roadmap). -->
+## Decisões arquiteturais
+Cada decisão tem um ADR em [docs/adr/](docs/adr/). As que mais moldam o app:
+| Decisão | Resumo | ADR |
+|---|---|---|
+| Spec-Driven Development | Nada de código sem spec aprovada; BR/AC rastreáveis até os testes (`check-traceability.sh`) | [0001](docs/adr/0001-adotar-spec-driven-development.md) |
+| Harness para agentes de IA | Instruções, hooks e sensores decidem o que está pronto, não a IA | [0002](docs/adr/0002-adotar-harness-engineering-para-agentes-de-ia.md), [0004](docs/adr/0004-adotar-workflows-agenticos-orquestrados.md) |
+| Clean Architecture modular | `app`, `core/*` e `feature/<nome>/{api,domain,data,ui}`; domain em Kotlin puro; UDF com um `UiState` e um `onEvent` ([ARCHITECTURE.md](ARCHITECTURE.md)) | [0003](docs/adr/0003-stack-de-sensores-de-qualidade.md) |
+| Pagamento por Deep Link, Room como fonte da verdade | Compra gravada antes de abrir a Cielo; recuperação por consulta; sem SDK | [0010](docs/adr/0010-integracao-cielo-smart-por-deep-link.md) |
+| Escopo de case | Itens de produção (Crashlytics, assinatura, baseline profiles) ficam fora | [0009](docs/adr/0009-escopo-de-case-itens-de-producao-fora.md) |
+| Cobertura do `ui` | Compose, previews e código gerado do Hilt fora do Kover; 85% sobre a lógica | [0011](docs/adr/0011-cobertura-do-ui-exclui-composables-e-previews.md) |
+
+## Bibliotecas externas
+Versões estáveis, todas no [catálogo](gradle/libs.versions.toml) (política do [ADR-0007](docs/adr/0007-stack-de-bibliotecas-observabilidade-e-politicas-de-qualidade.md)).
+| Biblioteca | Para quê | Por quê |
+|---|---|---|
+| Jetpack Compose (BOM) + Material 3 | UI declarativa e design system `Ds*` | Padrão atual do Android; previews por estado |
+| Navigation Compose (rotas type-safe) | Navegação entre as 4 telas | Rotas tipadas, argumentos só como IDs |
+| Hilt | Injeção de dependência | Padrão do Android; dispatchers e relógio injetáveis, testes simples |
+| Kotlin Coroutines + Flow | Assíncrono e UDF | Padrão da linguagem; `StateFlow` por tela |
+| Room | Compras (fonte da verdade do pagamento) | Transações e `Flow`; sobrevive à morte do processo |
+| kotlinx.serialization | JSON do catálogo e da Cielo | Sem reflexão, menos regras de R8 |
+| kotlinx-collections-immutable | `UiState` estável | Evita recomposição desnecessária |
+| core-splashscreen | Splash nativa | API oficial |
+| Timber | Logs (só em debug) | Sem dado sensível, atrás de um `Logger` |
+| desugar_jdk_libs | `java.time` com `minSdk 24` | Terminais Cielo rodam Android 7.1+ |
+| JUnit 5, MockK, Turbine, Robolectric | Testes | Fakes e Flow; Robolectric só onde há Room/Android |
+| Kover, detekt, compose-rules, Spotless, Konsist | Sensores de qualidade | Fazem o `verify.sh` decidir "pronto" |
+
+Rede (Retrofit/OkHttp) e imagens (Coil) fazem parte da stack de referência, mas não entraram: o catálogo é um JSON local e o
+pagamento é por Deep Link.
+
+## O que faria com mais tempo
+- **QR Code do ingresso** (opcional no case): spec `002`, vinculado à compra aprovada.
+- **Credenciais Cielo por configuração gerenciada** (MDM/Cielo Store) em vez de `BuildConfig` ([roadmap F1](docs/roadmap.md)).
+- **Verificar em terminal real:** a ordenação do `orders` (a recuperação supõe ordem crescente) e a visibilidade de pacotes no Android 11+.
+- **Aprovação tardia:** aviso ao operador, prazo máximo e estorno (hoje a venda é aprovada em silêncio, Q14).
+- **Acessibilidade:** TalkBack em dispositivo e testes de UI Compose e de screenshot das previews.
+- **Journeys J7 e J9** executadas no AVD; backend para disponibilidade compartilhada entre aparelhos (hoje é por aparelho, Q11).
+- **Produção:** itens do [ADR-0009](docs/adr/0009-escopo-de-case-itens-de-producao-fora.md) (Crashlytics, assinatura, baseline profiles).
+
+## Uso de IA
+Como a IA foi orientada e usada: [docs/ai/](docs/ai/README.md) (restrições do harness), [log por etapa](docs/ai/log.md) e
+[prompts e chamadas por tarefa](docs/ai/prompts.md).
