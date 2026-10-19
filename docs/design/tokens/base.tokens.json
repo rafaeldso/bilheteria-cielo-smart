@@ -425,5 +425,33 @@
         ]
       }
     }
+  },
+  "color": {
+    "qr": {
+      "$type": "color",
+      "$description": "QR Code do ingresso (spec 002). Iguais nos dois temas de proposito: leitores precisam de modulos escuros sobre fundo claro com margem.",
+      "foreground": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "hex": "#000000"
+        }
+      },
+      "background": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "hex": "#ffffff"
+        }
+      }
+    }
   }
 }

@@ -27,6 +27,7 @@ após aprovação.
 | `DsProgressIndicator` | designsystem | `LinearProgressIndicator` | `.progress` | indeterminado | `progressbar` com rótulo; estático com reduzir animações | Planejado (spec 001) |
 | `DsSnackbar` | designsystem | `Snackbar` | `.snackbar` | com/sem ação | live region educada | Planejado |
 | `DsTextField` | designsystem | `OutlinedTextField` | — (adicionar ao kit quando a 1ª spec precisar) | texto, numérico, sensível | erro anunciado; rótulo sempre visível | Planejado |
+| `DsQrCode` | designsystem | — (`Canvas`; matriz `QrMatrix` própria, sem dependência da biblioteca de QR) | `.qr` | 200dp; preto sobre branco fixo (`qr.*`), margem de 4 módulos | papel `Image`; descrição por parâmetro, nunca o conteúdo codificado | Planejado (spec 002) |
 | `AmountText` | ui | `Text` | `.num` + tipo | tamanhos da escala | leitura "189 reais e 90 centavos" | Planejado |
 | `MaskedCardText` | ui | `Text` | — | — | leitura "final 4821"; nunca recebe PAN | Planejado |
 

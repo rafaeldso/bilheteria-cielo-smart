@@ -43,6 +43,8 @@ class DsIconsTest {
             "History" to DsIcons.History,
             "ReceiptLong" to DsIcons.ReceiptLong,
             "ConfirmationNumber" to DsIcons.ConfirmationNumber,
+            "Print" to DsIcons.Print,
+            "Share" to DsIcons.Share,
             "PointOfSale" to DsIcons.PointOfSale,
             "AddShoppingCart" to DsIcons.AddShoppingCart,
             "Lock" to DsIcons.Lock,

@@ -52,6 +52,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Serves the ticket images to the app the operator picks in the share sheet (spec 002, BR-41, BR-42). -->
+        <provider
+            android:name=".ticket.TicketFileProvider"
+            android:authorities="${applicationId}.tickets.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/ticket_file_paths" />
+        </provider>
+
         <service
             android:name=".cielo.PaymentForegroundService"
             android:exported="false"

@@ -26,4 +26,10 @@ sealed interface TicketingError : AppError {
     data object TerminalAppUnavailable : TicketingError
 
     data object StorageFailure : TicketingError
+
+    /** The purchase does not exist or is not approved: no tickets (BR-33, BR-36). */
+    data object TicketsUnavailable : TicketingError
+
+    /** The QR Code or an image file could not be produced (BR-36, BR-43). */
+    data object TicketGenerationFailed : TicketingError
 }

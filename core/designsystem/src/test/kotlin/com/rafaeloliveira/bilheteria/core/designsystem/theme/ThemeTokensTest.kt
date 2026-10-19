@@ -125,6 +125,41 @@ class ThemeTokensTest {
     }
 
     @Test
+    fun `dado tokens do QR Code quando comparar com as cores estendidas entao sao iguais nos dois temas`() {
+        val qr =
+            loadTokens("base.tokens.json")
+                .getValue("color")
+                .jsonObject
+                .getValue("qr")
+                .jsonObject
+        val foreground =
+            qr
+                .getValue(
+                    "foreground",
+                ).jsonObject
+                .getValue("\$value")
+                .jsonObject
+                .getValue("hex")
+                .jsonPrimitive.contentOrNull
+                .orEmpty()
+        val background =
+            qr
+                .getValue(
+                    "background",
+                ).jsonObject
+                .getValue("\$value")
+                .jsonObject
+                .getValue("hex")
+                .jsonPrimitive.contentOrNull
+                .orEmpty()
+
+        listOf(lightExtendedColors(), darkExtendedColors()).forEach { extended ->
+            assertEquals(Color(("FF" + foreground.removePrefix("#")).toLong(HEX_RADIX)), extended.qrForeground)
+            assertEquals(Color(("FF" + background.removePrefix("#")).toLong(HEX_RADIX)), extended.qrBackground)
+        }
+    }
+
+    @Test
     fun `dado tokens de tipografia quando comparar com a Typography entao tamanho peso altura e espacamento batem`() {
         val tokens = loadTokens("base.tokens.json").getValue("typography").jsonObject
 

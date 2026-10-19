@@ -20,13 +20,19 @@ import com.rafaeloliveira.bilheteria.core.common.Logger
 /** Keeps the messages so tests can check what was logged (and that it carries no sensitive data). */
 internal class RecordingLogger : Logger {
     val errors = mutableListOf<String>()
+    val warnings = mutableListOf<String>()
+    val infos = mutableListOf<String>()
 
-    override fun info(message: String) = Unit
+    override fun info(message: String) {
+        infos += message
+    }
 
     override fun warn(
         message: String,
         throwable: Throwable?,
-    ) = Unit
+    ) {
+        warnings += message
+    }
 
     override fun error(
         message: String,

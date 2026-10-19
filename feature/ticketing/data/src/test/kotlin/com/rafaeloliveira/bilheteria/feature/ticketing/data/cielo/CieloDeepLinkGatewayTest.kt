@@ -38,7 +38,7 @@ class CieloDeepLinkGatewayTest {
     private val credentials = CieloCredentials(TEST_CLIENT_ID, TEST_ACCESS_TOKEN)
 
     private fun gateway(dispatcher: CoroutineDispatcher) =
-        CieloDeepLinkGateway(encoder, credentials, launcher, session, dispatcher, logger)
+        CieloDeepLinkGateway(encoder, credentials, DeepLinkOpener(launcher, session, logger), session, dispatcher)
 
     @ParameterizedTest
     @ValueSource(strings = ["com.ads.lio.uriappclient", "br.com.cielosmart.orderservice"])

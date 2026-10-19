@@ -1,0 +1,741 @@
+<title>QR Code do ingresso · prancha</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--
+  Copyright 2026 Rafael Oliveira
+  Licensed under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+
+  Prancha da spec 002 (QR Code do ingresso), gerada do mockup-kit (docs/design/README.md).
+  Como usar (skill sdd-design):
+    1. Copie para docs/specs/NNN-nome/design/mockups.html.
+    2. Edite SÓ o bloco "DADOS DA FEATURE" no <script>: META, SCREENS (funções estado → HTML),
+       BOARDS (uma prancha por estado da spec, com notas) e PROTOTYPE (máquina de estados).
+    3. Use apenas variáveis --md-* (tokens de docs/design/tokens) e as classes de componentes
+       abaixo (cada uma mapeia um componente de docs/design/components.md).
+  Variáveis --md-* espelham docs/design/tokens/*.tokens.json. Mudou token? Atualize aqui também.
+  Dados SEMPRE fictícios: nada de PAN, CPF, nome ou valor real.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Roboto+Flex:opsz,wght@8..144,400..600&family=Roboto:wght@400;500&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,400,0..1,0&display=swap">
+<style>
+/* Layout: mesa de revisão — cabeçalho com metadados e controles, pranchas (um celular por estado)
+   com anotações em "redline", aba de protótipo clicável e aba de fluxo. */
+:root {
+  /* Cromo da prancha (segue o tema de quem visualiza) */
+  --bg: #e9edec;
+  --panel: #f7f9f8;
+  --ink: #1b2120;
+  --muted: #56615f;
+  --line: #ccd5d3;
+  --redline: #c2185b;
+  --redline-ink: #ffffff;
+  --focus: #006a6a;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-id: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* App (Android): famílias dos tokens font.family.* */
+  --font-brand: "Roboto Flex", Roboto, system-ui, sans-serif;
+  --font-plain: Roboto, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111615; --panel: #1a201f; --ink: #e3e9e8; --muted: #9ba6a4; --line: #2f3836;
+    --redline: #ff7aa8; --redline-ink: #2a0012; --focus: #80d5d4; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111615; --panel: #1a201f; --ink: #e3e9e8; --muted: #9ba6a4; --line: #2f3836;
+  --redline: #ff7aa8; --redline-ink: #2a0012; --focus: #80d5d4; color-scheme: dark;
+}
+
+/* ===== Tokens do app (docs/design/tokens) — escopo do celular, não da página ===== */
+.app {
+  --fs: 1; /* escala de fonte do sistema (1 = 100%, 2 = 200%) */
+  --md-primary: #00658F; --md-on-primary: #FFFFFF; --md-primary-container: #C7E7FF; --md-on-primary-container: #001E2E;
+  --md-secondary: #3B5F84; --md-on-secondary: #FFFFFF; --md-secondary-container: #D2E4FF; --md-on-secondary-container: #001D36;
+  --md-tertiary: #615A7C; --md-on-tertiary: #FFFFFF; --md-tertiary-container: #E7DEFF; --md-on-tertiary-container: #1D1736;
+  --md-error: #BA1A1A; --md-on-error: #FFFFFF; --md-error-container: #FFDAD6; --md-on-error-container: #410002;
+  --md-surface: #F6FAFE; --md-on-surface: #171C20; --md-surface-variant: #DDE3EA; --md-on-surface-variant: #41484D;
+  --md-surface-container-lowest: #FFFFFF; --md-surface-container-low: #F0F4F8; --md-surface-container: #EAEEF2;
+  --md-surface-container-high: #E4E9ED; --md-surface-container-highest: #DFE3E7;
+  --md-outline: #71787E; --md-outline-variant: #C1C7CE; --md-scrim: #000000;
+  --md-inverse-surface: #2C3135; --md-inverse-on-surface: #EDF1F5; --md-inverse-primary: #85CFFF;
+  --md-success: #2E6B30; --md-on-success: #FFFFFF; --md-success-container: #B1F1A9; --md-on-success-container: #002204;
+  --md-warning: #7A5900; --md-on-warning: #FFFFFF; --md-warning-container: #FFDEA3; --md-on-warning-container: #261900;
+  --md-space-xs: 4px; --md-space-sm: 8px; --md-space-md: 12px; --md-space-lg: 16px; --md-space-xl: 24px; --md-space-xxl: 32px;
+  --md-shape-extra-small: 4px; --md-shape-small: 8px; --md-shape-medium: 12px; --md-shape-large: 16px;
+  --md-shape-extra-large: 28px; --md-shape-full: 9999px;
+}
+.app[data-scheme="dark"] {
+  --md-primary: #85CFFF; --md-on-primary: #00344C; --md-primary-container: #004C6C; --md-on-primary-container: #C7E7FF;
+  --md-secondary: #A2C9F7; --md-on-secondary: #003258; --md-secondary-container: #224A70; --md-on-secondary-container: #D2E4FF;
+  --md-tertiary: #CBC1E9; --md-on-tertiary: #332C4C; --md-tertiary-container: #4A4263; --md-on-tertiary-container: #E7DEFF;
+  --md-error: #FFB4AB; --md-on-error: #690005; --md-error-container: #93000A; --md-on-error-container: #FFDAD6;
+  --md-surface: #0F1418; --md-on-surface: #DFE3E7; --md-surface-variant: #41484D; --md-on-surface-variant: #C1C7CE;
+  --md-surface-container-lowest: #0A0F12; --md-surface-container-low: #171C20; --md-surface-container: #1B2024;
+  --md-surface-container-high: #262B2F; --md-surface-container-highest: #31363A;
+  --md-outline: #8B9198; --md-outline-variant: #41484D; --md-scrim: #000000;
+  --md-inverse-surface: #DFE3E7; --md-inverse-on-surface: #2C3135; --md-inverse-primary: #00658F;
+  --md-success: #96D78F; --md-on-success: #00390A; --md-success-container: #13521B; --md-on-success-container: #B1F1A9;
+  --md-warning: #F5BF48; --md-on-warning: #402D00; --md-warning-container: #5C4300; --md-on-warning-container: #FFDEA3;
+}
+
+/* ===== Componentes e utilitários adicionados pela spec 001 (aprovados em 2026-10-17) =====
+   DsQuantityStepper (.stepper), DsProgressIndicator (.progress), DsButton desabilitado/largura total,
+   DsStatusBadge neutro, displaySmall, cabeçalho de seção fixo, dica e cabeçalho de item. */
+.btn:disabled { background: color-mix(in srgb, var(--md-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-on-surface) 38%, transparent); cursor: default; }
+.btn.block { width: 100%; justify-content: center; }
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px 16px 8px;
+  padding: 8px; border-radius: var(--md-shape-full); background: var(--md-surface-container-high); }
+.stepper .icon-btn { width: 48px; height: 48px; border-radius: var(--md-shape-full);
+  background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.stepper .icon-btn:disabled { background: transparent; color: color-mix(in srgb, var(--md-on-surface) 38%, transparent); cursor: default; }
+.stepper .qty { font: 400 calc(28px * var(--fs))/calc(36px * var(--fs)) var(--font-brand); min-width: 3ch; text-align: center; }
+.progress { height: 4px; margin: 4px 16px; border-radius: 2px; overflow: hidden; background: var(--md-secondary-container); position: relative; }
+.progress::after { content: ""; position: absolute; inset: 0 60% 0 0; background: var(--md-primary); border-radius: 2px;
+  animation: ds-progress 1.4s infinite ease-in-out; }
+@keyframes ds-progress { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { .progress::after { animation: none; inset: 0; opacity: .5; } }
+.status.neutral { background: var(--md-surface-container-highest); color: var(--md-on-surface-variant); }
+.event-meta { padding: 4px 16px 12px; display: grid; gap: 2px; }
+.hint { padding: 0 16px 4px; }
+.t-display-small { font: 400 calc(36px * var(--fs))/calc(44px * var(--fs)) var(--font-brand); }
+.month-header { position: sticky; top: 0; z-index: 1; background: var(--md-surface); }
+
+
+/* ===== Propostos pela spec 002 (UI Spec 002 §5; entram no kit só após aprovação) =====
+   DsQrCode (.qr) com tokens qr.foreground/qr.background fixos (iguais nos dois temas), cartão de ingresso
+   (composição local da feature, .ticket), barra de ações fixa (.sticky-actions), ação do snackbar. */
+.app { --md-qr-foreground: #000000; --md-qr-background: #FFFFFF; }
+.ticket { margin: 0 16px 12px; padding: 16px; border-radius: var(--md-shape-large); background: var(--md-surface-container-low);
+  display: grid; gap: 12px; justify-items: center; }
+.ticket > h4 { justify-self: start; margin: 0; }
+.ticket-sub { text-align: center; }
+.snackbar > span:first-child { flex: 1; }
+.qr { width: 200px; height: 200px; border-radius: var(--md-shape-small); background: var(--md-qr-background); overflow: hidden; }
+.sticky-actions { position: sticky; bottom: 0; z-index: 2; display: grid; gap: 8px; padding: 12px 16px;
+  background: var(--md-surface); border-top: 1px solid var(--md-outline-variant); }
+.sticky-actions .snackbar { position: absolute; left: 12px; right: 12px; bottom: calc(100% + 8px); z-index: 3; }
+.app.fs-large .sticky-actions { position: static; }
+.app.fs-large .sticky-actions .snackbar { position: static; }
+.btn.busy { cursor: default; }
+.sk-h16 { height: 16px; } .sk-h20 { height: 20px; }
+.sk-w40 { width: 40%; } .sk-w55 { width: 55%; } .sk-w70 { width: 70%; }
+.sk-qr { width: 200px; height: 200px; }
+.sk-start { justify-self: start; }
+.snack-action { background: transparent; border: 0; color: var(--md-inverse-primary); min-height: 48px; padding: 0 8px; cursor: pointer; border-radius: var(--md-shape-extra-small); }
+.spin { animation: ds-spin 1s linear infinite; }
+@keyframes ds-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
+/* ===== Página ===== */
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-ui); }
+.wrap {
+  max-width: 1240px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+  display: grid; gap: 28px;
+}
+.id { font-family: var(--font-id); font-size: 12.5px; letter-spacing: .02em; }
+header.meta { display: grid; gap: 14px; }
+.eyebrow { font: 500 12px/1 var(--font-id); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+h1 { margin: 0; font: 600 clamp(24px, 3.4vw, 34px)/1.15 var(--font-ui); text-wrap: balance; letter-spacing: -.01em; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 13.5px; }
+.facts b { color: var(--ink); font-weight: 500; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--line); font: 500 12px/1.4 var(--font-id); color: var(--ink); background: var(--panel); }
+.pill.review::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--redline); }
+.lede { max-width: 68ch; margin: 0; color: var(--muted); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.tabs, .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 8px; background: var(--bg); }
+.tabs button, .seg button {
+  font: 500 13.5px/1 var(--font-ui); color: var(--muted); background: transparent; border: 0;
+  padding: 8px 12px; border-radius: 6px; cursor: pointer; min-height: 34px;
+}
+.tabs button[aria-selected="true"], .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.ctl { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.spacer { flex: 1; }
+button:focus-visible, select:focus-visible, .app [tabindex]:focus-visible, .app button:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px;
+}
+
+/* Pranchas */
+.screen-group { display: grid; gap: 14px; }
+.screen-group > h2 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+  font: 600 19px/1.3 var(--font-ui); padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.screen-group > h2 .id { color: var(--muted); font-weight: 400; }
+.boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 32px 28px; }
+.board { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.board-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.board-head strong { font: 600 15px/1.3 var(--font-ui); }
+.refs { display: flex; flex-wrap: wrap; gap: 4px; }
+.ref { font: 500 11.5px/1 var(--font-id); padding: 4px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 13.5px; }
+.notes li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; }
+.notes li > span:last-child { min-width: 0; }
+.notes .n, .ann::after {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--redline); color: var(--redline-ink); font: 600 11px/1 var(--font-id);
+}
+.notes code { font-family: var(--font-id); font-size: 12px; }
+body.hide-notes .notes, body.hide-notes .ann::after { display: none; }
+
+/* Celular */
+.device { width: min(360px, 100%); justify-self: center; border-radius: 34px; padding: 8px;
+  background: #1d2221; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 12px 28px -14px rgba(0,0,0,.45); }
+.app { position: relative; height: 720px; border-radius: 27px; overflow: hidden; display: flex; flex-direction: column;
+  background: var(--md-surface); color: var(--md-on-surface); font-family: var(--font-plain); }
+.statusbar { flex: none; height: 28px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; font: 500 13px/1 var(--font-plain); color: var(--md-on-surface); }
+.statusbar .ms { font-size: 15px; }
+.gesture { flex: none; height: 22px; display: grid; place-items: center; }
+.gesture::before { content: ""; width: 108px; height: 4px; border-radius: 2px; background: var(--md-on-surface); opacity: .55; }
+.body { flex: 1; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+
+/* Tipografia M3 (escala com --fs) */
+.t-headline-small { font: 400 calc(24px * var(--fs))/calc(32px * var(--fs)) var(--font-brand); }
+.t-title-large { font: 400 calc(22px * var(--fs))/calc(28px * var(--fs)) var(--font-brand); }
+.t-title-medium { font: 500 calc(16px * var(--fs))/calc(24px * var(--fs)) var(--font-plain); letter-spacing: .15px; }
+.t-body-large { font: 400 calc(16px * var(--fs))/calc(24px * var(--fs)) var(--font-plain); letter-spacing: .5px; }
+.t-body-medium { font: 400 calc(14px * var(--fs))/calc(20px * var(--fs)) var(--font-plain); letter-spacing: .25px; }
+.t-label-large { font: 500 calc(14px * var(--fs))/calc(20px * var(--fs)) var(--font-plain); letter-spacing: .1px; }
+.t-label-medium { font: 500 calc(12px * var(--fs))/calc(16px * var(--fs)) var(--font-plain); letter-spacing: .5px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--md-on-surface-variant); }
+
+/* Componentes (ver docs/design/components.md) */
+.ms { font-family: "Material Symbols Outlined"; font-weight: 400; font-style: normal; font-size: 24px; line-height: 1;
+  display: inline-block; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased; user-select: none; }
+.topbar { display: flex; align-items: center; gap: 4px; min-height: 64px; padding: 0 4px 0 16px; }
+.topbar.has-nav { padding-left: 4px; }
+.topbar h3 { margin: 0; flex: 1; min-width: 0; }
+.icon-btn { width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: transparent; color: var(--md-on-surface-variant); cursor: pointer; }
+.chips { display: flex; gap: 8px; padding: 4px 16px 8px; overflow-x: auto; scrollbar-width: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 16px;
+  border-radius: var(--md-shape-small); border: 1px solid var(--md-outline); background: transparent;
+  color: var(--md-on-surface-variant); cursor: pointer; position: relative; }
+.chip::before { content: ""; position: absolute; inset: -8px 0; } /* área de toque 48dp */
+.chip[aria-pressed="true"] { background: var(--md-secondary-container); color: var(--md-on-secondary-container); border-color: transparent; padding-left: 8px; }
+.chip .ms { font-size: 18px; }
+.summary { margin: 4px 16px 12px; padding: 16px; border-radius: var(--md-shape-large);
+  background: var(--md-primary-container); color: var(--md-on-primary-container); display: grid; gap: 4px; }
+.summary .big { font: 400 calc(32px * var(--fs))/calc(40px * var(--fs)) var(--font-brand); letter-spacing: -.25px; }
+.section-label { padding: 12px 16px 4px; }
+.list { list-style: none; margin: 0; padding: 0; }
+.item { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px; align-items: center; min-height: 72px;
+  padding: 8px 24px 8px 16px; cursor: pointer; }
+.item + .item { border-top: 1px solid var(--md-outline-variant); }
+.item:hover { background: color-mix(in srgb, var(--md-on-surface) 8%, transparent); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.avatar .ms { font-size: 20px; }
+.item .lines { min-width: 0; display: grid; }
+.item .end { display: grid; justify-items: end; gap: 4px; }
+.status { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--md-shape-small); }
+.status .ms { font-size: 14px; }
+.status.ok { background: var(--md-success-container); color: var(--md-on-success-container); }
+.status.warn { background: var(--md-warning-container); color: var(--md-on-warning-container); }
+.status.bad { background: var(--md-error-container); color: var(--md-on-error-container); }
+.btn { min-height: 40px; padding: 0 24px; border-radius: var(--md-shape-full); border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; position: relative; }
+.btn::before { content: ""; position: absolute; inset: -4px 0; } /* área de toque 48dp */
+.btn.filled { background: var(--md-primary); color: var(--md-on-primary); }
+.btn.tonal { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.btn.outlined { background: transparent; color: var(--md-primary); border: 1px solid var(--md-outline); }
+.btn .ms { font-size: 18px; }
+.state-msg { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 64px 32px 24px; }
+.state-msg .glyph { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--md-surface-container-high); color: var(--md-on-surface-variant); }
+.state-msg .glyph.err { background: var(--md-error-container); color: var(--md-on-error-container); }
+.state-msg .glyph .ms { font-size: 32px; }
+.state-msg p { margin: 0; max-width: 30ch; }
+.sk { border-radius: var(--md-shape-small); background: var(--md-surface-container-highest); }
+.sk-row { display: grid; grid-template-columns: 40px 1fr 64px; gap: 16px; align-items: center; padding: 16px; }
+.sk-row .c { width: 40px; height: 40px; border-radius: 50%; }
+@media (prefers-reduced-motion: no-preference) {
+  .sk { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .45; } }
+}
+.detail-hero { padding: 8px 16px 20px; display: grid; gap: 4px; }
+.kv { margin: 0 16px; border-radius: var(--md-shape-medium); background: var(--md-surface-container-low); }
+.kv div { display: flex; justify-content: space-between; gap: 16px; padding: 14px 16px; }
+.kv div + div { border-top: 1px solid var(--md-outline-variant); }
+.kv dt, .kv dd { margin: 0; }
+.kv dd { text-align: right; }
+.actions { display: grid; gap: 12px; padding: 24px 16px; }
+.snackbar { position: absolute; left: 12px; right: 12px; bottom: 34px; padding: 14px 16px; border-radius: var(--md-shape-extra-small);
+  background: var(--md-inverse-surface); color: var(--md-inverse-on-surface); display: flex; gap: 8px; align-items: center; }
+
+/* Anotações sobre o celular (redline) */
+.ann { position: relative; }
+.ann::after { content: attr(data-n); position: absolute; top: 6px; right: 6px; z-index: 2;
+  box-shadow: 0 0 0 2px var(--md-surface); }
+
+/* Protótipo */
+.proto { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 32px; align-items: start; }
+.proto aside { display: grid; gap: 16px; align-content: start; max-width: 60ch; }
+.proto select { font: 400 14px/1.2 var(--font-ui); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); min-height: 38px; }
+.log { margin: 0; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel);
+  font: 400 12.5px/1.6 var(--font-id); color: var(--muted); max-height: 220px; overflow: auto; }
+@media (max-width: 760px) { .proto { grid-template-columns: 1fr; } }
+
+/* Fluxo e decisão */
+.panel { padding: 18px 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); display: grid; gap: 10px; }
+.panel h2 { margin: 0; font: 600 17px/1.3 var(--font-ui); }
+.panel p, .panel ol { margin: 0; max-width: 72ch; }
+.panel ol { padding-left: 20px; display: grid; gap: 6px; }
+.diagram { overflow-x: auto; }
+pre.mermaid { margin: 0; background: transparent; color: var(--ink); font: 400 13px/1.5 var(--font-id); }
+</style>
+
+<div class="wrap">
+  <header class="meta">
+    <div class="eyebrow" id="meta-eyebrow"></div>
+    <h1 id="meta-title"></h1>
+    <div class="facts" id="meta-facts"></div>
+    <p class="lede" id="meta-lede"></p>
+  </header>
+
+  <div class="toolbar" role="group" aria-label="Controles da prancha">
+    <div class="tabs" role="tablist" aria-label="Visualização">
+      <button role="tab" id="tab-boards" aria-selected="true" aria-controls="view-boards">Pranchas</button>
+      <button role="tab" id="tab-prototype" aria-selected="false" aria-controls="view-prototype">Protótipo</button>
+      <button role="tab" id="tab-flow" aria-selected="false" aria-controls="view-flow">Fluxo e decisão</button>
+    </div>
+    <span class="spacer"></span>
+    <span class="ctl">Tema do app
+      <span class="seg" id="seg-scheme">
+        <button data-v="light" aria-pressed="true">Claro</button>
+        <button data-v="dark" aria-pressed="false">Escuro</button>
+      </span>
+    </span>
+    <span class="ctl">Fonte
+      <span class="seg" id="seg-fs">
+        <button data-v="1" aria-pressed="true">100%</button>
+        <button data-v="2" aria-pressed="false">200%</button>
+      </span>
+    </span>
+    <span class="ctl">Anotações
+      <span class="seg" id="seg-notes">
+        <button data-v="on" aria-pressed="true">Ver</button>
+        <button data-v="off" aria-pressed="false">Ocultar</button>
+      </span>
+    </span>
+  </div>
+
+  <main>
+    <section id="view-boards" role="tabpanel" aria-labelledby="tab-boards" style="display:grid;gap:40px"></section>
+
+    <section id="view-prototype" role="tabpanel" aria-labelledby="tab-prototype" hidden>
+      <div class="proto">
+        <div class="device"><div class="app" id="proto-app"></div></div>
+        <aside>
+          <div class="panel">
+            <h2>Como testar</h2>
+            <p id="proto-help"></p>
+            <label class="ctl" for="proto-scenario">Cenário da API
+              <select id="proto-scenario"></select>
+            </label>
+            <div><button class="pill" id="proto-restart" type="button">Reiniciar fluxo</button></div>
+          </div>
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px">Eventos emitidos (UiEvent)</div>
+            <pre class="log" id="proto-log" aria-live="polite"></pre>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="view-flow" role="tabpanel" aria-labelledby="tab-flow" hidden>
+      <div style="display:grid;gap:20px">
+        <div class="panel">
+          <h2>Fluxo de navegação</h2>
+          <div class="diagram"><pre class="mermaid" id="flow-diagram"></pre></div>
+        </div>
+        <div class="panel">
+          <h2>Como decidir</h2>
+          <ol id="decision-steps"></ol>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ======================= DADOS DA FEATURE (edite só este bloco) ======================= */
+
+const META = {
+  eyebrow: "Spec 002 v1.1.2 · UI Spec v0.2.1 · dados fictícios",
+  title: "QR Code do ingresso",
+  facts: [["UI Spec", "v0.2.1"], ["Spec", "002 v1.1.2"], ["Telas", "SCR-05 (novo) e SCR-03 (ação nova)"], ["Status", "Aprovada"]],
+  lede: "Depois de uma venda aprovada, o operador abre os ingressos, vê um QR Code por ingresso e entrega ao comprador: " +
+        "imprime na impressora do terminal ou compartilha pelo menu do Android. Cada prancha é um estado da seção 6 da spec. " +
+        "Os QR Codes desta prancha são ilustrativos e não podem ser lidos. Os números vermelhos ligam a tela às notas de componente, token e acessibilidade.",
+};
+
+// Dados fictícios (eventos, locais, códigos e referências inventados; nenhum número de cartão).
+const EVENTS = [
+  { id: "e1", name: "Noite de Jazz no Parque", date: "sáb., 15 nov · 20:00", dateSpoken: "sábado, 15 de novembro, às 20 horas",
+    venue: "Concha Acústica Municipal", price: 5000 },
+  { id: "e2", name: "Stand-up: Rindo à Toa", date: "sex., 21 nov · 21:30", dateSpoken: "sexta, 21 de novembro, às 21 e 30",
+    venue: "Teatro do Centro", price: 6000 },
+  { id: "e3", name: "Orquestra Jovem: Clássicos do Cinema", date: "dom., 30 nov · 17:00", dateSpoken: "domingo, 30 de novembro, às 17 horas",
+    venue: "Auditório da Cidade", price: 3500 },
+];
+const HISTORY = [
+  { id: "p3", ref: "7F3K-9Q2L", eventId: "e1", qty: 3, when: "17/10/2026 às 14:32", status: "Approved", brand: "Visa", auth: "A1B2C3", nsu: "000123456" },
+  { id: "p2", ref: "2M8D-4XR1", eventId: "e2", qty: 1, when: "17/10/2026 às 13:05", status: "Cancelled" },
+  { id: "p1", ref: "9C1T-6HV7", eventId: "e3", qty: 1, when: "17/10/2026 às 11:48", status: "Declined" },
+];
+const STATUS = {
+  Approved: { label: "Aprovada", icon: "check_circle", tone: "ok" },
+  Declined: { label: "Negada", icon: "block", tone: "bad" },
+  Cancelled: { label: "Cancelada", icon: "cancel", tone: "neutral" },
+};
+// TicketActionState.PrintFailed(reason) e ShareFailed: texto específico por motivo (BR-40, BR-43).
+const ACTION_ERRORS = {
+  terminal: "Impressão Cielo indisponível neste aparelho. Nenhum ingresso foi impresso.",
+  paper: "A impressora está sem papel. Coloque papel e tente de novo.",
+  printer: "A impressora não concluiu a impressão. Confira o papel.",
+  unknown: "Não foi possível imprimir os ingressos.",
+  share: "Não foi possível compartilhar os ingressos.",
+};
+
+const money = (c) => "R$ " + (c / 100).toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const spoken = (c) => { const r = Math.floor(c / 100), ct = c % 100; return `${r} reais${ct ? ` e ${ct} centavos` : ""}`; };
+const ev = (id) => EVENTS.find((e) => e.id === id);
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+const statusBadge = (st, { cls = "", attrs = "" } = {}) => `<span class="status ${STATUS[st].tone} t-label-medium ${cls}" ${attrs}><span class="ms" aria-hidden="true">${STATUS[st].icon}</span>${STATUS[st].label}</span>`;
+
+const statusBar = () => `<div class="statusbar" aria-hidden="true"><span class="num">14:40</span>
+  <span><span class="ms">signal_cellular_4_bar</span> <span class="ms">wifi</span> <span class="ms">battery_5_bar</span></span></div>`;
+const topBar = (title, back) => back
+  ? `<div class="topbar has-nav"><button class="icon-btn" data-ev="NavigateUp" aria-label="${back}"><span class="ms">arrow_back</span></button>
+      <h3 class="t-title-large" role="heading" aria-level="1">${title}</h3></div>`
+  : `<div class="topbar"><h3 class="t-title-large" role="heading" aria-level="1">${title}</h3></div>`;
+const stateMsg = ({ icon, title, body, err, action, n = 1, role = "" }) => `<div class="state-msg ann" data-n="${n}" ${role}>
+  <div class="glyph${err ? " err" : ""}"><span class="ms" aria-hidden="true">${icon}</span></div>
+  <h4 class="t-title-medium" style="margin:0">${title}</h4>
+  <p class="t-body-medium muted">${body}</p>${action || ""}</div>`;
+
+/* QR Code ILUSTRATIVO: matriz 25x25 pseudoaleatória (semente) com os 3 marcadores de posição. Não é um QR válido. */
+function qrSvg(seed) {
+  const N = 25; let x = 0; for (const c of seed) x = (x * 31 + c.charCodeAt(0)) >>> 0;
+  const rnd = () => { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296; };
+  const finder = (r, c) => {
+    for (const [r0, c0] of [[0, 0], [0, N - 7], [N - 7, 0]]) {
+      if (r >= r0 - 1 && r <= r0 + 7 && c >= c0 - 1 && c <= c0 + 7) {
+        const rr = r - r0, cc = c - c0;
+        if (rr < 0 || cc < 0 || rr > 6 || cc > 6) return 0;
+        return (rr === 0 || rr === 6 || cc === 0 || cc === 6 || (rr >= 2 && rr <= 4 && cc >= 2 && cc <= 4)) ? 1 : 0;
+      }
+    }
+    return null;
+  };
+  const Q = 4, T = N + 2 * Q; let rects = "";
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const f = finder(r, c); const on = f === null ? rnd() > 0.52 : f === 1;
+    if (on) rects += `<rect x="${c + Q}" y="${r + Q}" width="1" height="1"/>`;
+  }
+  return `<svg viewBox="0 0 ${T} ${T}" width="100%" height="100%" shape-rendering="crispEdges" aria-hidden="true">
+    <rect width="${T}" height="${T}" fill="var(--md-qr-background)"/><g fill="var(--md-qr-foreground)">${rects}</g></svg>`;
+}
+const snack = (text, action, n, ns) => `<div class="snackbar t-body-medium${ns ? " ann" : ""}"${ns ? ` data-n="${ns}"` : ""} role="status"><span>${text}</span>
+  ${action ? `<button class="snack-action t-label-large${n ? " ann" : ""}"${n ? ` data-n="${n}"` : ""} data-ev="${action[1]}">${action[0]}</button>` : ""}</div>`;
+
+const SCREENS = {
+  // SCR-03 Comprovante (spec 001) — só o que a 0.5.0 muda: ações do estado Approved.
+  // state = { kind: "Approved" | "Declined" | "Cancelled", purchaseId, from: "sale" | "history", snackbar }
+  "SCR-03": (s) => {
+    const p = HISTORY.find((x) => x.id === s.purchaseId);
+    const e = ev(p.eventId);
+    const total = e.price * p.qty;
+    const head = { Approved: ["Pagamento aprovado", "Entregue os ingressos ao comprador."],
+      Declined: ["Pagamento negado", "A Cielo não autorizou o pagamento. Se o comprador quiser, refaça a venda com outra forma de pagamento."],
+      Cancelled: ["Pagamento cancelado", "O pagamento foi cancelado no terminal."] }[s.kind];
+    const rows = [["Nº da compra", p.ref], ["Evento", e.name], ["Data do evento", e.date], ["Local", e.venue],
+      ["Quantidade", plural(p.qty, "ingresso", "ingressos")], ["Valor unitário", money(e.price)], ["Total", money(total)],
+      ["Data/hora da compra", p.when], ["Status", STATUS[s.kind].label]];
+    if (s.kind === "Approved") rows.push(["Bandeira", p.brand], ["Código de autorização", p.auth], ["NSU", p.nsu]);
+    const viewTickets = `<button class="btn filled block t-label-large ann" data-n="1" data-ev="OnOpenTickets"><span class="ms" aria-hidden="true">confirmation_number</span>Ver ingressos</button>`;
+    let actions = "";
+    if (s.kind === "Approved" && s.from === "sale") {
+      actions = `<div class="sticky-actions">${viewTickets}
+        <button class="btn tonal block t-label-large ann" data-n="2" data-ev="OnNewSale"><span class="ms" aria-hidden="true">add_shopping_cart</span>Nova venda</button></div>`;
+    } else if (s.kind === "Approved") {
+      actions = `<div class="sticky-actions">${viewTickets}</div>`;
+    } else if (s.from === "sale") {
+      actions = `<div class="actions"><button class="btn filled block t-label-large ann" data-n="1" data-ev="OnNewSale"><span class="ms" aria-hidden="true">add_shopping_cart</span>Nova venda</button></div>`;
+    }
+    return topBar("Comprovante", s.from === "history" ? "Voltar ao histórico" : null) + `
+      <div class="detail-hero" role="${s.kind === "Approved" ? "status" : "alert"}">
+        ${statusBadge(s.kind, { attrs: 'style="justify-self:start"' })}
+        <span class="t-display-small num" aria-label="${spoken(total)}">${money(total)}</span>
+        <span class="t-title-medium">${head[0]}</span>
+        <span class="t-body-medium muted">${head[1]}</span></div>
+      <dl class="kv t-body-medium">${rows.map(([k, v]) => `<div><dt class="muted">${k}</dt><dd class="num">${v}</dd></div>`).join("")}</dl>
+      ${actions}${s.snackbar ? snack(s.snackbar) : ""}`;
+  },
+
+  // SCR-05 Ingressos. state = { kind: "Loading" | "Content" | "Error", purchaseId, from,
+  //   action: "Idle" | "Printing" | "PrintFailed" | "ShareFailed", reason: "terminal" | "printer" | "unknown", snackbar }
+  "SCR-05": (s) => {
+    const top = topBar("Ingressos", "Voltar ao comprovante");
+    if (s.kind === "Loading") return top + `<div role="status" aria-busy="true" aria-label="Carregando ingressos" class="ann" data-n="1">
+      <div class="event-meta"><div class="sk sk-h16 sk-w70"></div><div class="sk sk-h16 sk-w55"></div><div class="sk sk-h16 sk-w40"></div></div>
+      ${[1, 2].map(() => `<div class="ticket"><div class="sk sk-h20 sk-w40 sk-start"></div><div class="sk sk-qr"></div><div class="sk sk-h16 sk-w70"></div><div class="sk sk-h16 sk-w55"></div></div>`).join("")}</div>`;
+    if (s.kind === "Error") return top + stateMsg({ icon: "qr_code_2", err: true, role: 'role="alert"',
+      title: "Não foi possível abrir os ingressos", body: "Os dados desta compra não puderam ser lidos ou os QR Codes não puderam ser gerados.",
+      action: `<button class="btn filled t-label-large ann" data-n="2" data-ev="OnRetry"><span class="ms" aria-hidden="true">refresh</span>Tentar novamente</button>` });
+    const p = HISTORY.find((x) => x.id === s.purchaseId); const e = ev(p.eventId);
+    const printing = s.action === "Printing";
+    const failed = s.action === "PrintFailed" || s.action === "ShareFailed";
+    // Marcadores (data-n) por estado: cada prancha numera só o que as suas notas descrevem.
+    const M = s.action === "Idle" ? { meta: 1, card: 2, qr: 3, print: 4 }
+      : s.action === "Printed" ? { printed: 1 } : printing ? { print: 1, share: 2 } : s.action === "PrintFailed" && s.reason !== "terminal" ? { snack: 1, snackAction: 2 } : failed ? { snack: 1 } : {};
+    const an = (n) => n ? { c: " ann", a: ` data-n="${n}"` } : { c: "", a: "" };
+    const cards = Array.from({ length: p.qty }, (_, i) => `<article class="ticket${i === 0 ? an(M.card).c : ""}"${i === 0 ? an(M.card).a : ""} aria-labelledby="t${i}">
+        <h4 id="t${i}" class="t-title-medium" role="heading" aria-level="2">Ingresso ${i + 1} de ${p.qty}</h4>
+        <div class="qr${i === 0 ? an(M.qr).c : ""}"${i === 0 ? an(M.qr).a : ""} role="img" aria-label="QR Code do ingresso ${i + 1} de ${p.qty}, ${e.name}">${qrSvg(p.ref + ":" + i)}</div>
+        <span class="t-body-medium muted ticket-sub">${e.name}<br>${e.date} · ${e.venue}</span></article>`).join("");
+    const progress = s.action === "PrintFailed" && s.reason !== "terminal" ? ` Imprimiu ${s.printed ?? 1} de ${p.qty} ingressos.` : "";
+    const err = s.action === "PrintFailed" ? [ACTION_ERRORS[s.reason || "unknown"] + progress, "OnRetryAction"]
+      : s.action === "ShareFailed" ? [ACTION_ERRORS.share, "OnRetryAction"] : null;
+    return top + `
+      <div class="event-meta${an(M.meta).c}"${an(M.meta).a}>
+        <span class="t-title-medium">${e.name}</span>
+        <span class="t-body-medium muted">${e.date} · ${e.venue}</span>
+        <span class="t-body-medium muted num">${plural(p.qty, "ingresso", "ingressos")}</span></div>
+      ${cards}
+      <div class="sticky-actions">
+        ${err ? snack(err[0], ["Tentar novamente", err[1]], M.snackAction, M.snack) : ""}
+        ${s.snackbar ? snack(s.snackbar) : ""}
+        ${s.action === "Printed" ? snack("Ingressos impressos", null, null, M.printed) : ""}
+        <button class="btn filled block t-label-large${an(M.print).c}${printing ? " busy" : ""}"${an(M.print).a} data-ev="OnPrint" ${printing ? 'aria-disabled="true" aria-busy="true"' : ""}>
+          <span class="ms${printing ? " spin" : ""}" aria-hidden="true">${printing ? "progress_activity" : "print"}</span>${printing ? "Imprimindo…" : "Imprimir ingressos"}</button>
+        <button class="btn tonal block t-label-large${an(M.share).c}"${an(M.share).a} data-ev="OnShare" ${printing ? "disabled" : ""}><span class="ms" aria-hidden="true">share</span>Compartilhar ingressos</button>
+      </div>`;
+  },
+};
+
+/* Pranchas: uma por estado da spec (seção 6). refs = IDs rastreáveis; notes = redlines numerados. */
+const BOARDS = [
+  { screen: "SCR-05", name: "Ingressos", boards: [
+    { state: { kind: "Content", purchaseId: "p3", from: "sale", action: "Idle" }, label: "Content · Idle", refs: ["US-01", "BR-30", "BR-31", "BR-32", "BR-35", "BR-41", "AC-29", "AC-31", "AC-34", "AC-41"], notes: [
+      "<b>Evento</b>: nome, data, local e quantidade no topo (BR-35), com a mesma geometria do cabeçalho da compra. Vira o contexto de todos os QR Codes abaixo.",
+      "<b>Ingresso n de q</b>: um cartão por ingresso (<code>surfaceContainerLow</code>, <code>shape.large</code>), composto na feature com <code>DsQrCode</code>; título como heading. Compra de 10 ingressos = 10 cartões; a tela rola.",
+      "<b>QR Code</b>: <code>DsQrCode</code> (proposto), 200dp, sempre preto sobre branco com margem (tokens <code>qr.foreground</code>/<code>qr.background</code>), nos dois temas, para leitores o lerem. TalkBack lê “QR Code do ingresso 1 de 3, Noite de Jazz no Parque”, nunca o conteúdo.",
+      "<b>Ações</b> na barra inferior fixa (alcance do polegar; com fonte ≥ 150% as ações rolam junto da lista, como na 0.4.4 da 001): <b>Imprimir ingressos</b> é a ação primária (<code>DsButton</code> Filled; emite <code>OnPrint</code>); <b>Compartilhar ingressos</b>, tonal (<code>OnShare</code>), abre o menu do Android com as imagens.",
+    ] },
+    { state: { kind: "Content", purchaseId: "p3", from: "sale", action: "Printing" }, label: "Content · Printing", refs: ["US-04", "BR-38", "BR-39", "AC-38", "AC-39"], notes: [
+      "<b>Imprimindo</b>: o botão mantém o contêiner <code>primary</code> com <code>onPrimary</code> (contraste 6,4:1) e ganha indicador e o texto “Imprimindo…” (<code>DsButton</code> carregando: toque bloqueado e anunciado como ocupado, sem o cinza de 38% de desabilitado, porque é a única informação de progresso). Novo toque é ignorado (BR-39). Anunciado “Imprimindo os ingressos” (educado).",
+      "<b>Compartilhar</b> fica indisponível enquanto imprime, para uma falha de compartilhamento não liberar uma segunda impressão. Decisão <b>D3</b>, aprovada: está na spec 1.0.1 (BR-39, AC-39).",
+    ] },
+    { state: { kind: "Content", purchaseId: "p3", from: "sale", action: "PrintFailed", reason: "printer" }, label: "Content · PrintFailed", refs: ["BR-40", "AC-40"], notes: [
+      "<b>Falha de impressão</b>: <code>DsSnackbar</code> sobreposto acima da barra (não empurra a lista), com ação e texto específico por motivo (impressora/papel aqui; terminal ausente na prancha seguinte; desconhecido, §4.4). Compra e QR Codes não mudam. Fica na tela até o operador tocar em imprimir ou compartilhar de novo.",
+      "<b>Tentar novamente</b> emite <code>OnRetryAction</code> e repete a impressão.",
+    ] },
+    { state: { kind: "Content", purchaseId: "p3", from: "sale", action: "PrintFailed", reason: "paper", printed: 1 }, label: "Content · PrintFailed (sem papel)", refs: ["BR-40", "AC-40"], notes: [
+      "<b>Sem papel</b> (resposta <code>code 1</code> da impressão): texto próprio e a contagem “Imprimiu 1 de 3 ingressos.”. <b>Tentar novamente</b> retoma do ingresso 2, sem reimprimir o 1.",
+      "<b>Ação</b>: <code>OnRetryAction</code>.",
+    ] },
+    { state: { kind: "Content", purchaseId: "p3", from: "sale", action: "Printed" }, label: "Content · Printed", refs: ["BR-44", "AC-44"], notes: [
+      "<b>Confirmação</b>: <code>DsSnackbar</code> “Ingressos impressos” (sem ação), anunciado como status; volta a <code>Idle</code> sozinho (<code>OnActionDismissed</code>).",
+    ] },
+    { state: { kind: "Content", purchaseId: "p3", from: "sale", action: "PrintFailed", reason: "terminal" }, label: "Content · PrintFailed (terminal ausente)", refs: ["BR-40", "AC-40"], notes: [
+      "<b>App Cielo ausente</b> (o caso do celular e do AVD sem o app de pagamento): mesmo snackbar, texto próprio dizendo que nenhum ingresso foi impresso. Fora do terminal Cielo a impressão não existe; “Imprimir” continua a ação primária porque o produto é o terminal.",
+    ] },
+    { state: { kind: "Content", purchaseId: "p3", from: "sale", action: "ShareFailed" }, label: "Content · ShareFailed", refs: ["US-05", "BR-43", "AC-43"], notes: [
+      "<b>Falha ao compartilhar</b> (imagem não gerada ou nenhum app aceita): mesma <code>DsSnackbar</code>, texto próprio; “Tentar novamente” repete o compartilhamento.",
+    ] },
+    { state: { kind: "Loading", purchaseId: "p3", from: "sale" }, label: "Loading", refs: ["AC-34"], notes: [
+      "<b>Skeleton</b> com a geometria dos cartões (título, quadrado de 200dp e duas linhas), sem deslocar o layout. Anuncia “Carregando ingressos”; o pulso respeita reduzir animações. As ações só aparecem em <code>Content</code>.",
+    ] },
+    { state: { kind: "Error", purchaseId: "p3", from: "sale" }, label: "Error", refs: ["BR-36", "AC-35", "AC-36"], notes: [
+      "<b>Erro</b>: <code>DsErrorState</code> anunciado como alerta, para compra ilegível, não aprovada, inexistente ou falha ao gerar. Nenhum QR Code é mostrado.",
+      "<b>Tentar novamente</b> recebe o foco; emite <code>OnRetry</code> (repete a leitura e a geração).",
+    ] },
+  ] },
+  { screen: "SCR-03", name: "Comprovante (mudança da 0.5.0 da UI Spec 001)", boards: [
+    { state: { kind: "Approved", purchaseId: "p3", from: "sale" }, label: "Approved · fim da venda", refs: ["US-01", "BR-34", "AC-33"], notes: [
+      "<b>Ver ingressos</b> vira a ação primária (<code>DsButton</code> Filled, ícone <code>confirmation_number</code>; emite <code>OnOpenTickets</code>): a entrega é o próximo passo. As ações do <code>Approved</code> ficam na barra inferior fixa, como na SCR-05, porque o comprovante tem 12 linhas e a ação ficaria abaixo da dobra em 360×800.",
+      "<b>Nova venda</b> passa a Tonal nesse estado, mantendo largura total e <code>OnNewSale</code>. Decisão D1 abaixo.",
+    ] },
+    { state: { kind: "Approved", purchaseId: "p3", from: "history" }, label: "Approved · pelo histórico", refs: ["US-03", "BR-34", "AC-33"], notes: [
+      "<b>Reapresentar o ingresso</b>: aberto pelo histórico, o comprovante oferece a mesma ação “Ver ingressos”. Sem “Nova venda” (como na 001).",
+    ] },
+    { state: { kind: "Cancelled", purchaseId: "p2", from: "sale" }, label: "Cancelled · sem ingressos", refs: ["US-02", "BR-33", "BR-34", "AC-32", "AC-33"], notes: [
+      "<b>Sem ação de ingressos</b> em Cancelada e Negada (BR-33): nenhuma seção vazia. “Nova venda” segue Filled, como na 001.",
+    ] },
+  ] },
+];
+
+/* Protótipo: máquina de estados (equivalente ao ViewModel.onEvent). O cenário escolhe como imprimir e compartilhar terminam. */
+let protoToken = 0, retriedOnce = false;
+const later = (ms, fn) => { const t = ++protoToken; setTimeout(() => { if (t === protoToken) { fn(); drawProto(); } }, ms); };
+const PROTOTYPE = {
+  help: "Você começa no comprovante de uma venda aprovada de 3 ingressos. Toque em “Ver ingressos”, depois em “Imprimir ingressos” " +
+        "(toque várias vezes: só uma impressão é enviada) ou “Compartilhar ingressos”. Troque o cenário para ver as falhas; em toda falha, " +
+        "“Tentar novamente” funciona na segunda vez. Para ver o comprovante de uma venda cancelada (sem ingressos), use o último cenário.",
+  scenarios: [
+    ["ok", "Tudo funciona"], ["print-noapp", "Impressão: app Cielo ausente"], ["print-paper", "Impressão: sem papel (depois do 1º ingresso)"], ["print-printer", "Impressão: erro da impressora"],
+    ["print-unknown", "Impressão: erro desconhecido"], ["share-fail", "Compartilhar: falha"], ["tickets-error", "Ingressos: erro ao abrir"],
+    ["history", "Começar pelo histórico (comprovante aprovado)"], ["cancelled", "Venda cancelada (sem ingressos)"],
+  ],
+  initial: () => { retriedOnce = false; ++protoToken;
+    if (scenario === "cancelled") return { screen: "SCR-03", state: { kind: "Cancelled", purchaseId: "p2", from: "sale" } };
+    return { screen: "SCR-03", state: { kind: "Approved", purchaseId: "p3", from: scenario === "history" ? "history" : "sale" } }; },
+  entry: () => null, // o protótipo não recarrega por tempo: o estado inicial é o comprovante
+  onEvent(cur, evName, arg) {
+    const st = cur.state;
+    const openTickets = () => {
+      later(900, () => {
+        if (scenario === "tickets-error" && !retriedOnce) nav = { screen: "SCR-05", state: { kind: "Error", purchaseId: st.purchaseId, from: st.from } };
+        else nav = { screen: "SCR-05", state: { kind: "Content", purchaseId: st.purchaseId, from: st.from, action: "Idle" } };
+      });
+      return { screen: "SCR-05", state: { kind: "Loading", purchaseId: st.purchaseId, from: st.from } };
+    };
+    const print = () => {
+      later(1800, () => {
+        if (nav.screen !== "SCR-05") return;
+        const reason = { "print-noapp": "terminal", "print-paper": "paper", "print-printer": "printer", "print-unknown": "unknown" }[scenario];
+        const fail = reason && !retriedOnce;
+        log(fail ? `OnPrintResult(erro: ${reason})` : "OnPrintResult(ok)");
+        nav = PROTOTYPE.onEvent(nav, "OnPrintResult", fail ? reason : "ok");
+        if (!fail) later(2200, () => { nav = PROTOTYPE.onEvent(nav, "OnActionDismissed"); });
+      });
+      return { ...cur, state: { ...st, action: "Printing", snackbar: undefined, lastAction: "print" } };
+    };
+    const share = () => {
+      if (st.action === "Printing") return cur; // Compartilhar fica indisponível durante a impressão (BR-39, UI Spec §4.2)
+      if (scenario === "share-fail" && !retriedOnce) return { ...cur, state: { ...st, action: "ShareFailed", snackbar: undefined, lastAction: "share" } };
+      return { ...cur, state: { ...st, action: "Idle", snackbar: "Abre o menu de compartilhamento do Android (simulado)", lastAction: "share" } };
+    };
+    switch (evName) {
+      case "OnOpenTickets": return openTickets();
+      case "OnRetry": retriedOnce = true; return openTickets();
+      case "OnPrint": return st.action === "Printing" ? cur : print(); // BR-39: ignorado com impressão em andamento
+      case "OnShare": return share();
+      case "OnPrintResult": return { ...cur, state: { ...st, action: arg === "ok" ? "Printed" : "PrintFailed", reason: arg === "ok" ? undefined : arg, printed: 1 } };
+      case "OnActionDismissed": return st.action === "Printed" ? { ...cur, state: { ...st, action: "Idle" } } : cur;
+      case "OnRetryAction": retriedOnce = true; return st.lastAction === "share" ? share() : print();
+      case "OnNewSale": return { ...cur, state: { ...st, snackbar: "Volta à lista de eventos (SCR-01, spec 001)" } };
+      case "NavigateUp":
+        if (cur.screen === "SCR-05") return { screen: "SCR-03", state: { kind: "Approved", purchaseId: st.purchaseId, from: st.from } };
+        return { ...cur, state: { ...st, snackbar: "Volta ao histórico (SCR-04, spec 001)" } };
+      default: return cur;
+    }
+  },
+};
+
+const FLOW = `flowchart LR
+  S3[SCR-03 Comprovante Approved] -->|OnOpenTickets| S5[SCR-05 Ingressos]
+  S4[SCR-04 Histórico] -->|OnPurchaseSelected| S3
+  S5 -->|OnPrint| P([App Cielo: lio://print])
+  S5 -->|OnShare| X([Menu de compartilhamento do Android])
+  P -->|OnPrintResult: erro| S5
+  S5 -->|OnRetry / OnRetryAction| S5
+  S5 -->|voltar| S3
+  S3 -->|OnNewSale| S1[SCR-01 Eventos à venda]
+  S3C[SCR-03 Declined / Cancelled] -.->|sem ação de ingressos| S3C`;
+
+const DECISION = [
+  "Revise cada prancha nos dois temas e com fonte 200%; confira que o QR Code continua escuro sobre claro no tema escuro.",
+  "Percorra o protótipo: abra os ingressos, imprima e compartilhe; repita nos cenários de falha.",
+  "<b>D1</b>: na SCR-03 aprovada, “Ver ingressos” (Filled) passa a primária e “Nova venda” vira Tonal. Aceita, ou prefere manter “Nova venda” Filled e “Ver ingressos” Tonal?",
+  "<b>D2</b>: as ações ficam numa barra inferior fixa da SCR-05 (alcance do polegar), com Imprimir como primária. Aceita?",
+  "<b>D3</b>: “Compartilhar” fica indisponível enquanto imprime (a spec 1.0.0 só diz que “Imprimir” fica indisponível). Aprova a spec 1.0.1 estendendo o §6 e a BR-39 às duas ações?",
+  "Responda com <b>aprovado</b> ou com ajustes citando tela e estado (ex.: “SCR-05 Content: trocar o texto do botão”).",
+];
+/* ======================= FIM DOS DADOS DA FEATURE ======================= */
+
+/* Motor da prancha: não precisa editar abaixo. */
+const $ = (sel, el = document) => el.querySelector(sel);
+const prefs = { scheme: "light", fs: "1" };
+try {
+  const dark = document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  prefs.scheme = dark ? "dark" : "light";
+} catch (e) { /* mantém claro */ }
+
+function applyAppPrefs(el) { el.dataset.scheme = prefs.scheme; el.style.setProperty("--fs", prefs.fs); el.classList.toggle("fs-large", Number(prefs.fs) >= 1.5); }
+function frame(inner) { return statusBar() + `<div class="body">${inner}</div><div class="gesture" aria-hidden="true"></div>`; }
+
+function renderMeta() {
+  $("#meta-eyebrow").textContent = META.eyebrow;
+  $("#meta-title").textContent = META.title;
+  $("#meta-facts").innerHTML = META.facts.map(([k, v]) => k === "Status"
+    ? `<span class="pill review">${v}</span>` : `<span>${k} <b class="id">${v}</b></span>`).join("");
+  $("#meta-lede").textContent = META.lede;
+  $("#flow-diagram").textContent = FLOW;
+  $("#decision-steps").innerHTML = DECISION.map((d) => `<li>${d}</li>`).join("");
+}
+
+function renderBoards() {
+  $("#view-boards").innerHTML = BOARDS.map((g) => `<section class="screen-group">
+    <h2><span class="id">${g.screen}</span>${g.name}</h2>
+    <div class="boards">${g.boards.map((b) => `<article class="board">
+      <div class="board-head"><strong>${b.label}</strong><span class="refs">${b.refs.map((r) => `<span class="ref">${r}</span>`).join("")}</span></div>
+      <div class="device"><div class="app" inert>${frame(SCREENS[g.screen](b.state))}</div></div>
+      <ol class="notes">${b.notes.map((n, i) => `<li><span class="n">${i + 1}</span><span>${n}</span></li>`).join("")}</ol>
+    </article>`).join("")}</div></section>`).join("");
+  document.querySelectorAll("#view-boards .app").forEach(applyAppPrefs);
+}
+
+let nav, scenario = "content", timer;
+const log = (t) => { const el = $("#proto-log"); el.textContent = (t + "\n" + el.textContent).slice(0, 2000); };
+const ctx = { reload(next) { clearTimeout(timer); const sc = next || scenario;
+  timer = setTimeout(() => { nav = { screen: "SCR-01", state: PROTOTYPE.load(sc) }; drawProto(); }, 1100); } };
+
+function drawProto() {
+  const app = $("#proto-app");
+  app.innerHTML = frame(SCREENS[nav.screen](nav.state));
+  applyAppPrefs(app);
+}
+function startProto() {
+  clearTimeout(timer); $("#proto-log").textContent = "";
+  nav = PROTOTYPE.initial(); drawProto(); log(`${nav.screen} · ${nav.state.kind}`); /* spec 002: o protótipo começa no comprovante, sem recarga */
+}
+$("#proto-app").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-ev]"); if (!t) return;
+  const [ev, arg] = t.dataset.ev.split(":");
+  log(arg ? `${ev}(${arg})` : ev);
+  nav = PROTOTYPE.onEvent(nav, ev, arg, ctx); drawProto();
+});
+$("#proto-app").addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches("[role=button][data-ev]")) { e.preventDefault(); e.target.click(); }
+});
+
+function setup() {
+  $("#proto-help").textContent = PROTOTYPE.help;
+  $("#proto-scenario").innerHTML = PROTOTYPE.scenarios.map(([k, l]) => `<option value="${k}">${l}</option>`).join("");
+  $("#proto-scenario").addEventListener("change", (e) => { scenario = e.target.value; startProto(); });
+  $("#proto-restart").addEventListener("click", startProto);
+
+  const seg = (id, fn) => $(id).addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    $(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); fn(b.dataset.v);
+  });
+  const syncSeg = (id, v) => $(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.v === v)));
+  syncSeg("#seg-scheme", prefs.scheme);
+  seg("#seg-scheme", (v) => { prefs.scheme = v; document.querySelectorAll(".app").forEach(applyAppPrefs); });
+  seg("#seg-fs", (v) => { prefs.fs = v; document.querySelectorAll(".app").forEach(applyAppPrefs); });
+  seg("#seg-notes", (v) => document.body.classList.toggle("hide-notes", v === "off"));
+
+  const tabs = [["boards", "#tab-boards"], ["prototype", "#tab-prototype"], ["flow", "#tab-flow"]];
+  const show = (name) => tabs.forEach(([n, id]) => {
+    $(id).setAttribute("aria-selected", String(n === name)); $("#view-" + n).hidden = n !== name;
+  });
+  tabs.forEach(([n, id]) => $(id).addEventListener("click", () => { show(n); try { history.replaceState(null, "", "#" + n); } catch (e) {} }));
+  const h = (location.hash || "").slice(1);
+  if (tabs.some(([n]) => n === h)) show(h);
+}
+
+renderMeta(); renderBoards(); setup(); startProto();
+</script>

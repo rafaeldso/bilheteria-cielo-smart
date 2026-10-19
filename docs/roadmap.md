@@ -19,8 +19,8 @@
 |---|---|---|---|---|
 | D0 | `000-fundacao`: projeto Android limpo, build-logic, sensores, CI/CD | Infra (sem spec) | `tasks.md`, `progress.md` | ✅ |
 | D1 | `001-venda-de-ingressos`: RF1–RF5 + RNFs do case | G | spec, research, ui-spec + prancha, plan, tasks | ✅ Implementada (spec 1.3.0, PR #7) |
-| D2 | `002-qr-code-ingresso` (opcional no case) | P | spec enxuta, tasks | Só se houver tempo após D1 |
-| D3 | Entrega: README, uso de IA, repositório público | Isento (docs) | README, `docs/ai/` | 🟡 Docs prontas; falta decidir a D2 e tornar o repositório público |
+| D2 | `002-qr-code-ingresso` (opcional no case) | M (era P: entraram impressão e compartilhamento) | spec, research, ui-spec + prancha, plan, tasks | ✅ Implementada (spec 1.1.2; impressão verificada no AVD Android 11, terminal real pendente) |
+| D3 | Entrega: README, uso de IA, repositório público | Isento (docs) | README, `docs/ai/` | 🟡 Docs prontas; D2 feita; falta tornar o repositório público |
 
 ## Ordem de execução (duas trilhas)
 A trilha A (código) avança enquanto a trilha B (documentos) espera aprovação humana.

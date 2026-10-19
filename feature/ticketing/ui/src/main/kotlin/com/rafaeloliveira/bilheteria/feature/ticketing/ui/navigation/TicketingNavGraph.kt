@@ -27,19 +27,22 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.toRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.EventListRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.PurchaseHistoryRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.PurchaseRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.ReceiptRoute
+import com.rafaeloliveira.bilheteria.feature.ticketing.api.navigation.TicketsRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt.ReceiptOrigin
 import java.time.Clock
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.eventlist.EventListRoute as EventListScreenRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.history.PurchaseHistoryRoute as PurchaseHistoryScreenRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.purchase.PurchaseRoute as PurchaseScreenRoute
 import com.rafaeloliveira.bilheteria.feature.ticketing.ui.receipt.ReceiptRoute as ReceiptScreenRoute
+import com.rafaeloliveira.bilheteria.feature.ticketing.ui.tickets.TicketsRoute as TicketsScreenRoute
 
 /**
- * The ticketing flow as destinations of the host `NavHost` (plan §4): SCR-01 to SCR-04, typed by the routes of
+ * The ticketing flow as destinations of the host `NavHost` (plan §4): SCR-01 to SCR-05, typed by the routes of
  * `:feature:ticketing:api`. The start destination is [EventListRoute]. Click navigation lives here, as callbacks of
  * the screens' Routes; the one result-driven navigation, the end of a purchase, is a state of the purchase screen
  * (`Completed`) that replaces it with the receipt, so back from the receipt does not reopen the purchase.
@@ -70,20 +73,32 @@ public fun NavGraphBuilder.ticketingGraph(
             clock = clock,
         )
     }
-    composable<ReceiptRoute> { entry ->
-        // The origin is read from the back stack, which survives process death: after a sale the receipt sits on the
-        // event list (the purchase was popped); from the history the history is right below it.
-        val origin = remember(entry) { receiptOrigin(previousIsHistory = navController.previousIsHistory()) }
-        ReceiptScreenRoute(
-            origin = origin,
-            onNewSale = { navController.backToEvents() },
-            onNavigateUp = { navController.navigateUpOnce() },
-            clock = clock,
-        )
+    receiptDestination(navController, clock)
+    composable<TicketsRoute> {
+        TicketsScreenRoute(onNavigateUp = { navController.navigateUpOnce() }, clock = clock)
     }
     composable<PurchaseHistoryRoute> {
         PurchaseHistoryScreenRoute(
             onPurchaseSelected = { purchaseId -> navController.navigateSingleTop(ReceiptRoute(purchaseId)) },
+            onNavigateUp = { navController.navigateUpOnce() },
+            clock = clock,
+        )
+    }
+}
+
+/** SCR-03: the origin is read from the back stack (it survives process death), and "Ver ingressos" opens SCR-05. */
+private fun NavGraphBuilder.receiptDestination(
+    navController: NavController,
+    clock: Clock,
+) {
+    composable<ReceiptRoute> { entry ->
+        // After a sale the receipt sits on the event list (the purchase was popped); from the history the history is
+        // right below it.
+        val origin = remember(entry) { receiptOrigin(previousIsHistory = navController.previousIsHistory()) }
+        ReceiptScreenRoute(
+            origin = origin,
+            onNewSale = { navController.backToEvents() },
+            onOpenTickets = { navController.navigateSingleTop(TicketsRoute(entry.toRoute<ReceiptRoute>().purchaseId)) },
             onNavigateUp = { navController.navigateUpOnce() },
             clock = clock,
         )

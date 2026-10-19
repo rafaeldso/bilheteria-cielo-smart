@@ -26,15 +26,17 @@ import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 /**
- * Logic of [CieloCallbackActivity] kept out of the Android class so it runs on the JVM: parses the raw `response`
- * parameter and stores the outcome (BR-11 to BR-14, BR-25). The work runs in an application-scoped coroutine, so it
- * completes even if the activity is destroyed. Neither the response nor an exception message is ever logged.
+ * Logic of [CieloCallbackActivity] kept out of the Android class so it runs on the JVM: routes a print answer to
+ * the print job, or parses the raw `response` and stores the payment outcome (BR-11 to BR-14, BR-25). The work runs
+ * in an application-scoped coroutine, so it completes even if the activity is destroyed. Neither the response nor an
+ * exception message is ever logged.
  */
 internal class CieloCallbackHandler
     @Inject
     constructor(
         private val parser: CieloResponseParser,
         private val handlePaymentOutcome: HandlePaymentOutcomeUseCase,
+        private val printSink: PrintResultSink,
         @param:CallbackScope private val scope: CoroutineScope,
         private val logger: Logger,
     ) {
@@ -43,6 +45,10 @@ internal class CieloCallbackHandler
             response: String?,
             onDone: () -> Unit,
         ) {
+            if (routedToPrint(response)) {
+                onDone()
+                return
+            }
             scope
                 .launch {
                     // Bounded so the translucent activity never stays over the app if storage hangs.
@@ -56,6 +62,30 @@ internal class CieloCallbackHandler
                         logger.error("payment_outcome_not_applied")
                     }
                 }.invokeOnCompletion { onDone() }
+        }
+
+        /**
+         * Print answers never reach the payment flow (plan §4, R2): with a job waiting, anything shaped like a print
+         * answer goes to it; without one, an answer that only a print can have is dropped. An ambiguous
+         * `{code, reason}` with no job waiting is a payment error and goes on to the payment flow.
+         */
+        private fun routedToPrint(response: String?): Boolean {
+            val print = parser.parsePrint(response) ?: return false
+            return when {
+                printSink.awaitingResult -> {
+                    printSink.onPrintOutcome(print.outcome)
+                    true
+                }
+
+                print.certain -> {
+                    logger.warn("print_result_discarded")
+                    true
+                }
+
+                else -> {
+                    false
+                }
+            }
         }
 
         private companion object {
