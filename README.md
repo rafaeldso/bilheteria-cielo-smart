@@ -15,6 +15,30 @@ Uso de IA no processo: [docs/ai/](docs/ai/README.md).
 | Quem vai revisar PR | [Guia de code review](docs/code-review.md) | 10 min |
 | Agente de IA | [AGENTS.md](AGENTS.md) | — |
 
+## Requisitos do case
+Mapa do [case_android.md](case_android.md) para a entrega. Rastreabilidade completa (BR → AC → teste) em
+[docs/specs/001-venda-de-ingressos](docs/specs/001-venda-de-ingressos/spec.md) (`tasks.md`).
+
+| Requisito do case | Situação | Onde está |
+|---|---|---|
+| Listagem de eventos disponíveis | ✅ Implementado | AC-01..03, AC-22..24; catálogo em JSON local, filtro por mês |
+| Seleção de quantidade por evento | ✅ Implementado | AC-04..06 (mínimo 1, máximo 10 por compra) |
+| Pagamento via integração com a Cielo | ✅ Implementado | Deep Link `lio://` ([ADR-0010](docs/adr/0010-integracao-cielo-smart-por-deep-link.md)); validado no `lio-emulator` |
+| Registrar resultado (aprovada, negada, cancelada) | ✅ Implementado | AC-09..11; falhas técnicas viram "Falhou" |
+| Comprovante / resumo da compra | ✅ Implementado | AC-16; histórico de compras (AC-18..21) |
+| QR Code do ingresso (opcional) | ⏸️ Não implementado | Spec `002` prevista no [roadmap](docs/roadmap.md) |
+| Tratamento explícito de erros de integração e pagamento | ✅ Implementado | Matriz de erros do [plano §5](docs/specs/001-venda-de-ingressos/plan.md); AC-12..15, AC-25..27 |
+| Evitar duplicidade de cobrança em reenvio de ação | ✅ Implementado | Uma compra aberta por vez (BR-10), compra gravada antes de pagar, `reference` única, consulta à Cielo antes de recobrar (BR-25); AC-08, AC-14, AC-15. Exceção aceita: aprovação tardia (Q14) |
+| Código organizado e de fácil manutenção | ✅ Implementado | Clean Architecture modular, sensores no `verify.sh` ([ARCHITECTURE.md](ARCHITECTURE.md)) |
+| Testes automatizados para cenários críticos | ✅ Implementado | Os 28 ACs têm teste; `verify.sh full` verde; cobertura por camada (Kover) |
+| Uso de IA documentado | ✅ Documentado | [docs/ai/](docs/ai/README.md): restrições, log por etapa e chamadas por tarefa |
+| README: execução, decisões, bibliotecas, integração Cielo, trade-offs, mais tempo | ✅ Neste README | Seções abaixo |
+| Documentação do harness (specs, ADRs, resultados) | ✅ Implementado | [docs/specs/](docs/specs/), [docs/adr/](docs/adr/), [docs/harness/](docs/harness/) |
+
+**Limites verificados:** o pagamento foi testado no `lio-emulator` (AVD Android 10), não em um terminal Cielo físico; "Negada" não é
+simulável no emulador (coberta por teste unitário); TalkBack e Android 11+ ficaram para depois. Detalhes em
+[Trade-offs](#trade-offs) e [O que faria com mais tempo](#o-que-faria-com-mais-tempo).
+
 ## O app
 Capturas no AVD Android 10 com o `lio-emulator` da Cielo (tema escuro; dados fictícios do emulador).
 | Eventos à venda | Filtro por mês | Compra | Comprovante | Histórico |
