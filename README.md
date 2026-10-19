@@ -51,6 +51,11 @@ ANDROID_SERIAL=emulator-5554 ./gradlew :app:installDebug               # o app (
 O passo a passo do pagamento no emulador está em [Integração Cielo](#integração-cielo).
 
 ### APK pronto
+**[Baixar o APK da última versão](https://github.com/rafaeldso/bilheteria-cielo-smart/releases/latest)** (GitHub Release;
+arquivo `.apk` em *Assets*). É um APK de **debug**, assinado com chave efêmera (sem loja, [ADR-0009](docs/adr/0009-escopo-de-case-itens-de-producao-fora.md)).
+Para pagar, instale também o `lio-emulator.apk` da Cielo em um AVD Android 7 ou 10 (seção acima); sem ele o app abre, mas o
+pagamento não completa.
+
 Cada push na `main` publica o APK de debug como artefato do workflow `release`; cada tag `v*` cria
 uma GitHub Release com o APK anexado.
 
