@@ -103,6 +103,12 @@ pagamento não completa.
 Cada push na `main` publica o APK de debug como artefato do workflow `release`; cada tag `v*` cria
 uma GitHub Release com o APK anexado.
 
+| Versão | O que traz |
+|---|---|
+| **v0.2.0** | QR Code do ingresso (spec 002): tela de ingressos, imprimir no terminal e compartilhar; "Ver ingressos" no comprovante |
+| v0.1.0 | Venda de ingressos com pagamento Cielo Smart (spec 001) |
+
+
 ## Onde está cada coisa
 | Pergunta | Resposta |
 |---|---|
