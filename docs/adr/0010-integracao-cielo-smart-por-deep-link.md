@@ -61,6 +61,12 @@ Opção escolhida: **"C"**, porque é a única que cumpre a política da Cielo e
   `StartPurchaseUseCase` (segunda compra aberta recusada).
 - detekt `SensitiveDataInLog` (S-05) e revisão do `security-reviewer` em toda mudança no pacote `cielo`.
 
+- Callback sem `BROWSABLE` (2026-10-18, `security-reviewer`): `CieloCallbackActivity` é exportada para receber `order://response`, mas
+  sem a categoria `BROWSABLE` um link ou QR em navegador não a aciona. Verificado no AVD (T25) que o retorno da Cielo chega.
+  Detalhes no plano §4 e §7.
+- Aprovação tardia (BR-29): resposta aprovada para uma compra `Failed`/`NotFound` só vale com `reference` e valor iguais;
+  callback e recuperação são serializados pelo `PurchaseWriteLock` (plano §4).
+
 ## Prós e Contras das Opções
 
 ### A. SDK Integração Local

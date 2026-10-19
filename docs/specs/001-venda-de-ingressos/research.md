@@ -215,17 +215,17 @@ mas o L300 v3 roda 7.1 e o emulador 7/10; targetSdk 29 vs. políticas atuais de 
 
 ## 10. Riscos e perguntas em aberto
 
-- `[PRECISA ESCLARECIMENTO]` Como distinguir "negada" de "erro" (`code` 3 vs payment com status não pago)? O emulador só simula
+- **Resolvido** (Q8 opção A: código 3 = Negada; Error do emulador = código 2 (T01)): Como distinguir "negada" de "erro" (`code` 3 vs payment com status não pago)? O emulador só simula
   Success/Cancelled/Error. Sugestão: tratar Error como "negada/falhou" e documentar a limitação na spec.
-- `[PRECISA ESCLARECIMENTO]` Os valores reais de `status`/`statusCode` no retorno de sucesso e `responsecode` (0 também em erro): confirmar
+- **Resolvido** (capturado na T01/T25 (research §13)): Os valores reais de `status`/`statusCode` no retorno de sucesso e `responsecode` (0 também em erro): confirmar
   rodando o emulador e capturando os JSONs.
-- `[PRECISA ESCLARECIMENTO]` Idempotência: `reference` é única/garantida? Filtro por `reference` em `orders`? Estratégia de recuperação após
+- **Resolvido** (`reference` única (UUID v4) e presente na listagem `orders`; recuperação paginada (BR-15, research §12)): Idempotência: `reference` é única/garantida? Filtro por `reference` em `orders`? Estratégia de recuperação após
   morte do processo (seção 6).
-- `[PRECISA ESCLARECIMENTO]` Credenciais: o avaliador fornecerá Client-ID/Access Token? O emulador aceita valores fictícios? Injeção por
+- **Resolvido** (Q12: credenciais fictícias aceitas pelo emulador; injeção por propriedades Gradle → `BuildConfig`): Credenciais: o avaliador fornecerá Client-ID/Access Token? O emulador aceita valores fictícios? Injeção por
   `local.properties`/BuildConfig sem versionar.
-- `[PRECISA ESCLARECIMENTO]` Valores monetários: `value` em centavos (string) e `unitPrice` (unidade?) divergem nos exemplos.
-- `[PRECISA ESCLARECIMENTO]` minSdk 24/targetSdk 29 vs. padrão do projeto; Android 7 ou 10 no AVD; ABI do APK.
-- `[PRECISA ESCLARECIMENTO]` `paymentCode`: fixar (ex.: `CREDITO_AVISTA`) ou deixar o usuário escolher no terminal?
+- **Resolvido** (centavos (T01)): Valores monetários: `value` em centavos (string) e `unitPrice` (unidade?) divergem nos exemplos.
+- **Resolvido** (`minSdk 24`, AVD Android 10 (plano §11)): minSdk 24/targetSdk 29 vs. padrão do projeto; Android 7 ou 10 no AVD; ABI do APK.
+- **Resolvido** (Q7: sem `paymentCode`; o operador escolhe no terminal): `paymentCode`: fixar (ex.: `CREDITO_AVISTA`) ou deixar o usuário escolher no terminal?
 - Risco: página `pagamento` lida via resumo, sem a seção de URI/callback; strings de URI vêm do README do sample e do cancelamento.
   Conferir texto e códigos na fonte antes do `plan.md`.
 - Risco: SDK Local descontinuado; Flutter/React samples não mostram código textual (imagens).

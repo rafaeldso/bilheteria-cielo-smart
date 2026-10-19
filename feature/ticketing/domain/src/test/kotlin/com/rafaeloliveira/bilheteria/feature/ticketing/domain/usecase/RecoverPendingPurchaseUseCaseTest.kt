@@ -23,6 +23,9 @@ import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePaymen
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.FakePurchaseRepository
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.TEST_NOW
 import com.rafaeloliveira.bilheteria.feature.ticketing.domain.testing.aPurchase
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -106,5 +109,24 @@ class RecoverPendingPurchaseUseCaseTest {
 
             assertEquals(DataResult.Failure(TicketingError.StorageFailure), result)
             assertTrue(gateway.lookupRequests.isEmpty())
+        }
+
+    @Test
+    fun `BR-15 - dado escrita em andamento sob a trava quando recuperar entao espera a trava`() =
+        runTest {
+            val lock = PurchaseWriteLock()
+            val repository = FakePurchaseRepository(listOf(aPurchase()))
+            val useCase = RecoverPendingPurchaseUseCase(repository, gateway, Clock.fixed(now, ZoneOffset.UTC), lock)
+            val release = CompletableDeferred<Unit>()
+            launch { lock.withLock { release.await() } }
+            advanceUntilIdle()
+
+            launch { useCase() }
+            advanceUntilIdle()
+            assertEquals(PurchaseStatus.Pending, repository.all.single().status)
+
+            release.complete(Unit)
+            advanceUntilIdle()
+            assertEquals(PurchaseStatus.Recovering, repository.all.single().status)
         }
 }

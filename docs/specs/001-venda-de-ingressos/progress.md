@@ -8,7 +8,7 @@
 
 ## Estado atual
 - **Última etapa concluída:** lote E (T20–T23) e T24 (navegação) commitados localmente; lote E revisado em 2 rodadas (compose-ui, architecture, ui-design) sem bloqueante
-- **Próxima etapa:** T27 (`consistency-check`) e T28 (`verify.sh full`, spec → Implementada). T26 fechada. T25 fechada (TalkBack, AVD API 30+ e ordenação do `orders` em terminal real adiados pelo humano). Extras desta sessão: splash nativa (`core-splashscreen` 1.2.0, aprovada) e ícone do app.
+- **Próxima etapa:** T28 (bloqueada pela cobertura, ver abaixo) (`verify.sh full`, spec → Implementada). T26 fechada. T25 fechada (TalkBack, AVD API 30+ e ordenação do `orders` em terminal real adiados pelo humano). Extras desta sessão: splash nativa (`core-splashscreen` 1.2.0, aprovada) e ícone do app.
 - **CI:** correções de `security` enviadas; confirmar verde após o próximo push
 - **Arquivos em andamento:** nenhum
 - **Último sensor:** `verify.sh standard` → verde em 2026-10-18 (fim da T26; rodado sem o `gradle-daemon-jvm.properties` local, que quebra detekt/spotless)
@@ -43,6 +43,8 @@
 | 2026-10-18 | `androidx.navigation.compose` adicionado ao `app` (já no catálogo) | `NavHost` no `app` (architecture.md) | Não |
 
 ## Bloqueios e perguntas abertas
+- [x] **T27 fechada (2026-10-18):** plano, tasks e UI Spec alinhados; testes de que `HandlePaymentOutcomeUseCase` e `RecoverPendingPurchaseUseCase` usam o `PurchaseWriteLock` (provados por mutação); `docs/ai/log.md`, ADR-0010 (callback sem `BROWSABLE`, BR-29) e `research.md` §10 atualizados; README com a seção da integração Cielo. Pendências aceitas: J7 e J9 sem execução no AVD; `components.md` mantém "Planejado" nos componentes sem screenshot test.
+- [ ] **T28 bloqueada (decisão do humano):** `verify.sh full` falha só no `koverVerify`: `feature:ticketing:ui` 35,5% (mínimo 85%, sem testes de UI Compose por decisão do humano) e `feature:ticketing:data` 74,6% (mínimo 75%). Não baixei limite nem excluí classes (AGENTS.md regra 7). Opções: (a) escrever testes JVM para o `data` (faltam ~0,4 p.p.) e para a lógica pura do `ui`, e reabrir os testes de UI Compose para cobrir o resto; (b) propor exclusão de `*Screen`/`*Route` do Kover em `config/`/build-logic via ADR; (c) ADR de exceção temporária para o `ui`.
 - [x] **Decisão do humano (lote E), aprovada com a UI Spec 0.4.3 em 2026-10-18:** (1) saída do comprovante em `Error` vindo da venda (hoje só o voltar do sistema; recomendação: seta "Voltar para eventos"); (2) ícone do botão "Voltar para eventos" no `Unavailable` (`DsErrorState` fixa `Refresh`; precisa de `actionIcon` no core); (3) registrar `DsStatusMessage` no catálogo e na §5; (4) UI Spec 0.4.3: chaves reais da §4.4 (`ticketing_status_*`/`common_retry` em `strings_common.xml`, `ticketing_history_datetime_today/yesterday/other`, `ticketing_purchase_event_*`, `*_spoken_*`), cabeçalho do snapshot sem "disponíveis", "Data do evento" absoluta, dia da semana por extenso, ícones substitutos, "Tentar de novo" × "Tentar novamente" (spec §6 × UI Spec).
 - [ ] Sugestões do lote E: `spokenBody` no `DsStatusMessage` e rótulo falado do retry do `DsErrorState` (valor por extenso); "de 2026" no falado do comprovante; `heading` do resultado do comprovante com `mergeDescendants` (conferir no TalkBack, T25); `Year` do EventList congelado na virada do ano; `HistoryItem.status` já como `SaleResult` no mapper; `OtherDay` carregar `SpokenDateTime`; mover testes de `SpokenDateTime`; previews Font 2x dos Empty; live region do comprovante re-anuncia na rotação (ver origem na T24); sensores propostos: chaves da §4.4 × `strings_*.xml`, `ZoneId.systemDefault`/`Clock.system*` só em `*Route.kt`, `NumberFormat`/`DateTimeFormatter.ofPattern` só em `ui.format`, `UnusedResources` como erro.
 - [x] T24: `MainActivity` injeta o `Clock` (módulo em `core:common/di`, ver decisão acima) e o passa a `ticketingGraph` e às Routes (domain e UI no mesmo fuso).
@@ -73,6 +75,7 @@
 ## Log de sessões
 | Data | Ferramenta / agente | Resumo |
 |---|---|---|
+| 2026-10-18 | Claude Code + `spec-consistency-analyzer` (sonnet) | T27: 24 divergências (6 Importantes, 7 Médias, 11 Baixas), nenhuma de comportamento; plano/tasks/ui-spec corrigidos; `verify.sh standard` verde; pendências acima |
 | 2026-10-18 | Claude Code + 5 revisores (architecture, security, test, compose-ui, spec-consistency) | T26: sem bloqueante de código; `PurchaseWriteLock`, testes da BR-29, UI Spec 0.4.4, spec 1.3.0 aprovada, J7/J9; Importantes restantes aceitos pelo humano: `toString` mascarado, `check()` do `toFailedState`, limite de tamanho no parser, testes de navegação tautológicos, motivos de descarte distintos, release sem `cielo.*`; sugestões ficam no backlog |
 | 2026-10-18 | Claude Code (sessão principal) | Decisões da T25 aprovadas: spec 1.3.0 (BR-29/AC-28), T29 (aprovação tardia), splash nativa e ícone de ingresso |
 | 2026-10-18 | Claude Code (sessão principal, `verify-on-device`) | T25 parcial: J1–J7 no AVD Android 10 com `lio-emulator`, fatos do README do data, D1 (fonte 200% da SCR-01) corrigido, `journeys/` criado; decisões do humano acima |

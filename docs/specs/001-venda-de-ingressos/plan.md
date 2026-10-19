@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | **Spec** | [spec.md](spec.md) (versão 1.3.0) · [ui-spec.md](ui-spec.md) (0.4.4) · [research.md](research.md) |
-| **Status** | Aprovado (2026-10-17) · ADR: [0010](../../adr/0010-integracao-cielo-smart-por-deep-link.md) |
+| **Status** | Aprovado (2026-10-17); revisões posteriores no Changelog (§12) · ADR: [0010](../../adr/0010-integracao-cielo-smart-por-deep-link.md) |
 | **Tamanho** | G |
 
 > Este plano descreve **como** a spec será implementada. Fatos da integração Cielo vêm do
@@ -104,7 +104,8 @@ sequenceDiagram
     O->>C: passa o cartão no terminal
     C->>CB: order://response?response=base64
     CB->>H: invoke(parse(response))
-    H->>R: confere reference + valor e grava Approved/Declined/Cancelled/Failed (BR-11..14)
+    H->>R: sob PurchaseWriteLock: confere reference + valor e grava Approved/Declined/Cancelled/Failed (BR-11..14)
+    Note over H,R: compra Failed/NotFound com reference e valor iguais e nenhuma aberta → Approved (aprovação tardia, BR-29)
     H->>G: para o foreground service
     R-->>VM: Flow da compra mudou
     VM-->>S: navega para o comprovante (Approved/Declined/Cancelled) ou Error
@@ -120,6 +121,7 @@ sequenceDiagram
     participant C as App Cielo
     participant H as HandlePaymentOutcomeUseCase
     VM->>RP: invoke() (abertura do app com Pending, ou resposta ilegível)
+    Note over RP,H: recuperação e callback compartilham o PurchaseWriteLock (Mutex singleton); o callback chama a variante sem trava
     RP->>R: marca Pending como Recovering
     RP->>G: requestLookup(page = 0)
     G->>C: lio://orders?request=base64(pageSize=5,page=0)&urlCallback=order://response
@@ -169,7 +171,7 @@ sealed interface PaymentOutcome {
     data class Cancelled(override val reference: PurchaseReference?) : PaymentOutcome
     data class Failed(override val reference: PurchaseReference?, val reason: FailureReason) : PaymentOutcome
     data object Unreadable : PaymentOutcome { override val reference: PurchaseReference? = null }
-    data class LookupPage(val page: Int, val totalPages: Int, val matches: List<PaymentOutcome>) : PaymentOutcome {
+    data class LookupPage(val page: Int, val totalPages: Int, val orders: List<LookupOrder>) : PaymentOutcome {  // LookupOrder: reference, status e pagamentos do pedido (sem dados de cartão)
         override val reference: PurchaseReference? = null
     }
 }
@@ -207,8 +209,10 @@ class ObserveAvailableEventsUseCase   // BR-01, BR-02, BR-17, BR-22: data futura
 class GroupEventsByMonthUseCase       // BR-22..24: agrupa, lista meses com evento e normaliza mês selecionado ("Todos" se esgotou)
 class QuantityLimits                  // BR-05..07: função pura max = min(10, disponíveis)
 class StartPurchaseUseCase            // BR-08..10
-class HandlePaymentOutcomeUseCase     // BR-11..14, BR-25, parte do BR-15 (lookup)
-class RecoverPendingPurchaseUseCase   // BR-15, BR-25
+class HandlePaymentOutcomeUseCase     // BR-11..14, BR-25, BR-29 (aprovação tardia), parte do BR-15 (lookup); sob PurchaseWriteLock
+class RecoverPendingPurchaseUseCase   // BR-15, BR-25; sob PurchaseWriteLock
+@Singleton class PurchaseWriteLock    // Mutex que serializa callback e recuperação (review T26)
+fun interface ReferenceGenerator      // BR-08: gera o reference (UUID v4 no data/di)
 class ObservePurchaseUseCase          // BR-16, BR-19
 class ObserveOpenPurchaseUseCase      // BR-10, BR-15: compra Pending/Recovering ou null (adicionado no lote D, 2026-10-18)
 class ObservePurchaseHistoryUseCase   // BR-18, BR-20, BR-21
@@ -311,9 +315,10 @@ a saída da compra da pilha, sem evento interno (decisão 2026-10-18; requisito 
 (`OnEventSelected`, `OnOpenHistory`, `OnPurchaseSelected`, `OnNewSale`, "Voltar para eventos") não muda o estado: a `Route`
 chama o callback. Argumentos de rota são só IDs.
 
+**Serialização de escritas (review T26, 2026-10-18):** `PurchaseRepository.update` regrava a linha inteira a partir de um snapshot lido antes, então o callback (`HandlePaymentOutcomeUseCase`, inclusive a aprovação tardia da BR-29) e a recuperação (`RecoverPendingPurchaseUseCase`) rodam sob um único `PurchaseWriteLock` (`Mutex` singleton no domain, não reentrante: a recuperação chamada pelo callback usa a variante sem trava). Decisão humana: sem CAS no DAO. Fora da trava: o `update` para `Failed` do `StartPurchaseUseCase` (linha recém-criada, ainda sem callback possível).
+
 **Implementação da T24 (2026-10-18):** (1) `ticketingGraph(navController, clock)` liga as 4 Routes por callbacks; o `app` hospeda o `NavHost` com `startDestination = EventListRoute`. (2) A origem do comprovante (venda × histórico) não é argumento: vem da pilha (entrada anterior = histórico), então sobrevive à morte do processo. (3) `OpenPurchaseRedirect` (ViewModel por activity, estado + evento de consumo) empilha a SCR-02 sobre a SCR-01 quando o app abre com compra `Pending`/`Recovering` (UI Spec §3, AC-15); só age se o destino atual é a SCR-01, e a segurança do pagamento não depende dele (BR-10: sem "Pagar" enquanto a compra aberta é desconhecida). Compra aberta ilegível ao abrir não redireciona (sem `eventId`): o erro da BR-26 aparece quando o operador abre a compra, nunca há cobrança (lacuna registrada frente ao AC-25 literal). (4) O voltar das SCR-02/03/04 só age na entrada visível (`RESUMED`), contra toque duplo. (5) Um único `Clock` (`core:common/di/ClockModule`, `systemDefaultZone`) alimenta os use cases e as Routes, e o fuso é lido na criação do processo. (6) As chaves `eventId`/`purchaseId` dos ViewModels vêm do descritor das rotas de `:api`, com teste cruzado. O `SavedStateHandle` da compra guarda `eventId` (rota), a quantidade e o
 
-**Serialização de escritas (review T26, 2026-10-18):** `PurchaseRepository.update` regrava a linha inteira a partir de um snapshot lido antes, então o callback (`HandlePaymentOutcomeUseCase`, inclusive a aprovação tardia da BR-29) e a recuperação (`RecoverPendingPurchaseUseCase`) rodam sob um único `PurchaseWriteLock` (`Mutex` singleton no domain, não reentrante: a recuperação chamada pelo callback usa a variante sem trava). Decisão humana: sem CAS no DAO. Fora da trava: o `update` para `Failed` do `StartPurchaseUseCase` (linha recém-criada, ainda sem callback possível).
 `purchaseId` da tentativa atual. Exceção ao AP-22: o `PurchaseViewModel` coleta compra aberta e catálogo desde o `init`,
 porque a recuperação da BR-15 precisa rodar mesmo sem a UI assinando (decisão 2026-10-18). `Completed` também é decisão de
 2026-10-18 (não está na spec §6: é sinal de navegação). Todas as declarações do `ui` são `internal`; os `sealed interface *UiState` têm `@Immutable`.
@@ -337,6 +342,7 @@ andamento; falha, registro inexistente ou `Failed` vão para `ReceiptUiState.Err
 | Aprovado com `reference` ou `payments[].amount` diferentes da compra aberta (e sem a exceção da linha seguinte) | descartado + log de segurança | Sem mudança (continua aguardando/recuperando) | — |
 | Callback sem compra aberta | descartado + log | — | — |
 | Aprovado com `reference` de compra `Failed`/`NotFound` e `payments[].amount` igual ao total (BR-29, AC-28) | `Approved` na compra antiga (só `repository.update`; a compra aberta e a sessão do gateway não mudam); log `late_approval` | Venda no histórico; sem aviso (Q14) | — |
+| `StorageFailure` ao gravar o resultado no callback (inclusive a aprovação tardia) ou timeout de 10 s do callback | `payment_outcome_not_applied` (log); a compra fica como estava | `Recovering`/`Error` conforme o estado salvo; a recuperação (BR-15) resolve na próxima abertura | Reabrir a compra |
 | Consulta sem o `reference` em 4 páginas | `PaymentOutcome` → `Failed(NotFound)` | `Error(RecoveryNotFound)` | Tentar pagar de novo |
 | Falha ao ler a compra aberta, ou `recoverPending()` com `Failure` | `StorageFailure` / falha do gateway | `Error(RecoveryFailed)` (BR-26) | Consultar de novo (repete leitura e consulta; nunca paga) |
 | Catálogo ilegível, evento inexistente ou esgotado, sem compra aberta | `CatalogUnavailable` / ausência | `PurchaseUiState.Unavailable` (BR-27) | Voltar para eventos |
@@ -389,7 +395,7 @@ token por MDM/configuração gerenciada da Cielo Store.
 
 ## 8. Observabilidade
 - **Logs** (`Logger`, só debug por ADR-0009): `purchase_started(reference)`, `payment_outcome(type, reference)`,
-  `lookup_page(page, found)`, `callback_discarded(reason)`. Nunca valores de cartão, token, resposta bruta, nome de comprador.
+  `lookup_page(page, found)`, `callback_discarded(reason)`, `late_approval(reference)`, `payment_outcome_not_applied`, `purchase_storage_failure`, `payment_service_not_started`. (`purchase_started` não foi implementado: a gravação da compra já é observável no Room.) Nunca valores de cartão, token, resposta bruta, nome de comprador.
 - **Analytics:** nenhum (ADR-0009, S1).
 - **Crash/erros:** sem crash reporter (S1); erros inesperados vão para `Logger.error` com tipo e `reference`.
 
@@ -404,12 +410,12 @@ token por MDM/configuração gerenciada da Cielo Store.
 ## 10. Estratégia de Testes
 | Nível | Escopo | Ferramentas | ACs cobertos |
 |---|---|---|---|
-| Unitário (domain) | Disponibilidade, filtro de data, agrupamento por mês, limites de quantidade, `StartPurchase` (inclusive BR-10), `HandlePaymentOutcome` (mapeamento de códigos, falsificação, valor divergente), `RecoverPendingPurchase` (achou/não achou/paginação) | JUnit 5, MockK, fakes de repositório e gateway, `Clock` fixo | AC-01, 02, 04–15, 17, 22–24 |
+| Unitário (domain) | Disponibilidade, filtro de data, agrupamento por mês, limites de quantidade, `StartPurchase` (inclusive BR-10), `HandlePaymentOutcome` (mapeamento de códigos, falsificação, valor divergente), `RecoverPendingPurchase` (achou/não achou/paginação) | JUnit 5, MockK, fakes de repositório e gateway, `Clock` fixo | AC-01, 02, 04–15, 17, 22–24, 28 (inclui `LateApprovalUseCaseTest` e `PurchaseWriteLockTest`) |
 | Unitário (data) | `CieloRequestEncoder` (JSON e URI), `CieloResponseParser` com JSONs da doc da Cielo (sucesso, erro, listagem, ilegível, campos sensíveis ignorados), mapper do catálogo | JUnit 5, fixtures em `src/test/resources` | AC-07, 09–15 |
-| Unitário (presentation) | 4 ViewModels: estados, eventos, `SavedStateHandle`, navegação como estado | JUnit 5, Turbine, `MainDispatcherExtension` | AC-01–24 (lado de UI) |
+| Unitário (presentation) | 4 ViewModels: estados, eventos, `SavedStateHandle`, navegação como estado | JUnit 5, Turbine, `MainDispatcherExtension` | AC-01–27 (lado de UI) |
 | Integração (data) | `PurchaseDao`/repositório: compra aberta única, histórico ordenado e filtrado, soma de aprovadas | Room in-memory + Robolectric | AC-08, 17, 18, 20 |
-| UI (componente) | Telas stateless por estado (Loading/Content/Empty/Error, Editing/limite, comprovante) e a11y básica | Compose UI Test + Robolectric | AC-02, 03, 06, 16, 19, 20, 21 |
-| Fluxo crítico (dispositivo) | Journey no AVD Android 10 com `lio-emulator`: aprovado, cancelado, erro, app fechado | `verify-on-device` (Android CLI) | AC-07, 09, 10, 13, 15 |
+| UI (componente) | **Fora de foco por decisão do humano (2026-10-18):** testes Compose e screenshot de previews não foram escritos; os ACs de UI ficam cobertos pelos testes de ViewModel e por lógica pura em JVM (`ui.format`, mapeadores) | — | — |
+| Fluxo crítico (dispositivo) | Journey no AVD Android 10 com `lio-emulator`: aprovado, cancelado, erro, app fechado | `verify-on-device` (Android CLI) | AC-07, 09, 10, 13, 15 (J1–J6 executadas; J7/AC-14 e J9/AC-28 escritas, **não executadas** no AVD) |
 
 Nome de todo teste cita o `AC-xx` (S-09). Cobertura pelos limites do testing.md (domain 90%, ui 85%, data 75%).
 
@@ -424,3 +430,13 @@ Nome de todo teste cita o `AC-xx` (S-09). Cobertura pelos limites do testing.md 
 | `ReceiptUiState.Loading` / `PurchaseUiState.Loading` fora da spec | — | Baixo | Aceitos como detalhe técnico (2026-10-17, 2026-10-18) |
 | Datas fixas no JSON envelhecerem (evento "passado" some da lista) | Média | Médio | Datas de nov/2026 a mar/2027; README explica como editar o JSON |
 | Token extraível do APK | Alta (é inerente) | Baixo no case | Explicado no ADR-0010; valores fictícios; melhoria futura F1 no roadmap (configuração gerenciada) |
+
+## 12. Changelog
+| Data | Mudança | Origem |
+|---|---|---|
+| 2026-10-17 | Versão inicial aprovada | Humano |
+| 2026-10-18 | `ObserveOpenPurchaseUseCase`, `PurchaseUiState.Completed`/`Unavailable`, `Error(RecoveryFailed)`, `OpenPurchaseRedirect`, navegação com `popUpTo` (§4); ressalva do `PurchaseViewModel` coletando no `init` | Lote D/E e T24 (decisões do humano, ver `progress.md`) |
+| 2026-10-18 | Callback sem `BROWSABLE` (§4, §7); spoofing de erro sem `reference` como risco aceito (§7) | T15/T25, decisão do humano |
+| 2026-10-18 | BR-29: aprovação tardia, `PurchaseRepository.findById` (§4, §5, §7) | T25/T29, spec 1.3.0 |
+| 2026-10-18 | `PurchaseWriteLock` serializa callback e recuperação; sem CAS no DAO (§4) | Review T26, decisão do humano |
+| 2026-10-18 | T27: diagramas (§3), lista de use cases e `LookupPage` (§4), logs (§8) e testes (§10) alinhados ao código; sem mudança de comportamento | `consistency-check` |

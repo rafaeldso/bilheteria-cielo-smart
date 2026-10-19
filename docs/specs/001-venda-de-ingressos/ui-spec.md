@@ -171,7 +171,7 @@ A resposta ilegível não é `Error`: vai para `Recovering` (BR-25).
 | 3 | `DsSummaryCard` | — | `primaryContainer`, `displaySmall`, `shape.large` | Informação dominante |
 | 4 | `DsButton` | Filled, ícone, largura total, desabilitado | `primary` | Valor na frase; desabilitado em `AwaitingPayment` |
 | — | `DsProgressIndicator` | linear indeterminado | `primary`, `secondaryContainer` | Aprovado; `Planejado` em [components.md](../../design/components.md) |
-| — | `DsErrorState` | com ação | `errorContainer` | 4 variantes de texto |
+| — | `DsErrorState` | com ação | `errorContainer` | 5 variantes de texto |
 
 #### 4.4 Conteúdo (strings)
 | Chave | Texto (pt-BR) | Onde | Observação |
@@ -415,7 +415,7 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | P1 | **Resposta ilegível pode esconder um pagamento aprovado.** Hoje a spec (BR-14/AC-14) registra "Falhou" e libera nova tentativa, o que pode cobrar duas vezes se a Cielo tiver aprovado e só a leitura falhou. Proposta: tratar resposta ilegível como a BR-15 (ir para `Recovering` e consultar a Cielo pelo `reference` antes de liberar nova tentativa). Enquanto não decidido, o texto do erro já pede para conferir o terminal. Exige spec 1.1.0 | Humano | Fechada: aprovada (spec 1.1.0, BR-25) |
 | P3 | **Recuperação sem resultado não tem destino definido.** A BR-15 diz "registrar Falhou e liberar nova tentativa", mas não diz para onde a tela vai nem o que o operador vê. Proposta: voltar à SCR-02 em `Error` (variante "pagamento anterior não encontrado") com o mesmo evento e quantidade e "Tentar pagar R$ X de novo". Desenhada como proposta. Exige spec 1.1.0 | Humano | Fechada: aprovada (spec 1.1.0, BR-15) |
 | P4 | Atalho "Refazer esta venda" após `Declined`/`Cancelled` | Humano | Fechada: não incluir (2026-10-17) |
-| P2 | A tela de espera pressupõe que o app da Cielo cobre a nossa durante o pagamento; confirmar no emulador como fica a volta ao app | Agente (implementação) | Aberta |
+| P2 | A tela de espera pressupõe que o app da Cielo cobre a nossa durante o pagamento; confirmar no emulador como fica a volta ao app | Agente (implementação) | Fechada: verificada no AVD na T25 (J1–J6) |
 
 ## 8. Design Ready (checklist antes do checkpoint)
 - [x] Toda tela tem ID `SCR-xx` e liga a uma `US-xx`
