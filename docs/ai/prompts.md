@@ -1,7 +1,8 @@
 # Prompts do humano
 
 > Na íntegra, em ordem. Prompts de skill (`/android-cli`, `/feature-flow`) entram só pelo nome.
-> Os Prompts 0–2 são literais. A seção "Chamadas por tarefa" lista as skills acionadas em cada tarefa da feature 001.
+> Os Prompts 0–2 são literais. A seção "Chamadas por tarefa" lista as skills acionadas em cada tarefa da feature 001;
+> a seção "Feature 002" traz os prompts literais da sessão do QR Code e as chamadas por tarefa.
 
 ## Prompt 0
 `/android-cli` (carrega a skill do Android CLI; verificação do ambiente)
@@ -54,4 +55,63 @@ constitution, guias, spec, plano, tasks), as ações (traceability, `spec-consis
 sem publicar nem alterar o remoto; não ler `local.properties`). O agente parou antes do commit para pedir aprovação, e o humano
 autorizou os passos seguintes, incluindo a exclusão de cobertura do `ui` do
 [ADR-0011](../adr/0011-cobertura-do-ui-exclui-composables-e-previews.md).
+
+## Feature 002 — QR Code do ingresso
+> **Procedência:** os prompts abaixo são **literais**, na ordem da sessão de 2026-10-19. O primeiro é o prompt de handoff
+> que abriu a sessão (ela não tinha o contexto da anterior); o resto são as respostas e aprovações do humano.
+
+### Prompt 3 (handoff e demanda)
+`/feature-flow` com o texto:
+> Spec 002: QR Code do ingresso (item opcional do case)
+>
+> Você é um Engenheiro Android Sênior e Tech Lead (AGENTS.md). Responda em português do Brasil; código, identificadores e commits em inglês (Conventional Commits). Esta sessão NÃO tem o contexto da anterior: tudo de que precisa está abaixo e nos arquivos.
+>
+> **Objetivo.** Criar a spec 002 (`docs/specs/002-qr-code-ingresso/`), seguindo o SDD do projeto. O case (`case_android.md`) diz: "Geração de QR Code do ingresso (opcional)" e "Se implementar QR Code, o ingresso deve estar vinculado à compra concluída". Hoje o app não gera QR Code.
+>
+> **Estado de partida (não refaça).** Feature 001 (venda de ingressos) Implementada: spec 1.3, UI Spec 0.4.4, T01–T30 concluídas, `verify.sh full` verde, PR #7–#10 mergeados na `main`; release `v0.1.0` publicada com o APK de debug. A compra aprovada vira `Purchase` com `status = Approved`, `reference` (UUID v4) e `TransactionData`; o comprovante é a SCR-03. Domain em Kotlin puro, dados em Room, UI em Compose com o design system `Ds*`. O roadmap já prevê a D2 (`002-qr-code-ingresso`) como demanda P, "só se houver tempo".
+>
+> **Leitura obrigatória antes de agir.** `AGENTS.md`, `docs/constitution.md`, `docs/harness/guides/anti-patterns.md`; `docs/specs/001-venda-de-ingressos/` (spec, plan §3–§5 e §7, ui-spec SCR-03, progress); `docs/specs/_templates/`, `docs/harness/guides/security.md` e `ui-design.md`; ADR-0007 e ADR-0009; `docs/onboarding/`.
+>
+> **O que fazer (Fases 1 e 2 do SDD, parar no checkpoint).** (1) Usar a skill `feature-flow` para classificar o tamanho (minha expectativa: P; justifique se for M) e pedir minha confirmação. (2) Usar `sdd-specify` para criar `spec.md` a partir do template, com histórias (INVEST, MoSCoW), regras EARS (`BR-xx`), critérios Gherkin (`AC-xx` ligados a uma BR), estados de UI, eventos e classificação de dados. (3) Marcar o indefinido com `[PRECISA ESCLARECIMENTO: ...]` e fazer perguntas objetivas, com uma recomendação para cada; sugestões de pontos a decidir (sem decidir sozinho): o que o QR codifica (sem PAN, token Cielo nem PII), um QR por compra ou por ingresso, só compra `Approved`, onde aparece (SCR-03, SCR-04 ou tela própria), validação dentro ou fora do escopo, aprovação tardia (BR-29), biblioteca de geração. (4) Se houver UI, indicar que a próxima fase é `sdd-design`, sem iniciá-la antes da aprovação. (5) Parar no checkpoint e pedir aprovação explícita; sem código de produção, plano nem tarefas nesta sessão.
+>
+> **Regras.** A spec 001 é viva: não alterar BR/AC existentes; se a 002 exigir mudança na 001, parar, descrever o conflito e propor nova versão. IDs estáveis. Proporcionalidade: P = `spec.md` enxuta + `tasks.md`. Todo AC com teste que cita o ID (S-09).
+>
+> **Limites.** Perguntar antes de: adicionar dependência (por exemplo, ZXing); criar módulo; alterar `build-logic/`, `config/`, `quality/`, `scripts/harness/`, CI ou a constitution; mudar contrato público de `:api`; migração de banco; usar modelo de topo ou esforço `max` em subagentes. Nunca: commitar segredos ou ler `local.properties`/keystores; logar PAN, CVV, trilha ou PII; fazer push ou alterar o remoto sem pedido; enfraquecer sensores. Só versões estáveis de bibliotecas, consultadas na fonte. Subagentes em `sonnet` por padrão.
+>
+> **Entrega.** `spec.md` (status "Rascunho") e `progress.md`; lista de perguntas abertas com recomendação; resumo curto (tamanho proposto, impacto na 001, próximo passo); se quiser commitar, mostrar a mensagem (`docs(qr-ticket): ...`, com o rodapé `Co-Authored-By`) e pedir aprovação antes.
+
+### Prompts 4 a 14 (respostas, decisões e aprovações)
+> 4. pode seguir as recomendações que você sugeriu nas perguntas abertas de 1 a 10
+> 5. adicione ao escopo a parte: Envio ou compartilhamento do ingresso (e-mail, WhatsApp, PDF, impressão em lio://print).
+> 5a. (resposta às perguntas do agente) canais: "Impressão lio://print (Recomendado)" e "Compartilhar (WhatsApp/e-mail via share sheet)"; tamanho: "Sim, M (Recomendado)"
+> 6. sobre a q11 e q12, pode seguir com a sua recomendação. Sobre a spec 0.3.0 tá aprovada.
+> 7. UI Spec 002 aprovado
+> 8. pode  *(iniciar o plano)*
+> 9. aprovado  *(plano e mudanças de spec M1 a M4)*
+> 10. aprovo  *(tasks.md)*
+> 11. (resposta ao risco R1 do spike) "testar a primeira opção, se não funcionar. Testar a segunda opção." *(MediaStore; se falhar, AVD Android 11)*
+> 12. pode commitar e abrir o PR
+> 13. não esqueça depois de gerar uma nova tag e uma nova versão da apk, atualizando o Readme com as informações atuais, a nova tela e verificando se existe alguma informação desatualizada.
+> 14. verique também a questão da documentação que o case pede, além da questão dos prompts, pode seguir o padrão da spec 001
+
+### Chamadas por tarefa (feature 002)
+> Pasta da spec: `docs/specs/002-qr-code-ingresso`, abreviada como `002`. Procedência: **literal** (informada pelo autor ou registrada na sessão) ou **reconstruída** (a partir do `tasks.md`, do `progress.md` e do [log.md](log.md)).
+
+| Etapa | Tarefas | Chamada | Procedência |
+|---|---|---|---|
+| Demanda, tamanho e spec | Fases 1–2 | `/feature-flow` (Prompt 3) · `/sdd-specify 002` | **literal** |
+| UI Spec e prancha | Fase 2.5 | `/sdd-design 002` (+ `ui-design-reviewer`, 2 rodadas) | **literal** |
+| Plano | Fase 3 | `/sdd-plan 002` | **literal** |
+| Tarefas | Fase 4 | `/sdd-tasks 002` | **literal** |
+| Spike do `lio://print` e ZXing | T01 | `/implement-task 002 T01` (WebFetch, `device-tester`) | **literal** |
+| Catálogo e contratos do domain | T02, T03 | `/implement-task 002 T02` · `T03` | **literal** |
+| Use cases e design system | T04–T06 | `/implement-task 002 T04` … `T06` | reconstruída |
+| Dados: QR, imagem, callback, arquivos, impressão, DI | T07–T11 | `/implement-task 002 T07` … `T11` | reconstruída |
+| Presentation e UI | T12–T14 | `/implement-task 002 T12` … `T14` | reconstruída |
+| Revisão e segurança | T15 | `/review-changes 002` · `/security-scan` (5 revisores, 2 rodadas) | **literal** |
+| Journeys no AVD API 29 e 30 | T16 | `/verify-on-device 002` (`device-tester`) | **literal** |
+| Fechamento: `verify.sh full`, consistência, docs | T17, T18 | `/verify full` · `/consistency-check 002` | **literal** |
+| PR | — | `/open-pr` (a ser acionada pelo autor) | — |
+
+> Implementação feita na sessão principal (sem worktrees): o repositório não tinha commit com o trabalho em andamento, e commit só sob pedido.
 
