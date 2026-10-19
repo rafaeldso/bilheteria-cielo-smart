@@ -100,7 +100,7 @@ Skill `compose-screen`: `Route` + `Screen` stateless + um `@Preview` por estado 
   > Fechada em 2026-10-18: 1 rodada de 5 revisores, sem bloqueante de código; Importantes corrigidos ou aceitos pelo humano (ver `progress.md`). Rodada 2 dos revisores não executada por decisão do humano.
 - [x] **T27** `consistency-check` + `scripts/harness/check-traceability.sh docs/specs/001-venda-de-ingressos`
   > Fechada em 2026-10-18: sem divergência de comportamento; plano, tabela de rastreabilidade e docs alinhados; testes do `PurchaseWriteLock` nos dois use cases. Pendências registradas: J7 e J9 não executadas no AVD.
-- [ ] **T28** (**bloqueada:** `koverVerify` falha em `ui` 35,5% < 85% e `data` 74,6% < 75%; ver `progress.md`) `scripts/harness/verify.sh full` verde; spec → Implementada; changelog; seção da integração Cielo no README
+- [x] **T28** `scripts/harness/verify.sh full` verde; spec → Implementada; changelog; seção da integração Cielo no README
 
 ## Rastreabilidade
 | AC | Tarefas | Testes (nome começa com) |

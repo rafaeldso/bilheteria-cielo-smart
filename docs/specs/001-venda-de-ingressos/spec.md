@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | **ID** | 001 |
-| **Status** | Aprovada |
+| **Status** | Implementada |
 | **Versão** | 1.3.0 |
 | **Módulo** | `feature/ticketing` (provisório; o `plan.md` confirma a divisão de módulos) |
 | **Autor** | Rafael Oliveira (com Claude Code) |
@@ -480,3 +480,4 @@ E uma compra em andamento, se houver, não é alterada
 | 1.2.0 | 2026-10-18 | Rafael Oliveira | Aprovada (BR-26..28, AC-25..27) |
 | 1.3.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da T25 no emulador, recomendações aprovadas pelo humano: BR-29/AC-28 (pagamento aprovado depois de "não encontrado" vira Aprovada); AC-25 ajustado (o erro aparece na tela da compra); fora do escopo: reabrir o app após venda concluída; Q14 aberta |
 | 1.3.0 | 2026-10-18 | Rafael Oliveira | Aprovada. Q14 respondida: aprovação tardia sem aviso ao operador e sem prazo máximo, risco de cobrança dupla aceito (aviso, prazo e estorno ficam para spec futura); nota do AC-25 corrigida (compra aberta ilegível abre na lista de eventos, sem cobrança) |
+| 1.3.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Implementada. T01–T30 concluídas, `verify.sh full` verde, análise de consistência (T27) sem divergência de comportamento. Pendências aceitas: J7 e J9 sem execução no AVD; TalkBack, AVD API 30+ e ordenação do `orders` em terminal real adiados |

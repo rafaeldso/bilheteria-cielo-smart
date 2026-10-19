@@ -4,7 +4,7 @@
 > com pagamento pelo ecossistema Cielo Smart / Cielo LIO. Case técnico ([case_android.md](case_android.md))
 > construído com Spec-Driven Development, Clean Architecture modular e agentes de IA guiados por harness.
 
-**Status:** fundação pronta (000); feature de venda (001) em especificação. Plano: [roadmap](docs/roadmap.md).
+**Status:** fundação pronta (000); feature de venda (001) implementada. Plano: [roadmap](docs/roadmap.md).
 Uso de IA no processo: [docs/ai/](docs/ai/README.md).
 
 ## Comece por aqui

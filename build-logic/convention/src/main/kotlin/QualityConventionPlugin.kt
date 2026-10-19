@@ -68,14 +68,30 @@ class QualityConventionPlugin : Plugin<Project> {
                 // Shared fakes and builders are test code: they must not count as production coverage.
                 sources { excludedSourceSets.add("testFixtures") }
             }
-            if (minimum != null) {
-                reports { verify { rule { minBound(minimum) } } }
+            reports {
+                // ADR-0011: Compose UI is verified by previews and on device, not by JVM line coverage; pure logic
+                // (ViewModels, mappers, formatters) in the same module stays measured.
+                if (path.endsWith(":ui")) {
+                    filters {
+                        excludes {
+                            annotatedBy(*COMPOSE_UI_ANNOTATIONS)
+                            classes(*GENERATED_DI_CLASSES, *PREVIEW_CLASSES)
+                        }
+                    }
+                }
+                if (minimum != null) {
+                    verify { rule { minBound(minimum) } }
+                }
             }
         }
     }
 
     private companion object {
         const val DETEKT_RULES = ":quality:detekt-rules"
+        val COMPOSE_UI_ANNOTATIONS =
+            arrayOf("androidx.compose.runtime.Composable", "androidx.compose.ui.tooling.preview.Preview")
+        val GENERATED_DI_CLASSES = arrayOf("*_Factory", "*_Factory\$*", "*_HiltModules*", "Hilt_*", "*_MembersInjector")
+        val PREVIEW_CLASSES = arrayOf("*PreviewsKt")
         val LAYER_COVERAGE = mapOf("domain" to 90, "ui" to 85, "data" to 75)
     }
 }
