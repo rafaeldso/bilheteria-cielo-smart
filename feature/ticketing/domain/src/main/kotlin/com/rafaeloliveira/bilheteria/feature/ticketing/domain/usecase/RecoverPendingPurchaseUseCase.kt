@@ -40,8 +40,12 @@ class RecoverPendingPurchaseUseCase
         private val repository: PurchaseRepository,
         private val gateway: PaymentGateway,
         private val clock: Clock,
+        private val lock: PurchaseWriteLock,
     ) {
-        suspend operator fun invoke(): DataResult<Boolean> =
+        suspend operator fun invoke(): DataResult<Boolean> = lock.withLock { invokeLocked() }
+
+        /** Same as [invoke] for callers that already hold the [PurchaseWriteLock]. */
+        internal suspend fun invokeLocked(): DataResult<Boolean> =
             when (val open = repository.findOpen()) {
                 is DataResult.Failure -> open
                 is DataResult.Success -> open.value?.let { recover(it) } ?: DataResult.Success(false)

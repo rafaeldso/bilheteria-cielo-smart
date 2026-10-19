@@ -36,7 +36,7 @@ class RecoverPendingPurchaseUseCaseTest {
     private val now = TEST_NOW.plusSeconds(30)
     private val gateway = FakePaymentGateway()
     private val useCaseFor = { repository: FakePurchaseRepository ->
-        RecoverPendingPurchaseUseCase(repository, gateway, Clock.fixed(now, ZoneOffset.UTC))
+        RecoverPendingPurchaseUseCase(repository, gateway, Clock.fixed(now, ZoneOffset.UTC), PurchaseWriteLock())
     }
 
     @ParameterizedTest

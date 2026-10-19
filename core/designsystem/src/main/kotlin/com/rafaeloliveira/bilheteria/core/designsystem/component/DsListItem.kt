@@ -56,7 +56,7 @@ private const val STACKED_TRAILING_FONT_SCALE = 1.5f
 
 /**
  * List row of the design system: optional 40dp circular leading icon (`secondaryContainer`), a headline in
- * `labelLarge`, an optional supporting line in `bodyMedium` and an optional trailing column aligned to the end.
+ * `labelLarge`, an optional supporting line in `bodyMedium` and an optional trailing column at the end.
  *
  * Headline and supporting line wrap up to two lines each; the trailing content never truncates. With font scale
  * of 1.5 or more the trailing content moves below the texts (start aligned with them), so the text column keeps
@@ -72,7 +72,8 @@ private const val STACKED_TRAILING_FONT_SCALE = 1.5f
  * the merged visible texts.
  * @param showTopDivider true draws an `outlineVariant` line above the row, to separate it from the previous one.
  * @param trailing slot at the end for the value and a second line (price and availability, total and badge);
- * its content is aligned to the end; null omits it.
+ * its content is aligned to the end of the row, or to the start of the texts when stacked below them (font scale
+ * of 1.5 or more); null omits it.
  */
 @Composable
 fun DsListItem(

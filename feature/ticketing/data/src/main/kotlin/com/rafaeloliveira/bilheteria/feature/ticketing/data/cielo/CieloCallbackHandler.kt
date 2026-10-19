@@ -51,7 +51,8 @@ internal class CieloCallbackHandler
                             suspendRunCatching { handlePaymentOutcome(parser.parse(response)) }
                         }
                     if (result?.getOrNull() !is DataResult.Success) {
-                        // Room keeps the purchase open and the recovery (BR-15) resolves it.
+                        // An open purchase stays in Room and the recovery (BR-15) resolves it. A late approval (BR-29)
+                        // has none to recover: if it fails, the old Failed row stays as it was.
                         logger.error("payment_outcome_not_applied")
                     }
                 }.invokeOnCompletion { onDone() }

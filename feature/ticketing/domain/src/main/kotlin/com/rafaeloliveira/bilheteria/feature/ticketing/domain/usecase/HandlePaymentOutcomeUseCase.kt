@@ -37,6 +37,9 @@ import javax.inject.Inject
  * and end the payment session (`gateway.finish()`). `Unreadable` never becomes Approved or Failed: it starts the
  * recovery (BR-25).
  *
+ * The whole handling runs under the [PurchaseWriteLock], shared with the recovery, so snapshot-based updates do
+ * not overwrite each other.
+ *
  * Late approval (BR-29): an `Approved` response whose `reference` is not the open purchase's (or with no open purchase)
  * is applied to the purchase it names when that purchase is `Failed`/`NotFound` (the lookup found nothing, then the
  * terminal finished the payment) and the paid amount equals its total. Only the repository is updated: the open
@@ -61,8 +64,11 @@ class HandlePaymentOutcomeUseCase
         private val recover: RecoverPendingPurchaseUseCase,
         private val clock: Clock,
         private val logger: Logger,
+        private val lock: PurchaseWriteLock,
     ) {
-        suspend operator fun invoke(outcome: PaymentOutcome): DataResult<Unit> =
+        suspend operator fun invoke(outcome: PaymentOutcome): DataResult<Unit> = lock.withLock { handle(outcome) }
+
+        private suspend fun handle(outcome: PaymentOutcome): DataResult<Unit> =
             when (val open = repository.findOpen()) {
                 is DataResult.Failure -> open
                 is DataResult.Success -> handleOpen(open.value, outcome)
@@ -142,7 +148,7 @@ class HandlePaymentOutcomeUseCase
             }
 
         private suspend fun recoverPurchase(): DataResult<Unit> =
-            when (val recovery = recover()) {
+            when (val recovery = recover.invokeLocked()) {
                 is DataResult.Failure -> recovery
                 is DataResult.Success -> DataResult.Success(Unit)
             }
