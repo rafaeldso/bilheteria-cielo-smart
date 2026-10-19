@@ -6,6 +6,7 @@
 
 **Status:** fundação pronta (000); feature de venda de ingressos (001) implementada; QR Code (opcional no case) não feito. Plano: [roadmap](docs/roadmap.md).
 Uso de IA no processo: [docs/ai/](docs/ai/README.md).
+**Licença:** Apache 2.0 ([LICENSE](LICENSE)) · © 2026 Rafael Oliveira.
 
 ## Comece por aqui
 | Você é… | Leia, nesta ordem | Tempo |
