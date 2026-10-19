@@ -42,3 +42,13 @@ public data class ReceiptRoute(
 /** SCR-04 Histórico de compras. */
 @Serializable
 public data object PurchaseHistoryRoute
+
+/**
+ * SCR-05 Ingressos of the approved purchase with id [purchaseId]: the QR Code of each ticket, printing and sharing
+ * (spec 002). Only an id travels in the route; the screen reads the purchase. The property name is the
+ * `SavedStateHandle` key, as in [ReceiptRoute].
+ */
+@Serializable
+public data class TicketsRoute(
+    public val purchaseId: String,
+)
