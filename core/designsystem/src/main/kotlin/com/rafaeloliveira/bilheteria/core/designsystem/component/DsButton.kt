@@ -24,8 +24,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -33,6 +35,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rafaeloliveira.bilheteria.core.designsystem.icon.DsIcons
@@ -52,6 +57,10 @@ import com.rafaeloliveira.bilheteria.core.designsystem.theme.BilheteriaTheme
  * @param enabled false renders the disabled state (12% container, 38% content) and ignores clicks.
  * @param fillMaxWidth true makes the button as wide as its parent (the `.btn.block` of the kit).
  * @param leadingIcon optional 18dp decorative icon before the label; the label already describes the action.
+ * @param busyDescription when not null the button is **busy** (UI Spec 002 §4.3, `.btn.busy`): it keeps the container
+ *   and content colors of its variant, shows a small progress ring instead of the icon, ignores clicks and is announced
+ *   as disabled with this text as its state (e.g. "Imprimindo os ingressos"). Unlike [enabled] = false it does not dim
+ *   to 38%, because the label ("Imprimindo…") is the only progress information on screen.
  */
 @Composable
 fun DsButton(
@@ -62,16 +71,19 @@ fun DsButton(
     enabled: Boolean = true,
     fillMaxWidth: Boolean = false,
     leadingIcon: ImageVector? = null,
+    busyDescription: String? = null,
 ) {
-    val buttonModifier = if (fillMaxWidth) modifier.fillMaxWidth() else modifier
+    val busy = busyDescription != null
+    val buttonModifier = modifier.buttonSize(fillMaxWidth).busySemantics(busyDescription)
+    val onClickOrNothing = if (busy) ({}) else onClick
     val spacing = BilheteriaTheme.spacing
     val contentPadding = PaddingValues(horizontal = if (leadingIcon != null) spacing.lg else spacing.xl)
-    val content: @Composable () -> Unit = { DsButtonContent(text = text, leadingIcon = leadingIcon) }
+    val content: @Composable () -> Unit = { DsButtonContent(text = text, leadingIcon = leadingIcon, busy = busy) }
 
     when (variant) {
         DsButtonVariant.Filled -> {
             Button(
-                onClick = onClick,
+                onClick = onClickOrNothing,
                 modifier = buttonModifier,
                 enabled = enabled,
                 contentPadding = contentPadding,
@@ -80,7 +92,7 @@ fun DsButton(
 
         DsButtonVariant.Tonal -> {
             FilledTonalButton(
-                onClick = onClick,
+                onClick = onClickOrNothing,
                 modifier = buttonModifier,
                 enabled = enabled,
                 contentPadding = contentPadding,
@@ -89,7 +101,7 @@ fun DsButton(
 
         DsButtonVariant.Outlined -> {
             OutlinedButton(
-                onClick = onClick,
+                onClick = onClickOrNothing,
                 modifier = buttonModifier,
                 enabled = enabled,
                 contentPadding = contentPadding,
@@ -98,6 +110,19 @@ fun DsButton(
         }
     }
 }
+
+private fun Modifier.buttonSize(fillMaxWidth: Boolean): Modifier = if (fillMaxWidth) fillMaxWidth() else this
+
+/** Announces a busy button as disabled with [description] as its state; no change when [description] is null. */
+private fun Modifier.busySemantics(description: String?): Modifier =
+    if (description == null) {
+        this
+    } else {
+        semantics {
+            stateDescription = description
+            disabled()
+        }
+    }
 
 @Composable
 private fun outlinedBorder(enabled: Boolean): BorderStroke {
@@ -110,12 +135,20 @@ private fun outlinedBorder(enabled: Boolean): BorderStroke {
 private fun DsButtonContent(
     text: String,
     leadingIcon: ImageVector?,
+    busy: Boolean,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(BilheteriaTheme.spacing.sm, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (leadingIcon != null) {
+        if (busy) {
+            CircularProgressIndicator(
+                progress = { BUSY_PROGRESS },
+                modifier = Modifier.size(BilheteriaTheme.sizes.iconSmall),
+                color = LocalContentColor.current,
+                strokeWidth = BUSY_STROKE,
+            )
+        } else if (leadingIcon != null) {
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
@@ -127,6 +160,8 @@ private fun DsButtonContent(
 }
 
 private const val DISABLED_CONTAINER_ALPHA = 0.12f
+private const val BUSY_PROGRESS = 0.75f
+private val BUSY_STROKE = 2.dp
 
 @Preview(name = "Light")
 @Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
@@ -163,6 +198,15 @@ private fun DsButtonFilledDisabledPreview() {
             fillMaxWidth = true,
             leadingIcon = DsIcons.HourglassTop,
         )
+    }
+}
+
+@Preview(name = "Light")
+@Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun DsButtonFilledBusyPreview() {
+    DsPreviewSurface(Modifier.width(PREVIEW_WIDTH)) {
+        DsButton(text = "Imprimindo…", onClick = {}, fillMaxWidth = true, busyDescription = "Imprimindo os ingressos")
     }
 }
 

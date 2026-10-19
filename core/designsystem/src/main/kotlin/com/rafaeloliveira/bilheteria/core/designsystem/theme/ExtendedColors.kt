@@ -20,7 +20,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * Status roles that Material 3 does not have (`success`, `warning`), from the color tokens.
+ * Roles that Material 3 does not have (`success`, `warning`, and the fixed QR Code colors), from the tokens.
  * Read them through [BilheteriaTheme.extendedColors]. Always pair the color with text or an icon.
  */
 @Immutable
@@ -33,6 +33,9 @@ data class ExtendedColors(
     val onWarning: Color,
     val warningContainer: Color,
     val onWarningContainer: Color,
+    /** QR Code modules: the same in both themes on purpose, readers need dark on light (`color.qr.*`). */
+    val qrForeground: Color,
+    val qrBackground: Color,
 )
 
 internal fun lightExtendedColors(): ExtendedColors =
@@ -45,6 +48,8 @@ internal fun lightExtendedColors(): ExtendedColors =
         onWarning = Color(0xFFFFFFFF),
         warningContainer = Color(0xFFFFDEA3),
         onWarningContainer = Color(0xFF261900),
+        qrForeground = QR_FOREGROUND,
+        qrBackground = QR_BACKGROUND,
     )
 
 internal fun darkExtendedColors(): ExtendedColors =
@@ -57,6 +62,11 @@ internal fun darkExtendedColors(): ExtendedColors =
         onWarning = Color(0xFF402D00),
         warningContainer = Color(0xFF5C4300),
         onWarningContainer = Color(0xFFFFDEA3),
+        qrForeground = QR_FOREGROUND,
+        qrBackground = QR_BACKGROUND,
     )
+
+private val QR_FOREGROUND = Color(0xFF000000)
+private val QR_BACKGROUND = Color(0xFFFFFFFF)
 
 internal val LocalExtendedColors = staticCompositionLocalOf { lightExtendedColors() }
