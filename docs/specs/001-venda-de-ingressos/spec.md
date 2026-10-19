@@ -4,10 +4,10 @@
 |---|---|
 | **ID** | 001 |
 | **Status** | Implementada |
-| **Versão** | 1.3.0 |
+| **Versão** | 1.3.1 |
 | **Módulo** | `feature/ticketing` (provisório; o `plan.md` confirma a divisão de módulos) |
 | **Autor** | Rafael Oliveira (com Claude Code) |
-| **Links** | [case_android.md](../../../case_android.md) · [research.md](research.md) · Design ([ui-spec.md](ui-spec.md) v0.4.4 aprovada · [prancha](design/mockups.html)) |
+| **Links** | [case_android.md](../../../case_android.md) · [research.md](research.md) · Design ([ui-spec.md](ui-spec.md) v0.5.0 aprovada · [prancha](design/mockups.html); a ação "Ver ingressos" do comprovante está na [prancha da 002](../002-qr-code-ingresso/design/mockups.html)) |
 
 > Esta spec descreve **o quê** e **por quê**. Detalhes de implementação ficam no `plan.md`.
 > Fonte dos requisitos: o case (RF-1…RF-5, RNFs), a documentação oficial da Cielo Smart resumida no
@@ -67,7 +67,7 @@ Persona: **operador da bilheteria** usando o terminal Cielo Smart (Q1).
 - Tratamento explícito de erros de integração e de pagamento.
 
 **Fora do escopo:**
-- QR Code do ingresso (opcional no case): spec própria `002`, só após esta.
+- QR Code do ingresso (opcional no case): spec própria [`002`](../002-qr-code-ingresso/spec.md) (aprovada em 2026-10-19), que acrescenta ao comprovante aprovado a ação "Ver ingressos" (`OnOpenTickets`); nenhuma BR ou AC desta spec muda.
 - Backend próprio (o case não o avalia) e fonte remota de eventos.
 - Estorno/cancelamento pós-venda (`lio://payment-reversal`) (Q2).
 - Impressão de comprovante na impressora do terminal (`lio://print`): não pedido no case.
@@ -409,6 +409,7 @@ E uma compra em andamento, se houver, não é alterada
 | `OnOpenHistory` | Lista de eventos | Abre o histórico |
 | `OnPurchaseSelected(id)` | Histórico | Abre o comprovante da compra |
 | `OnNewSale` | Comprovante | Volta para a lista de eventos |
+| `OnOpenTickets` | Comprovante (`Approved`) | Abre a tela de ingressos da spec 002 (evento acrescentado na 1.3.1; comportamento na spec 002) |
 
 ## 7. Dependências e Contexto
 - **Módulos afetados:** novos módulos da feature; `app` (manifest, navegação, activity de retorno); `core:designsystem`.
@@ -481,3 +482,4 @@ E uma compra em andamento, se houver, não é alterada
 | 1.3.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da T25 no emulador, recomendações aprovadas pelo humano: BR-29/AC-28 (pagamento aprovado depois de "não encontrado" vira Aprovada); AC-25 ajustado (o erro aparece na tela da compra); fora do escopo: reabrir o app após venda concluída; Q14 aberta |
 | 1.3.0 | 2026-10-18 | Rafael Oliveira | Aprovada. Q14 respondida: aprovação tardia sem aviso ao operador e sem prazo máximo, risco de cobrança dupla aceito (aviso, prazo e estorno ficam para spec futura); nota do AC-25 corrigida (compra aberta ilegível abre na lista de eventos, sem cobrança) |
 | 1.3.0 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Implementada. T01–T30 concluídas, `verify.sh full` verde, análise de consistência (T27) sem divergência de comportamento. Pendências aceitas: J7 e J9 sem execução no AVD; TalkBack, AVD API 30+ e ordenação do `orders` em terminal real adiados |
+| 1.3.1 | 2026-10-19 | Rafael Oliveira (com Claude Code) | Ajuste documental decorrente da spec 002 (Q9, aprovado pelo humano): §3 aponta a 002; §6 lista o evento `OnOpenTickets` do comprovante. Nenhuma BR, AC, campo de `Purchase` ou tabela mudou |

@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Spec** | [spec.md](spec.md) (versão: 1.3.0) |
-| **Status** | Aprovada |
-| **Versão** | 0.4.4 |
+| **Spec** | [spec.md](spec.md) (versão: 1.3.1) |
+| **Status** | Aprovada (0.5.0) |
+| **Versão** | 0.5.0 |
 | **Fidelidade** | Prancha hi-fi + protótipo (G) |
 | **Prancha** | [design/mockups.html](design/mockups.html) · revisão local: http://127.0.0.1:8766/specs/001-venda-de-ingressos/design/mockups.html (`python3 -m http.server 8766` em `docs/`) |
 | **Design system** | [DESIGN.md](../../design/DESIGN.md) v0.2.0 (direção A "Ciano Smart") · [components.md](../../design/components.md) |
@@ -247,7 +247,8 @@ Nenhum. O app não recebe nem exibe dados do cartão nesta tela.
 │ Nº da compra      7F3K-9Q2L  │  DsKeyValueList
 │ Evento   Noite de Jazz…      │
 │ …                            │
-│ [        Nova venda        ] │  DsButton Filled (só vindo da venda)
+│ [      Ver ingressos       ] │  barra fixa (só em Approved, 0.5.0) · DsButton Filled
+│ [        Nova venda        ] │  DsButton Filled (Declined/Cancelled) · Tonal em Approved (só vindo da venda)
 └──────────────────────────────┘
 ```
 
@@ -262,6 +263,8 @@ Nenhum. O app não recebe nem exibe dados do cartão nesta tela.
 
 A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histórico" ou "Nova venda".
 
+**`Approved` com ingressos (0.5.0, spec 002):** as ações do estado ficam numa **barra inferior fixa** (o comprovante tem 12 linhas e a ação ficaria abaixo da dobra em 360×800; com `fontScale` ≥ 1,5 rolam junto do conteúdo). O estado ganha a ação **"Ver ingressos"** (`DsButton` Filled, ícone `confirmation_number`) que emite `OnOpenTickets` e abre a SCR-05 da [UI Spec 002](../002-qr-code-ingresso/ui-spec.md). Vindo da venda, "Ver ingressos" é a ação primária (a entrega dos ingressos é o próximo passo) e "Nova venda" passa a `DsButton` Tonal, também largura total, logo abaixo. Vindo do histórico, só "Ver ingressos". `Declined` e `Cancelled` não mudam: "Nova venda" segue Filled e não há ação de ingressos (BR-33/BR-34 da 002). A prancha desta mudança está em [002 mockups.html](../002-qr-code-ingresso/design/mockups.html) (SCR-03 · Approved); a prancha da 001 permanece congelada na 0.4.0.
+
 **`Error` vindo da venda (0.4.3):** não há resultado nem "Nova venda"; a top app bar mostra a seta "Voltar para eventos" (`ticketing_receipt_back_to_events`), que leva à SCR-01. Sem ela o operador só sairia pelo voltar do sistema, e a compra `Failed` mantém o `Error` indefinidamente.
 
 #### 4.3 Componentes
@@ -269,7 +272,8 @@ A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histór
 |---|---|---|---|---|
 | 1 | `DsStatusBadge` + `AmountText` | sucesso / erro / neutro | `successContainer`, `errorContainer`, `surfaceContainerHighest` | Neutro já previsto no catálogo; classe `.status.neutral` nova no kit |
 | 2 | `DsKeyValueList` | — | `surfaceContainerLow`, `shape.medium` | Campos da BR-16 |
-| 3 | `DsButton` | Filled, largura total | `primary` | "Nova venda" |
+| 3 | `DsButton` | Filled, largura total | `primary` | "Nova venda" (em `Approved` vira Tonal, `secondaryContainer`, abaixo de "Ver ingressos") |
+| 4 | `DsButton` | Filled, largura total, ícone | `primary` | "Ver ingressos" (só em `Approved`, 0.5.0) |
 
 #### 4.4 Conteúdo (strings)
 | Chave | Texto (pt-BR) | Onde | Observação |
@@ -284,6 +288,7 @@ A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histór
 | `ticketing_receipt_field_*` | Nº da compra · Evento · Data do evento · Local · Quantidade · Valor unitário · Total · Data/hora da compra · Status · Bandeira · Código de autorização · NSU | Lista | uma chave por campo |
 | `ticketing_receipt_datetime_format` | 17/10/2026 às 14:32 | Data/hora da compra e Data do evento | data **absoluta** (`dd/MM/aaaa às HH:mm`): o comprovante pode ser reaberto dias depois; a Data do evento usa o mesmo formato (0.4.3), lida por extenso ("17 de outubro às 14:32") |
 | `ticketing_receipt_new_sale` | Nova venda | Botão | |
+| `ticketing_receipt_view_tickets` | Ver ingressos | Botão, só em `Approved` (0.5.0) | |
 | `ticketing_receipt_loading` | Carregando o comprovante | `Loading` (a11y) | |
 | `ticketing_receipt_error_title` / `_body` | Não foi possível abrir o comprovante / Os dados desta compra não puderam ser lidos. | `Error` | BR-28 |
 | `ticketing_receipt_retry` | Tentar novamente | Botão em `Error` | |
@@ -292,16 +297,17 @@ A origem (fim da venda ou histórico) muda só a navegação: "voltar ao histór
 | Gesto | Elemento | `UiEvent` | Resultado | Feedback |
 |---|---|---|---|---|
 | Toque | "Nova venda" | `OnNewSale` | Volta a SCR-01 (disponíveis atualizados) | — |
+| Toque | "Ver ingressos" (`Approved`) | `OnOpenTickets` | Abre a SCR-05 (spec 002) | Ripple |
 | Toque | "Tentar novamente" | `OnRetry` | Repete a leitura (BR-28) | Vai para `Loading` |
 | Toque | Seta "Voltar para eventos" (`Error` vindo da venda) | — (navegação na `Route`) | Volta a SCR-01 | — |
 
 #### 4.6 Acessibilidade
-- **Ordem de leitura:** título → badge → total → título e texto do resultado → lista → botão.
+- **Ordem de leitura:** título → badge → total → título e texto do resultado → lista → "Ver ingressos" (só `Approved`, 0.5.0) → "Nova venda" (só vindo da venda). Ao voltar da SCR-05, o resultado não é reanunciado e o foco vai para "Ver ingressos".
 - **Rótulos falados:** total por extenso ("100 reais"); cada linha da lista lida como par ("Nº da compra, 7F3K-9Q2L").
 - **Headings:** título da tela; título do resultado.
 - **Live regions / foco:** ao abrir pelo fim da venda (e só nele; vindo do histórico o bloco é silencioso), o bloco de resultado é anunciado: `Approved` como status (educado); `Declined` e `Cancelled` como alerta (assertivo), por exigirem atenção do operador.
-- **Fonte 200%:** a lista empilha chave sobre valor quando não cabe; a tela rola.
-- **Contraste:** `onSuccessContainer`/`successContainer` 13,0:1 claro · 7,1:1 escuro; `onErrorContainer`/`errorContainer` 13,3:1 · 7,2:1; neutro `onSurfaceVariant`/`surfaceContainerHighest` 7,2:1 · 7,2:1; lista `onSurface`/`surfaceContainerLow` 15,5:1 · 13,3:1.
+- **Fonte 200%:** a lista empilha chave sobre valor quando não cabe; a tela rola. Em `Approved` (0.5.0), com `fontScale` ≥ 1,5 a barra de ações deixa de ser fixa e rola junto do conteúdo.
+- **Contraste:** `onSuccessContainer`/`successContainer` 13,0:1 claro · 7,1:1 escuro; botões da 0.5.0: `onPrimary`/`primary` 6,4:1 · 7,8:1 e `onSecondaryContainer`/`secondaryContainer` 13,2:1 · 7,1:1; `onErrorContainer`/`errorContainer` 13,3:1 · 7,2:1; neutro `onSurfaceVariant`/`surfaceContainerHighest` 7,2:1 · 7,2:1; lista `onSurface`/`surfaceContainerLow` 15,5:1 · 13,3:1.
 
 #### 4.7 Dados sensíveis na tela
 | Dado | Classificação (spec §8) | Como aparece | `FLAG_SECURE` |
@@ -451,3 +457,5 @@ Aprovados: estilos movidos para o `template.html` do kit (bloco "adicionados pel
 | 0.4.3 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da revisão do lote E (decisões aprovadas pelo humano): seta "Voltar para eventos" no `Error` do comprovante vindo da venda; `DsErrorState.retryIcon` (seta no `Unavailable`); `DsStatusMessage` registrado (§5); chaves reais da §4.4 (`strings_common.xml`, histórico, cabeçalho da compra); cabeçalho do snapshot sem "disponíveis"; Data do evento absoluta no comprovante; dia da semana por extenso no TalkBack; ícones substitutos por falta em `DsIcons` (`Block`, `History`, `Sync`); live region do comprovante só vindo da venda; texto do `Error` segue a UI Spec ("Tentar de novo" nas SCR-01/04, "Tentar novamente" na SCR-03; o `spec.md` descreve a ação, o texto exato é desta UI Spec) |
 | 0.4.3 | 2026-10-18 | Rafael Oliveira | Aprovada (itens da linha anterior, já implementados) |
 | 0.4.4 | 2026-10-18 | Rafael Oliveira (com Claude Code) | Achados da T25/T26, aprovados pelo humano: `DsListItem` empilha o trailing abaixo dos textos (alinhado ao início deles) com escala de fonte ≥ 1,5×, decisão por `fontScale` e não por largura (SCR-01 e SCR-04; a prancha mostra o trailing ao final no tamanho padrão); splash nativa (`core-splashscreen`) com fundo `surface` e ícone de ingresso sobre círculo `primary`, e ícone adaptativo do app (fora das telas SCR-xx) |
+| 0.5.0 | 2026-10-19 | Rafael Oliveira (com Claude Code) | Spec 002 (Q9): SCR-03 `Approved` ganha "Ver ingressos" (Filled) e "Nova venda" vira Tonal nesse estado; evento `OnOpenTickets`. Aguarda aprovação |
+| 0.5.0 | 2026-10-19 | Rafael Oliveira | Aprovada (com a UI Spec 002 v0.1.1: "Ver ingressos", barra de ações fixa no `Approved`, "Nova venda" Tonal nesse estado) |
