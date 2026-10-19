@@ -25,6 +25,8 @@ timber = "5.0.1"
 kotlinxSerialization = "1.11.0"
 kotlinxCollectionsImmutable = "0.5.2"
 desugarJdkLibs = "2.1.5"
+# QR Code do ingresso (spec 002, Q7 aprovada em 2026-10-19; 3.5.4 é a última estável no Maven Central)
+zxing = "3.5.4"
 # Testes (ADR-0003)
 junit = "5.14.4"
 mockk = "1.14.11"
@@ -67,6 +69,7 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }

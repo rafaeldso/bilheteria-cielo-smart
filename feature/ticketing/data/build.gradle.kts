@@ -40,6 +40,7 @@ dependencies {
     implementation(projects.feature.ticketing.domain)
     implementation(projects.core.database)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.zxing.core) // QR Code encoder (spec 002); pure Java, no camera, no permission
     implementation(libs.androidx.core.ktx) // NotificationCompat/ServiceCompat for the foreground service (minSdk 24)
     testImplementation(testFixtures(projects.feature.ticketing.domain))
     // Room in-memory tests need the Android framework (SQLite) on the JVM: Robolectric via the vintage engine.
