@@ -1,8 +1,8 @@
 # `:feature:ticketing:data`
 
-Catálogo de eventos (JSON em assets), compras (Room) e integração Cielo Smart por Deep Link (ADR-0010).
+Catálogo de eventos (JSON em assets), compras (Room), integração Cielo Smart por Deep Link (ADR-0010) e, na spec 002, QR Code (ZXing), impressão (`lio://print`) e imagens para compartilhar.
 
-**Spec:** [docs/specs/001-venda-de-ingressos](../../../docs/specs/001-venda-de-ingressos/spec.md) ·
+**Spec:** [docs/specs/001-venda-de-ingressos](../../../docs/specs/001-venda-de-ingressos/spec.md) · [002](../../../docs/specs/002-qr-code-ingresso/spec.md) ·
 **Camada:** data · **Plano:** [plan.md](../../../docs/specs/001-venda-de-ingressos/plan.md)
 
 ## API pública
@@ -44,6 +44,16 @@ persistido).
 BR-15), mas o pedido antigo pode ficar `PAID` na Cielo com a compra local já em `Failed`/`NotFound`. Essa aprovação tardia é
 tratada pela BR-29 (spec 1.3.0): o `HandlePaymentOutcomeUseCase` aprova a compra `Failed`/`NotFound` quando chega `PAID` com o
 mesmo `reference` e valor, sem tocar a compra aberta.
+
+## QR Code, impressão e compartilhamento (spec 002)
+- `ticket/`: `ZxingQrEncoder` (ZXing só aqui), `TicketImageRenderer` (imagem do ingresso, 384 px para imprimir e 1080 px para compartilhar), `QrRaster`
+  (mesma regra de módulo inteiro e margem do `DsQrCode`), `MediaStorePrintImageStore` (imagem temporária em `Pictures/Bilheteria`, só API ≥ 29, sem permissão
+  nossa), `DefaultTicketFiles` e `TicketFileProvider` (compartilhar: só `filesDir/shared_tickets`, provider não exportado).
+- `cielo/`: `CieloPrintCoordinator` (um ingresso por chamada, retomada, timeout de 15 s, singleton), `CieloPrintEncoder` (sem credenciais) e `DeepLinkOpener`
+  (a regra de pacote da allowlist, compartilhada com o pagamento). A resposta de impressão (`{code, message}`) usa `code` como a de pagamento: o
+  `CieloCallbackHandler` decide **por estado** (impressão aguardando) e a impressão não inicia com compra aberta.
+- Fatos verificados no emulador (API 29 e 30) e limites: [research.md da 002](../../../docs/specs/002-qr-code-ingresso/research.md).
+  Resumo: o app Cielo lê a imagem por caminho e só consegue com `MANAGE_EXTERNAL_STORAGE` (Android 11+); no Android 10 dá `EACCES`.
 
 ## Como testar
 ```bash

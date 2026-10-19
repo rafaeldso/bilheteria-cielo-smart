@@ -53,6 +53,7 @@ class CieloCallbackHandlerTest {
                 logger = logger,
                 lock = writeLock,
             ),
+        printSink = FakePrintResultSink(),
         scope = scope,
         logger = logger,
     )

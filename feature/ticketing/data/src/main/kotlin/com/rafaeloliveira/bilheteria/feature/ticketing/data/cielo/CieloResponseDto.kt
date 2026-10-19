@@ -41,6 +41,22 @@ internal data class CieloResponseDto(
     val totalPages: JsonPrimitive? = null,
 )
 
+/**
+ * Whitelist of the `lio://print` answer (research.md §1): `{code, message}`; a file the Cielo app cannot read answers
+ * `{code, reason}`, the same shape as a payment error. The payment-only fields are declared so a payment response is
+ * never mistaken for a print answer.
+ */
+@Serializable
+internal data class CieloPrintResponseDto(
+    val code: JsonPrimitive? = null,
+    val message: String? = null,
+    val reason: String? = null,
+    val id: JsonPrimitive? = null,
+    val reference: String? = null,
+    val payments: List<CieloPaymentDto>? = null,
+    val results: List<CieloOrderDto>? = null,
+)
+
 @Serializable
 internal data class CieloOrderDto(
     val id: JsonPrimitive? = null,
