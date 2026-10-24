@@ -10,7 +10,7 @@ compileSdk = "37" # Compose BOM 2026.09 exige 37; targetSdk sobe só com o check
 targetSdk = "36"
 minSdk = "24"
 # AndroidX (template oficial `android create empty-activity`; BOM atualizado)
-androidxCore = "1.18.0"
+androidxCore = "1.19.1"
 androidxActivity = "1.13.0"
 androidxSplashscreen = "1.2.0"
 androidxLifecycle = "2.11.0"
