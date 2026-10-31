@@ -2,7 +2,7 @@
 # Só versões estáveis (ADR-0007). Consultadas em 2026-10-17/18 em Google Maven, Maven Central e Gradle Plugin Portal.
 [versions]
 # Build
-androidGradlePlugin = "9.4.1"
+androidGradlePlugin = "9.5.0"
 kotlin = "2.4.21"
 ksp = "2.3.12"
 # SDK (lidos só nos convention plugins)
