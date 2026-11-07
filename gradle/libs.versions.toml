@@ -4,7 +4,7 @@
 # Build
 androidGradlePlugin = "9.4.1"
 kotlin = "2.4.21"
-ksp = "2.3.12"
+ksp = "2.3.13"
 # SDK (lidos só nos convention plugins)
 compileSdk = "37" # Compose BOM 2026.09 exige 37; targetSdk sobe só com o checklist de mudanças de comportamento
 targetSdk = "36"
@@ -22,7 +22,7 @@ room = "2.8.5"
 hilt = "2.60.1"
 coroutines = "1.11.0"
 timber = "5.0.1"
-kotlinxSerialization = "1.11.0"
+kotlinxSerialization = "1.12.0"
 kotlinxCollectionsImmutable = "0.5.2"
 desugarJdkLibs = "2.1.5"
 # QR Code do ingresso (spec 002, Q7 aprovada em 2026-10-19; 3.5.4 é a última estável no Maven Central)
